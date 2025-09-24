@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import { useRouter } from 'next/navigation';
+import QrScanner from '@/components/QrScan';
 
 function DashboardContent() {
   const { user, loading, isAdmin, hasPermission } = useAuth();
@@ -146,7 +147,10 @@ function DashboardContent() {
                 </svg>
               </div>
             </div>
+
           </motion.div>
+          <QrScanner/>
+
         </div>
 
         {/* Quick Actions */}

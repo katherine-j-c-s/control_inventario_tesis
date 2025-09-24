@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import QrReader from "@blackbox-vision/react-qr-reader";
+import { QrReader } from "@blackbox-vision/react-qr-reader";
+
 
 export default function QrScanner() {
   const [open, setOpen] = useState(false);
