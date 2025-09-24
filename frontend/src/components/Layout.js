@@ -1,7 +1,8 @@
-import { useAuth } from '@/hooks/useAuth';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import QrScanner from "./QrScan";
 
 export default function Layout({ children }) {
   const { user, logout, isAdmin } = useAuth();
@@ -9,7 +10,7 @@ export default function Layout({ children }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   if (!user) {
@@ -30,8 +31,6 @@ export default function Layout({ children }) {
               </Link>
 
               <div className="hidden md:ml-6 md:flex md:space-x-8">
-
-
                 {isAdmin() && (
                   <>
                     <Link
@@ -62,12 +61,18 @@ export default function Layout({ children }) {
               <div className="flex items-center space-x-2">
                 {user.foto && (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${user.foto}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace(
+                      "/api",
+                      ""
+                    )}/uploads/${user.foto}`}
                     alt="Foto de perfil"
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 )}
-                <Link href="/profile" className="text-sm font-medium text-gray-700 hover:bg-gray-300 rounded-md px-2 py-2">
+                <Link
+                  href="/profile"
+                  className="text-sm font-medium text-gray-700 hover:bg-gray-300 rounded-md px-2 py-2"
+                >
                   {user.nombre} {user.apellido}
                 </Link>
                 <span className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded-full">
