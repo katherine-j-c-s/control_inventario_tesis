@@ -30,12 +30,12 @@ export default function Layout({ children }) {
               </Link>
               
               <div className="hidden md:ml-6 md:flex md:space-x-8">
-                <Link
+                {/* <Link
                   href="/dashboard"
                   className="text-gray-900 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Dashboard
-                </Link>
+                </Link> */}
                 
                 {isAdmin() && (
                   <>

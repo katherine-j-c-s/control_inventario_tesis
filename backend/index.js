@@ -163,7 +163,21 @@ const startServer = async () => {
     });
 
   } catch (error) {
-    console.error('Error al inicializar el servidor:', error);
+    console.error('❌ Error al inicializar el servidor:', error.message);
+    
+    if (error.code === 'ECONNREFUSED') {
+      console.log('\n💡 Posibles soluciones:');
+      console.log('   1. Verificar que PostgreSQL esté ejecutándose');
+      console.log('   2. Verificar que el puerto 5432 esté disponible');
+      console.log('   3. Verificar la configuración en el archivo .env');
+    } else if (error.code === '3D000') {
+      console.log('\n💡 La base de datos "controlInventario" no existe.');
+      console.log('   Ejecuta el script create_database.sql en pgAdmin4');
+    } else if (error.code === '28P01') {
+      console.log('\n💡 Error de autenticación.');
+      console.log('   Verifica el usuario y contraseña en el archivo .env');
+    }
+    
     process.exit(1);
   }
 };
