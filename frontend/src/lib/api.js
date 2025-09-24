@@ -68,6 +68,23 @@ export const authAPI = {
   getProfile: () => {
     return api.get('/auth/profile');
   },
+
+  updateProfile: (userData, file) => {
+    const formData = new FormData();
+    Object.keys(userData).forEach(key => {
+      if (userData[key] !== undefined && userData[key] !== null) {
+        formData.append(key, userData[key]);
+      }
+    });
+    if (file) {
+      formData.append('foto', file);
+    }
+    return api.put('/auth/profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 // Funciones de gestión de usuarios

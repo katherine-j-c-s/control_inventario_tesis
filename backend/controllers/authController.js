@@ -138,8 +138,72 @@ const getProfile = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const updateData = req.body;
+    
+    const userRepository = AppDataSource.getRepository('User');
+    
+    const user = await userRepository.findOne({
+      where: { id: userId, activo: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Campos permitidos para actualizar por el propio usuario
+    const allowedFields = [
+      'nombre', 'apellido', 'email', 'puesto_laboral', 
+      'edad', 'genero'
+    ];
+
+    // Filtrar solo los campos permitidos
+    const filteredData = {};
+    Object.keys(updateData).forEach(key => {
+      if (allowedFields.includes(key)) {
+        filteredData[key] = updateData[key];
+      }
+    });
+
+    // Si se está actualizando la contraseña, encriptarla
+    if (updateData.password) {
+      const saltRounds = 10;
+      filteredData.password = await bcrypt.hash(updateData.password, saltRounds);
+    }
+
+    // Si hay nueva foto, actualizarla
+    if (req.file) {
+      filteredData.foto = req.file.filename;
+    }
+
+    // Actualizar usuario
+    await userRepository.update(userId, filteredData);
+    
+    const updatedUser = await userRepository.findOne({
+      where: { id: userId },
+      select: [
+        'id', 'nombre', 'apellido', 'dni', 'email', 
+        'puesto_laboral', 'edad', 'genero', 'foto', 
+        'rol', 'permisos', 'updated_at'
+      ]
+    });
+
+    res.json({
+      message: 'Perfil actualizado exitosamente',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error actualizando perfil:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   register,
   login,
-  getProfile
+  getProfile,
+  updateProfile
 };

@@ -28,15 +28,10 @@ export default function Layout({ children }) {
                   Control de Inventario
                 </h1>
               </Link>
-              
+
               <div className="hidden md:ml-6 md:flex md:space-x-8">
-                {/* <Link
-                  href="/dashboard"
-                  className="text-gray-900 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Dashboard
-                </Link> */}
-                
+
+
                 {isAdmin() && (
                   <>
                     <Link
@@ -53,7 +48,7 @@ export default function Layout({ children }) {
                     </Link>
                   </>
                 )}
-                
+
                 <Link
                   href="/inventory"
                   className="text-gray-900 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -72,14 +67,14 @@ export default function Layout({ children }) {
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 )}
-                <span className="text-sm font-medium text-gray-700">
+                <Link href="/profile" className="text-sm font-medium text-gray-700 hover:bg-gray-300 rounded-md px-2 py-2">
                   {user.nombre} {user.apellido}
-                </span>
+                </Link>
                 <span className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded-full">
-                  {user.rol}
+                  {user.puesto_laboral}
                 </span>
               </div>
-              
+
               <button
                 onClick={handleLogout}
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
