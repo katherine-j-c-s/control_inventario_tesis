@@ -5,16 +5,14 @@ import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import { useRouter } from 'next/navigation';
-import QrScanner from '@/components/QrScan';
+import QrScanComponent from '@/components/QrScan';
+
 
 function DashboardContent() {
   const { user, loading, isAdmin, hasPermission } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState({
-    totalUsuarios: 0,
-    totalProductos: 0,
-    productosStock: 0,
-    alertasStock: 0
+    totalUsuarios: 0
   });
 
   useEffect(() => {
@@ -28,10 +26,7 @@ function DashboardContent() {
     // Aquí podrías hacer llamadas a la API para obtener estadísticas
     // Por ahora usamos datos de ejemplo
     setStats({
-      totalUsuarios: 15,
-      totalProductos: 250,
-      productosStock: 230,
-      alertasStock: 5
+      totalUsuarios: 15
     });
   }, [user, router, loading]);
 
@@ -89,67 +84,8 @@ function DashboardContent() {
             </motion.div>
           )}
 
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.2 }}
-            className="card bg-gradient-to-r from-green-500 to-green-600 text-white"
-          >
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold">Total Productos</h3>
-                <p className="text-3xl font-bold">{stats.totalProductos}</p>
-              </div>
-              <div className="text-green-200">
-                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2L3 7v11a1 1 0 001 1h12a1 1 0 001-1V7l-7-5z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </motion.div>
 
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.3 }}
-            className="card bg-gradient-to-r from-yellow-500 to-yellow-600 text-white"
-          >
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold">En Stock</h3>
-                <p className="text-3xl font-bold">{stats.productosStock}</p>
-              </div>
-              <div className="text-yellow-200">
-                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                </svg>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.4 }}
-            className="card bg-gradient-to-r from-red-500 to-red-600 text-white"
-          >
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold">Alertas Stock</h3>
-                <p className="text-3xl font-bold">{stats.alertasStock}</p>
-              </div>
-              <div className="text-red-200">
-                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-
-          </motion.div>
-          <QrScanner/>
+          <QrScanComponent />
 
         </div>
 

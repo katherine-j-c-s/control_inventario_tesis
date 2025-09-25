@@ -2,7 +2,6 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import QrScanner from "./QrScan";
 
 export default function Layout({ children }) {
   const { user, logout, isAdmin } = useAuth();
