@@ -157,7 +157,7 @@ function InventoryContent() {
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn-primary"
+            className="bg-[#0D0EAB] text-white px-4 py-2 rounded-md"
           >
             + Agregar Producto
           </button>
@@ -185,11 +185,11 @@ function InventoryContent() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input-field"
+                className=" w-full md:w-auto rounded-md border-2 border-gray-300  "
               >
                 {categories.map(category => (
                   <option key={category} value={category}>
-                    {category === 'all' ? 'Todas las categorías' : category}
+                    {category === 'all' ? 'Todas las Categorías' : category}
                   </option>
                 ))}
               </select>

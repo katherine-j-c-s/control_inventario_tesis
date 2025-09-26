@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { userAPI } from '@/lib/api';
 import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
+import ProfileImage from '@/components/ProfileImage';
 
 function UsersAdminContent() {
   const { user, isAdmin } = useAuth();
@@ -190,13 +191,7 @@ function UsersAdminContent() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {userData.foto && (
-                            <img
-                              className="h-10 w-10 rounded-full object-cover"
-                              src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${userData.foto}`}
-                              alt=""
-                            />
-                          )}
+                          <ProfileImage user={userData} size="lg" className="mr-4" />
                           <div className={userData.foto ? "ml-4" : ""}>
                             <div className="text-sm font-medium text-gray-900">
                               {userData.nombre} {userData.apellido}

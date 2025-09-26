@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authAPI } from "@/lib/api";
+import ProfileImage from "@/components/ProfileImage";
 
 const FormProfile = ({ user }) => {
   const { updateUserData } = useAuth();
@@ -72,11 +73,17 @@ const FormProfile = ({ user }) => {
       {/* Profile Photo Section */}
       <div className="flex items-center space-x-6">
         <div className="relative">
-          <img
-            src={profileImage || "https://via.placeholder.com/100"}
-            alt="Foto de perfil"
-            className="w-24 h-24 rounded-full border-4 border-gray-200 object-cover"
-          />
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt="Foto de perfil"
+              className="w-24 h-24 rounded-full border-4 border-gray-200 object-cover"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full border-4 border-gray-200 bg-gray-400 flex items-center justify-center text-white text-2xl font-semibold">
+              {user?.nombre?.charAt(0)?.toUpperCase()}{user?.apellido?.charAt(0)?.toUpperCase()}
+            </div>
+          )}
           <button
             onClick={() => fileInputRef.current?.click()}
             className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 transition-colors"

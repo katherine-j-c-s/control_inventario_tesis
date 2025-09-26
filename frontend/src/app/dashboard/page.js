@@ -92,26 +92,26 @@ function DashboardContent() {
 
         {/* // Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-white">
-          <div className=" bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 ">
+          <div className=" bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 ">
             <QrScanComponent />
           </div>
           {/* <div className=" bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"> */}
           <Link
             href="/inventory" // 👈 ojo con la ruta, probablemente no necesites "../"
-            className="w-full cursor-pointer bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
+            className="w-full cursor-pointer bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
           >
             Inventario
           </Link>
 
           <Link
             href="/egreso"
-            className="w-full cursor-pointer bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
+            className="w-full cursor-pointer  bg-[#0D0EAB] hover:bg-primary-700 text-white p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
           >
             Egreso de Producto
           </Link>
           <Link
             href="/egreso"
-            className="w-full cursor-pointer bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
+            className="w-full cursor-pointer bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
           >
             Proyecto asignado
           </Link>
@@ -131,7 +131,7 @@ function DashboardContent() {
 
           <div className="space-y-3">
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   Nuevo usuario registrado: María García
@@ -141,7 +141,7 @@ function DashboardContent() {
             </div>
 
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   Producto actualizado: Aceite Motor 5W-30
@@ -151,7 +151,7 @@ function DashboardContent() {
             </div>
 
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   Alerta de stock bajo: Gasolina Premium
