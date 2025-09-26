@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { userAPI, roleAPI } from '@/lib/api';
-import Layout from '@/components/Layout';
+import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 
 function RolesAdminContent() {

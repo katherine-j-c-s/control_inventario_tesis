@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import Layout from "@/components/Layout";
+import Layout from "@/components/layouts/Layout";
 import { useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import FormProfile from "./formProfile";

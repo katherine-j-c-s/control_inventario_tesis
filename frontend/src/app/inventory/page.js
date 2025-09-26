@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import Layout from '@/components/Layout';
+import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 import QRCode from 'react-qr-code';
 import { DataTableDemo } from './inventaryTable';

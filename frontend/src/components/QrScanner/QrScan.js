@@ -104,14 +104,14 @@ export default function QrScanComponent() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center p-6  text-white rounded-lg ">
       {/* Solo el botón */}
       <button
         onClick={() => setOpen(!open)}
-        className={`px-6 py-3 rounded-xl shadow-md transition-all duration-200 font-medium ${
+        className={`px-6 py-3 rounded-xl  transition-all duration-200 font-medium ${
           open 
-            ? "bg-red-600 hover:bg-red-700 text-white" 
-            : "bg-blue-600 hover:bg-blue-700 text-white"
+            ? "bg-gray-400 hover:bg-gray-400 text-white" 
+            : " text-white"
         }`}
       >
         {open ? "Cerrar cámara" : "Escanear producto"}
@@ -146,12 +146,12 @@ export default function QrScanComponent() {
           />
           
           <div className="p-4 bg-gray-800 flex justify-center">
-            <button
+            {/* <button
               onClick={() => setOpen(false)}
               className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition"
             >
               Cerrar
-            </button>
+            </button> */}
           </div>
         </div>
       )}

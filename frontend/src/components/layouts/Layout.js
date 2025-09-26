@@ -2,6 +2,8 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import {SideMenu, sideMenu} from "../sideMenu"
+
 
 export default function Layout({ children }) {
   const { user, logout, isAdmin } = useAuth();
@@ -90,12 +92,16 @@ export default function Layout({ children }) {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      {/* Main Content  sm:px-6 lg:px-8 */}
+      <main className="max-w-7xl mx-auto py-6 gap-6 flex flex-row ">
+        {/* menu lateral */}
+        <SideMenu/>
+        {/* Contenido principal */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="flex-1 ml-60 px-2"
         >
           {children}
         </motion.div>
