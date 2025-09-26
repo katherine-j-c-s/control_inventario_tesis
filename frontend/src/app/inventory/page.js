@@ -197,7 +197,11 @@ function InventoryContent() {
           </div>
         </motion.div>
         {/*  Table */}
-        <DataTableDemo/>
+        <DataTableDemo 
+          products={filteredProducts}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
        </div>
     </Layout>
   );
