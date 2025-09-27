@@ -8,6 +8,7 @@ import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 import { DataTable } from './inventaryTable'; // Renombrado para claridad
 import { sampleProducts } from './_data/sample-data'; // Datos de ejemplo movidos
+import { FloatingQrScannerButton } from '@/components/QrScanner';
 
 // --- Componentes de ShadCN/UI ---
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,35 @@ function InventoryContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Manejar resultado del scanner QR
+  const handleQrScanResult = (data) => {
+    try {
+      const productData = JSON.parse(data);
+      // Buscar producto por código o ID
+      const foundProduct = products.find(p => 
+        p.codigo === productData.codigo || 
+        p.id === productData.id
+      );
+      
+      if (foundProduct) {
+        alert(`Producto encontrado: ${foundProduct.nombre}`);
+      } else {
+        alert('Producto no encontrado en el inventario');
+      }
+    } catch (error) {
+      // Si no es JSON, buscar por código de barras simple
+      const foundProduct = products.find(p => 
+        p.codigo.toLowerCase().includes(data.toLowerCase())
+      );
+      
+      if (foundProduct) {
+        alert(`Producto encontrado: ${foundProduct.nombre}`);
+      } else {
+        alert(`Código escaneado: ${data}\nProducto no encontrado`);
+      }
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -132,6 +162,9 @@ function InventoryContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Botón flotante del scanner QR */}
+      <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
   );
 }
