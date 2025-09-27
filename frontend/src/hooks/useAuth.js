@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, createContext } from 'react';
-import { authAPI } from '@/lib/api';
-import { rolesConfig } from '@/lib/roles';
+import { authAPI, roleAPI } from '@/lib/api';
+import { allRoutes } from '@/lib/roles';
 
 const AuthContext = createContext();
 
@@ -8,19 +8,38 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [rolePermissions, setRolePermissions] = useState({});
+
   useEffect(() => {
     const validateSession = async () => {
       const savedToken = localStorage.getItem('token');
       
       if (savedToken) {
         try {
-          // Si hay token, pedimos el perfil actualizado al servidor
-          const response = await authAPI.getProfile();
-          const freshUser = response.data;
-          
-          // Actualizamos el estado y localStorage con la info fresca
+          // 1. Validamos la sesión del usuario
+          const profileResponse = await authAPI.getProfile();
+          const freshUser = profileResponse.data;
           setUser(freshUser);
           localStorage.setItem('user', JSON.stringify(freshUser));
+
+          // 2. Obtenemos TODOS los roles y sus permisos (esto ahora funcionará)
+          const rolesResponse = await roleAPI.getRoles();
+          const rolesFromDB = rolesResponse.data;
+
+          // 3. Transformamos los datos
+          const dynamicRolesConfig = rolesFromDB.reduce((acc, role) => {
+            const allowedRouteKeys = Object.entries(role.permisos || {})
+              .filter(([, hasAccess]) => hasAccess)
+              .map(([key]) => key);
+
+            acc[role.nombre] = {
+              name: role.nombre,
+              routes: allowedRouteKeys.map(key => allRoutes[key]).filter(Boolean)
+            };
+            return acc;
+          }, {});
+
+          setRolePermissions(dynamicRolesConfig);
 
         } catch (error) {
           // Si el token es inválido o expiró, limpiamos todo
@@ -97,6 +116,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     loading,
+    rolePermissions,
     login,
     register,
     logout,
