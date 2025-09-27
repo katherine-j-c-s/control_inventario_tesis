@@ -62,24 +62,23 @@ const updateRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, permisos } = req.body;
-
     const roleRepository = AppDataSource.getRepository('Role');
-    
-    const role = await roleRepository.findOne({
-      where: { id: parseInt(id), activo: true }
-    });
+    const role = await roleRepository.findOne({ where: { id: parseInt(id), activo: true } });
 
     if (!role) {
       return res.status(404).json({ message: 'Rol no encontrado' });
     }
 
-    // No permitir editar roles del sistema
+    // LÓGICA MODIFICADA
     if (role.es_sistema) {
-      return res.status(403).json({ 
-        message: 'No se pueden modificar los roles del sistema' 
-      });
+      // Si se intenta cambiar algo que NO sean los permisos, se bloquea.
+      if (nombre !== undefined && nombre !== role.nombre) {
+        return res.status(403).json({ message: 'No se puede cambiar el nombre de un rol del sistema.' });
+      }
+      if (descripcion !== undefined && descripcion !== role.descripcion) {
+        return res.status(403).json({ message: 'No se puede cambiar la descripción de un rol del sistema.' });
+      }
     }
-
     // Actualizar campos
     if (nombre && nombre !== role.nombre) {
       // Verificar que el nuevo nombre no exista
@@ -114,7 +113,7 @@ const deleteRole = async (req, res) => {
     const { id } = req.params;
 
     const roleRepository = AppDataSource.getRepository('Role');
-    const userRoleRepository = AppDataSource.getRepository('UserRole');
+    const userRepository = AppDataSource.getRepository('User'); 
     
     const role = await roleRepository.findOne({
       where: { id: parseInt(id), activo: true }
@@ -124,26 +123,24 @@ const deleteRole = async (req, res) => {
       return res.status(404).json({ message: 'Rol no encontrado' });
     }
 
-    // No permitir eliminar roles del sistema
     if (role.es_sistema) {
       return res.status(403).json({ 
         message: 'No se pueden eliminar los roles del sistema' 
       });
     }
 
-    // Verificar si hay usuarios con este rol
-    const usersWithRole = await userRoleRepository.find({
-      where: { role_id: parseInt(id), activo: true }
+    const userCount = await userRepository.count({
+      where: { rol: role.nombre, activo: true }
     });
 
-    if (usersWithRole.length > 0) {
+    if (userCount > 0) {
       return res.status(400).json({ 
-        message: `No se puede eliminar el rol porque ${usersWithRole.length} usuario(s) lo tienen asignado` 
+        message: `No se puede eliminar el rol porque ${userCount} usuario(s) lo tienen asignado` 
       });
     }
 
-    // Soft delete
-    await roleRepository.update(id, { activo: false });
+    // [CAMBIO] Reemplazamos .update() por .delete() para un borrado físico
+    await roleRepository.delete(id);
 
     res.json({ message: 'Rol eliminado exitosamente' });
 
@@ -296,20 +293,22 @@ const getUsersByRole = async (req, res) => {
   try {
     const { roleId } = req.params;
 
-    const userRoleRepository = AppDataSource.getRepository('UserRole');
+    const roleRepository = AppDataSource.getRepository('Role');
+    const userRepository = AppDataSource.getRepository('User');
 
-    const usersWithRole = await userRoleRepository
-      .createQueryBuilder('ur')
-      .leftJoinAndSelect('ur.user', 'user')
-      .where('ur.role_id = :roleId', { roleId: parseInt(roleId) })
-      .andWhere('ur.activo = :activo', { activo: true })
-      .andWhere('user.activo = :userActivo', { userActivo: true })
-      .getMany();
+    // Primero, encontramos el rol por su ID para obtener el nombre
+    const role = await roleRepository.findOne({
+      where: { id: parseInt(roleId), activo: true }
+    });
 
-    const users = usersWithRole.map(ur => ({
-      ...ur.user,
-      fecha_asignacion: ur.fecha_asignacion
-    }));
+    if (!role) {
+      return res.status(404).json({ message: 'Rol no encontrado' });
+    }
+
+    // [MODIFICADO] Buscamos todos los usuarios que tengan ese nombre de rol
+    const users = await userRepository.find({
+      where: { rol: role.nombre, activo: true }
+    });
 
     res.json(users);
 

@@ -1,11 +1,18 @@
-"use client";
+// app/profile/formProfile.js
+'use client';
 
 import React, { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authAPI } from "@/lib/api";
-import ProfileImage from "@/components/ProfileImage";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Terminal, Upload, Trash2 } from "lucide-react";
 
-const FormProfile = ({ user }) => {
+export function FormProfile({ user }) {
   const { updateUserData } = useAuth();
   const fileInputRef = useRef(null);
   
@@ -19,268 +26,147 @@ const FormProfile = ({ user }) => {
     genero: user?.genero || ""
   });
 
-  const [profileImage, setProfileImage] = useState(user?.foto ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${user.foto}` : null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleSelectChange = (value) => {
+    setFormData(prev => ({ ...prev, genero: value }));
+  };
+
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
+    setMessage({ type: '', text: '' });
 
     try {
       const file = fileInputRef.current?.files[0];
       const response = await authAPI.updateProfile(formData, file);
       
-      // Actualizar los datos del usuario en el contexto
       updateUserData(response.data.user);
       
-      setMessage("Perfil actualizado exitosamente");
+      setMessage({ type: 'success', text: 'Perfil actualizado exitosamente' });
       setIsEditing(false);
+      setPreviewImage(null); // Limpiar previsualización
     } catch (error) {
-      console.error("Error actualizando perfil:", error);
-      setMessage(error.response?.data?.message || "Error al actualizar el perfil");
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Error al actualizar el perfil' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      
+  const handleCancel = () => {
+    // Restaurar el formulario a los datos originales del usuario
+    setFormData({
+      nombre: user?.nombre || "",
+      apellido: user?.apellido || "",
+      // ... restaurar otros campos
+    });
+    setPreviewImage(null);
+    setIsEditing(false);
+  };
+  
+  const userPhoto = user?.foto ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${user.foto}` : null;
 
-      {/* Profile Photo Section */}
-      <div className="flex items-center space-x-6">
-        <div className="relative">
-          {profileImage ? (
-            <img
-              src={profileImage}
-              alt="Foto de perfil"
-              className="w-24 h-24 rounded-full border-4 border-gray-200 object-cover"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full border-4 border-gray-200 bg-gray-400 flex items-center justify-center text-white text-2xl font-semibold">
-              {user?.nombre?.charAt(0)?.toUpperCase()}{user?.apellido?.charAt(0)?.toUpperCase()}
-            </div>
-          )}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-        </div>
-        <div className="space-x-4">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Subir nueva foto
-          </button>
-          <button
-            onClick={() => setProfileImage(null)}
-            className="text-brand-black hover:bg-gray-300 rounded-lg px-4 py-2 transition-colors"
-          >
-            Eliminar foto
-          </button>
+  return (
+    <div className="space-y-8">
+      {/* SECCIÓN DE FOTO DE PERFIL */}
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <Avatar className="w-24 h-24 border-4 border-muted">
+          <AvatarImage src={previewImage || userPhoto} />
+          <AvatarFallback className="text-3xl">
+            {user?.nombre?.[0]}{user?.apellido?.[0]}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={!isEditing}>
+            <Upload className="mr-2 h-4 w-4" />
+            Subir foto
+          </Button>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
         </div>
       </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`p-4 rounded-lg ${
-          message.includes("exitosamente") 
-            ? "bg-green-100 text-green-700 border border-green-200" 
-            : "bg-red-100 text-red-700 border border-red-200"
-        }`}>
-          {message}
-        </div>
+      {/* MENSAJES DE ESTADO */}
+      {message.text && (
+        <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className={message.type === 'success' ? 'border-green-500' : ''}>
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>{message.type === 'error' ? 'Error' : 'Éxito'}</AlertTitle>
+          <AlertDescription>{message.text}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* FORMULARIO */}
+      <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Nombre */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nombre
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu nombre"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="nombre">Nombre</Label>
+            <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* Apellido */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Apellido
-            </label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu apellido"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="apellido">Apellido</Label>
+            <Input id="apellido" name="apellido" value={formData.apellido} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* DNI */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              DNI
-            </label>
-            <input
-              type="text"
-              name="dni"
-              value={formData.dni}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu DNI"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="dni">DNI</Label>
+            <Input id="dni" name="dni" value={formData.dni} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu email"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* Puesto Laboral */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Puesto Laboral
-            </label>
-            <input
-              type="text"
-              name="puesto_laboral"
-              value={formData.puesto_laboral}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu puesto laboral"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="puesto_laboral">Puesto Laboral</Label>
+            <Input id="puesto_laboral" name="puesto_laboral" value={formData.puesto_laboral} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* Edad */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Edad
-            </label>
-            <input
-              type="number"
-              name="edad"
-              value={formData.edad}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Ingresa tu edad"
-              min="18"
-              max="100"
-            />
+          <div className="space-y-2">
+            <Label htmlFor="edad">Edad</Label>
+            <Input id="edad" name="edad" type="number" value={formData.edad} onChange={handleInputChange} disabled={!isEditing} />
           </div>
-
-          {/* Género */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Género
-            </label>
-            <select
-              name="genero"
-              value={formData.genero}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-            >
-              <option value="">Selecciona tu género</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-              <option value="Otro">Otro</option>
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="genero">Género</Label>
+            <Select onValueChange={handleSelectChange} value={formData.genero} disabled={!isEditing}>
+              <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Masculino">Masculino</SelectItem>
+                <SelectItem value="Femenino">Femenino</SelectItem>
+                <SelectItem value="Otro">Otro</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* BOTONES DE ACCIÓN */}
         <div className="flex justify-end space-x-4 pt-6">
           {!isEditing ? (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            >
+            <Button type="button" onClick={() => setIsEditing(true)}>
               Editar Perfil
-            </button>
+            </Button>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              >
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLoading ? "Guardando..." : "Guardar Cambios"}
-              </button>
+              </Button>
             </>
           )}
         </div>
       </form>
     </div>
   );
-};
-
-export default FormProfile;
+}

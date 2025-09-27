@@ -1,9 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { rolesConfig } from '@/lib/roles';
+
+// Componentes de ShadCN/UI y Lucide Icons
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Terminal } from "lucide-react";
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -18,25 +29,26 @@ function RegisterForm() {
     confirmPassword: ''
   });
   const [foto, setFoto] = useState(null);
-  const [registerLoading, setRegisterLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const { register, user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Esperar a que termine de cargar
-    
     if (user) {
-      router.push('/dashboard');
+      const userRole = user.rol || 'default';
+      const redirectPath = rolesConfig[userRole]?.defaultRoute || '/dashboard';
+      router.push(redirectPath);
     }
-  }, [user, router, loading]);
+  }, [user, router]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+  
+  const handleSelectChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e) => {
@@ -45,12 +57,12 @@ function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setRegisterLoading(true);
+    setIsLoading(true);
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
-      setRegisterLoading(false);
+      setIsLoading(false);
       return;
     }
 
@@ -59,241 +71,107 @@ function RegisterForm() {
 
     const result = await register(userData, foto);
     
-    if (result.success) {
-      router.push('/dashboard');
-    } else {
+    // La redirección se maneja en el useEffect
+    if (!result.success) {
       setError(result.error);
     }
     
-    setRegisterLoading(false);
+    setIsLoading(false);
   };
 
+  if (loading || user) {
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 py-12">
       <motion.div
-        initial={{ opacity: 0, y: -50 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-2xl w-full space-y-8"
+        className="w-full"
       >
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Registro de Usuario
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sistema de Control de Inventario - Petróleo
-          </p>
-        </div>
-        
-        <motion.form
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="mt-8 space-y-6 bg-white p-8 rounded-lg shadow-lg"
-          onSubmit={handleSubmit}
-        >
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm"
-            >
-              {error}
-            </motion.div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
-                Nombre *
-              </label>
-              <input
-                id="nombre"
-                name="nombre"
-                type="text"
-                required
-                className="input-field mt-1"
-                value={formData.nombre}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">
-                Apellido *
-              </label>
-              <input
-                id="apellido"
-                name="apellido"
-                type="text"
-                required
-                className="input-field mt-1"
-                value={formData.apellido}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="dni" className="block text-sm font-medium text-gray-700">
-                DNI *
-              </label>
-              <input
-                id="dni"
-                name="dni"
-                type="text"
-                required
-                className="input-field mt-1"
-                value={formData.dni}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email *
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="input-field mt-1"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="puesto_laboral" className="block text-sm font-medium text-gray-700">
-                Puesto Laboral *
-              </label>
-              <input
-                id="puesto_laboral"
-                name="puesto_laboral"
-                type="text"
-                required
-                className="input-field mt-1"
-                value={formData.puesto_laboral}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="edad" className="block text-sm font-medium text-gray-700">
-                Edad *
-              </label>
-              <input
-                id="edad"
-                name="edad"
-                type="number"
-                required
-                min="18"
-                max="100"
-                className="input-field mt-1"
-                value={formData.edad}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="genero" className="block text-sm font-medium text-gray-700">
-                Género *
-              </label>
-              <select
-                id="genero"
-                name="genero"
-                required
-                className="input-field mt-1"
-                value={formData.genero}
-                onChange={handleChange}
-              >
-                <option value="">Selecciona...</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-                <option value="Prefiero no decir">Prefiero no decir</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="foto" className="block text-sm font-medium text-gray-700">
-                Foto de Perfil
-              </label>
-              <input
-                id="foto"
-                name="foto"
-                type="file"
-                accept="image/*"
-                className="input-field mt-1"
-                onChange={handleFileChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña *
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minLength="6"
-                className="input-field mt-1"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmar Contraseña *
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                minLength="6"
-                className="input-field mt-1"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={registerLoading}
-              className={`w-full btn-primary ${registerLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {registerLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Registrando...
-                </div>
-              ) : (
-                'Registrar Usuario'
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Registro de Nuevo Usuario</CardTitle>
+            <CardDescription>Completa el formulario para crear tu cuenta.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <Alert variant="destructive">
+                  <Terminal className="h-4 w-4" />
+                  <AlertTitle>Error en el Registro</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </button>
-          </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nombre">Nombre *</Label>
+                  <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apellido">Apellido *</Label>
+                  <Input id="apellido" name="apellido" value={formData.apellido} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dni">DNI *</Label>
+                  <Input id="dni" name="dni" value={formData.dni} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="puesto_laboral">Puesto Laboral *</Label>
+                  <Input id="puesto_laboral" name="puesto_laboral" value={formData.puesto_laboral} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edad">Edad *</Label>
+                  <Input id="edad" name="edad" type="number" min="18" max="100" value={formData.edad} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="genero">Género *</Label>
+                  <Select onValueChange={(value) => handleSelectChange('genero', value)} value={formData.genero} required>
+                    <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Masculino">Masculino</SelectItem>
+                      <SelectItem value="Femenino">Femenino</SelectItem>
+                      <SelectItem value="Otro">Otro</SelectItem>
+                      <SelectItem value="Prefiero no decir">Prefiero no decir</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="foto">Foto de Perfil</Label>
+                  <Input id="foto" name="foto" type="file" accept="image/*" onChange={handleFileChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña *</Label>
+                  <Input id="password" name="password" type="password" minLength="6" value={formData.password} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
+                  <Input id="confirmPassword" name="confirmPassword" type="password" minLength="6" value={formData.confirmPassword} onChange={handleChange} required />
+                </div>
+              </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? 'Creando cuenta...' : 'Registrar Usuario'}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
               ¿Ya tienes cuenta?{' '}
-              <button
-                type="button"
-                onClick={() => router.push('/login')}
-                className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
-              >
+              <Link href="/login" className="font-semibold text-primary hover:underline">
                 Inicia sesión aquí
-              </button>
+              </Link>
             </p>
-          </div>
-        </motion.form>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   );

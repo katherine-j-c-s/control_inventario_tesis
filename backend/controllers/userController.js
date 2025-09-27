@@ -97,38 +97,37 @@ const updateUser = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rol } = req.body;
+    const { rol } = req.body; // El nombre del rol, ej: "Supervisor"
 
-    if (!['admin', 'usuario'].includes(rol)) {
-      return res.status(400).json({ 
-        message: 'Rol inválido. Debe ser "admin" o "usuario"' 
-      });
-    }
-
+    // 1. Obtener los repositorios necesarios
+    const roleRepository = AppDataSource.getRepository('Role');
     const userRepository = AppDataSource.getRepository('User');
-    
-    const user = await userRepository.findOne({
-      where: { id: parseInt(id), activo: true }
-    });
 
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+    // 2. Validar que el rol recibido exista en la base de datos
+    const rolExiste = await roleRepository.findOne({ where: { nombre: rol, activo: true } });
+
+    if (!rolExiste) {
+      return res.status(400).json({ message: `El rol '${rol}' no es un rol válido en el sistema.` });
     }
 
-    await userRepository.update(id, { rol });
+    // 3. Buscar al usuario que se va a actualizar
+    const userToUpdate = await userRepository.findOne({ where: { id: parseInt(id), activo: true } });
 
-    const updatedUser = await userRepository.findOne({
-      where: { id: parseInt(id) },
-      select: [
-        'id', 'nombre', 'apellido', 'dni', 'email', 
-        'puesto_laboral', 'edad', 'genero', 'foto', 
-        'rol', 'permisos', 'updated_at'
-      ]
-    });
+    if (!userToUpdate) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
 
-    res.json({
-      message: 'Rol de usuario actualizado exitosamente',
-      user: updatedUser
+    // 4. Actualizar el campo 'rol' y guardar los cambios
+    userToUpdate.rol = rol;
+    await userRepository.save(userToUpdate);
+
+    // 5. Devolver el usuario actualizado (sin la contraseña)
+    const updatedUserResponse = { ...userToUpdate };
+    delete updatedUserResponse.password; 
+
+    res.status(200).json({ 
+      message: 'Rol de usuario actualizado exitosamente.', 
+      user: updatedUserResponse 
     });
 
   } catch (error) {
@@ -194,11 +193,10 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
+    
+    await userRepository.delete(id);
 
-    // Soft delete - marcar como inactivo
-    await userRepository.update(id, { activo: false });
-
-    res.json({ message: 'Usuario eliminado exitosamente' });
+    res.json({ message: 'Usuario eliminado permanentemente' });
 
   } catch (error) {
     console.error('Error eliminando usuario:', error);

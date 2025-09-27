@@ -1,166 +1,165 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import Layout from "@/components/layouts/Layout";
-import { useRouter } from "next/navigation";
-import QrScanComponent from "@/components/QrScanner/QrScan";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import Layout from '@/components/layouts/Layout';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { rolesConfig } from '@/lib/roles'; // Importamos la config para los accesos directos
+
+// --- Componentes de ShadCN/UI y Lucide Icons ---
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Users, Package, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 function DashboardContent() {
-  const { user, loading, isAdmin, hasPermission } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  
+  // Datos de ejemplo para las tarjetas de estadísticas
   const [stats, setStats] = useState({
-    totalUsuarios: 0,
+    totalUsuarios: 15,
+    productosActivos: 124,
+    stockBajo: 3,
+    ordenesCompletas: 78,
   });
 
   useEffect(() => {
-    if (loading) return; // Esperar a que termine de cargar
-
+    if (loading) return;
     if (!user) {
       router.push("/login");
-      return;
     }
-
-    // Aquí podrías hacer llamadas a la API para obtener estadísticas
-    // Por ahora usamos datos de ejemplo
-    setStats({
-      totalUsuarios: 15,
-    });
-  }, [user, router, loading]);
+    // Aquí harías las llamadas a la API para obtener las estadísticas reales
+  }, [user, loading, router]);
 
   if (loading || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    // Puedes usar un componente Skeleton aquí para una mejor UX
+    return <div className="flex h-screen items-center justify-center">Cargando...</div>;
   }
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+  // Obtenemos los accesos directos permitidos para el rol del usuario
+  const userRole = user.rol || 'default';
+  const quickActions = rolesConfig[userRole]?.routes || [];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-3xl font-bold text-gray-900">
-            Bienvenido, {user.nombre} {user.apellido}
+      <div className="space-y-8">
+        {/* --- Header de Bienvenida --- */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-3xl font-bold">
+            Bienvenido, {user.nombre}
           </h1>
-          <p className="mt-2 text-gray-600">
-            Panel de control del sistema de inventario
+          <p className="mt-1 text-muted-foreground">
+            Aquí tienes un resumen rápido de la actividad del sistema.
           </p>
         </motion.div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {isAdmin() && (
-            <motion.div
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.1 }}
-              className="card bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-            >
-              <div className="flex items-center">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">Total Usuarios</h3>
-                  <p className="text-3xl font-bold">{stats.totalUsuarios}</p>
-                </div>
-                <div className="text-blue-200">
-                  <svg
-                    className="w-12 h-12"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </motion.div>
-          )}
+        {/* --- Tarjetas de Estadísticas --- */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalUsuarios}</div>
+              <p className="text-xs text-muted-foreground">Usuarios activos en el sistema</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Productos Activos</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.productosActivos}</div>
+              <p className="text-xs text-muted-foreground">Items registrados en inventario</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Alertas de Stock</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.stockBajo}</div>
+              <p className="text-xs text-muted-foreground">Productos con stock bajo</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Órdenes Completas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.ordenesCompletas}</div>
+              <p className="text-xs text-muted-foreground">Este mes</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* // Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-white">
-          <div className=" bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 ">
-            <QrScanComponent />
+        {/* --- Acciones Rápidas y Actividad Reciente --- */}
+        <div className="grid gap-8 md:grid-cols-3">
+          {/* Columna de Acciones Rápidas */}
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accesos Directos</CardTitle>
+                <CardDescription>
+                  Tus secciones más importantes, a un solo clic.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {quickActions.slice(0, 4).map((action) => (
+                  <Link key={action.href} href={action.href} passHref>
+                    <div className="p-4 bg-muted/50 hover:bg-muted rounded-lg transition-colors cursor-pointer flex items-center justify-between">
+                      <div className="flex items-center">
+                        <action.icon className="h-5 w-5 mr-3 text-primary" />
+                        <span className="font-semibold">{action.text}</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
           </div>
-          {/* <div className=" bg-gray-400 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"> */}
-          <Link
-            href="/inventory" // 👈 ojo con la ruta, probablemente no necesites "../"
-            className="w-full cursor-pointer bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
-          >
-            Inventario
-          </Link>
 
-          <Link
-            href="/egreso"
-            className="w-full cursor-pointer  bg-[#0D0EAB] hover:bg-primary-700 text-white p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
-          >
-            Egreso de Producto
-          </Link>
-          <Link
-            href="/egreso"
-            className="w-full cursor-pointer bg-[#0D0EAB] hover:bg-primary-700 p-4 border-10 shadow-md flex flex-row rounded-lg justify-center items-center gap-4 h-[130px]"
-          >
-            Proyecto asignado
-          </Link>
-          
+          {/* Columna de Actividad Reciente */}
+          <div className="md:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Actividad Reciente</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3 shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Nuevo usuario: María García</p>
+                    <p className="text-xs text-muted-foreground">Hace 2 horas</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3 shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Producto actualizado: Aceite 5W-30</p>
+                    <p className="text-xs text-muted-foreground">Hace 4 horas</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-destructive rounded-full mr-3 shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-destructive">Alerta de stock: Gasolina Premium</p>
+                    <p className="text-xs text-muted-foreground">Hace 6 horas</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="card"
-        >
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Actividad Reciente
-          </h2>
-
-          <div className="space-y-3">
-            <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  Nuevo usuario registrado: María García
-                </p>
-                <p className="text-xs text-gray-500">Hace 2 horas</p>
-              </div>
-            </div>
-
-            <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  Producto actualizado: Aceite Motor 5W-30
-                </p>
-                <p className="text-xs text-gray-500">Hace 4 horas</p>
-              </div>
-            </div>
-
-            <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 bg-[#13C8DA] rounded-full mr-3"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  Alerta de stock bajo: Gasolina Premium
-                </p>
-                <p className="text-xs text-gray-500">Hace 6 horas</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </Layout>
   );

@@ -1,137 +1,57 @@
+// app/inventory/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
-import QRCode from 'react-qr-code';
-import { DataTableDemo } from './inventaryTable';
+import { DataTable } from './inventaryTable'; // Renombrado para claridad
+import { sampleProducts } from './_data/sample-data'; // Datos de ejemplo movidos
+
+// --- Componentes de ShadCN/UI ---
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { PlusCircle, Loader2 } from "lucide-react";
+// Importar Dialog para el modal
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 function InventoryContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showQRModal, setShowQRModal] = useState(false);
-
-  // Datos de ejemplo para productos petroleros
-  const sampleProducts = [
-    {
-      id: 1,
-      nombre: 'Aceite Motor 5W-30',
-      codigo: 'AM5W30001',
-      categoria: 'Lubricantes',
-      descripcion: 'Aceite sintético para motores de alta performance',
-      unidad_medida: 'Litros',
-      precio_unitario: 45.99,
-      stock_minimo: 50,
-      stock_actual: 120,
-      ubicacion: 'Almacén A - Estante 1',
-      activo: true
-    },
-    {
-      id: 2,
-      nombre: 'Gasolina Premium 95',
-      codigo: 'GP95001',
-      categoria: 'Combustibles',
-      descripcion: 'Gasolina premium octanaje 95',
-      unidad_medida: 'Litros',
-      precio_unitario: 1.25,
-      stock_minimo: 1000,
-      stock_actual: 8500,
-      ubicacion: 'Tanque Principal T1',
-      activo: true
-    },
-    {
-      id: 3,
-      nombre: 'Diesel Ultra Bajo Azufre',
-      codigo: 'DUBA001',
-      categoria: 'Combustibles',
-      descripcion: 'Diesel con contenido ultra bajo de azufre',
-      unidad_medida: 'Litros',
-      precio_unitario: 1.15,
-      stock_minimo: 1500,
-      stock_actual: 12000,
-      ubicacion: 'Tanque Principal T2',
-      activo: true
-    },
-    {
-      id: 4,
-      nombre: 'Grasa Multipropósito',
-      codigo: 'GM001',
-      categoria: 'Lubricantes',
-      descripcion: 'Grasa para uso industrial multipropósito',
-      unidad_medida: 'Kilogramos',
-      precio_unitario: 8.50,
-      stock_minimo: 25,
-      stock_actual: 15,
-      ubicacion: 'Almacén B - Estante 3',
-      activo: true
-    },
-    {
-      id: 5,
-      nombre: 'Aditivo Anticongelante',
-      codigo: 'AA001',
-      categoria: 'Aditivos',
-      descripcion: 'Aditivo anticongelante para sistemas de refrigeración',
-      unidad_medida: 'Litros',
-      precio_unitario: 12.75,
-      stock_minimo: 30,
-      stock_actual: 45,
-      ubicacion: 'Almacén A - Estante 5',
-      activo: true
-    }
-  ];
 
   useEffect(() => {
     if (loading) return;
-    
     if (!user) {
       router.push('/login');
       return;
     }
-
-    // Simular carga de productos
+    // Simulación de carga de datos
     setProducts(sampleProducts);
   }, [user, router, loading]);
 
   const categories = ['all', 'Combustibles', 'Lubricantes', 'Aditivos'];
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.codigo.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = product.nombre.toLowerCase().includes(searchLower) ||
+                         product.codigo.toLowerCase().includes(searchLower);
     const matchesCategory = selectedCategory === 'all' || product.categoria === selectedCategory;
     return matchesSearch && matchesCategory && product.activo;
   });
 
-  const getStockStatus = (product) => {
-    if (product.stock_actual <= product.stock_minimo) {
-      return { status: 'low', color: 'bg-red-100 text-red-800', text: 'Stock Bajo' };
-    } else if (product.stock_actual <= product.stock_minimo * 1.5) {
-      return { status: 'medium', color: 'bg-yellow-100 text-yellow-800', text: 'Stock Medio' };
-    } else {
-      return { status: 'good', color: 'bg-green-100 text-green-800', text: 'Stock Bueno' };
-    }
-  };
-
-  const generateQRData = (product) => {
-    return JSON.stringify({
-      id: product.id,
-      codigo: product.codigo,
-      nombre: product.nombre,
-      stock: product.stock_actual,
-      ubicacion: product.ubicacion
-    });
-  };
-
   if (loading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -139,70 +59,79 @@ function InventoryContent() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-between items-center"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Inventario de Productos
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Gestiona el inventario de productos petroleros
-            </p>
+        {/* --- Header --- */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Inventario de Productos</h1>
+              <p className="mt-1 text-muted-foreground">
+                Gestiona y visualiza el stock de todos los productos.
+              </p>
+            </div>
+            <Button onClick={() => setShowAddModal(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Agregar Producto
+            </Button>
           </div>
-          
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-[#0D0EAB] text-white px-4 py-2 rounded-md"
-          >
-            + Agregar Producto
-          </button>
         </motion.div>
 
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Buscar por nombre o código..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field"
-              />
-            </div>
-            
-            <div className="flex space-x-4">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className=" w-full md:w-auto rounded-md border-2 border-gray-300  "
-              >
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category === 'all' ? 'Todas las Categorías' : category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        {/* --- Filtros --- */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <Input
+                  placeholder="Buscar por nombre o código..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="max-w-sm"
+                />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat === 'all' ? 'Todas las Categorías' : cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
-        {/*  Table */}
-        <DataTableDemo 
-          products={filteredProducts}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-       </div>
+
+        {/* --- Tabla de Datos --- */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+            <DataTable products={filteredProducts} />
+        </motion.div>
+      </div>
+      
+      {/* --- Modal para Agregar Producto --- */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Agregar Nuevo Producto</DialogTitle>
+            <DialogDescription>Completa los campos para añadir un item al inventario.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="nombre" className="text-right">Nombre</Label>
+              <Input id="nombre" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="codigo" className="text-right">Código</Label>
+              <Input id="codigo" className="col-span-3" />
+            </div>
+            {/* ... Aquí agregarías más campos del formulario ... */}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+            <Button>Guardar Producto</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

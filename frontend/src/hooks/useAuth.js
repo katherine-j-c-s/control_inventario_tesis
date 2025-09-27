@@ -1,24 +1,40 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { authAPI } from '@/lib/api';
+import { rolesConfig } from '@/lib/roles';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // Verificar si hay un token guardado al cargar la aplicación
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-    }
-    
-    setLoading(false);
+    const validateSession = async () => {
+      const savedToken = localStorage.getItem('token');
+      
+      if (savedToken) {
+        try {
+          // Si hay token, pedimos el perfil actualizado al servidor
+          const response = await authAPI.getProfile();
+          const freshUser = response.data;
+          
+          // Actualizamos el estado y localStorage con la info fresca
+          setUser(freshUser);
+          localStorage.setItem('user', JSON.stringify(freshUser));
+
+        } catch (error) {
+          // Si el token es inválido o expiró, limpiamos todo
+          console.error("Token inválido, cerrando sesión:", error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
+      }
+      
+      setLoading(false);
+    };
+
+    validateSession();
   }, []);
 
   const login = async (credentials) => {
@@ -27,8 +43,6 @@ export function AuthProvider({ children }) {
       const { user: userData, token: userToken } = response.data;
       
       setUser(userData);
-      setToken(userToken);
-      
       localStorage.setItem('token', userToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
@@ -48,8 +62,6 @@ export function AuthProvider({ children }) {
       const { user: newUser, token: userToken } = response.data;
       
       setUser(newUser);
-      setToken(userToken);
-      
       localStorage.setItem('token', userToken);
       localStorage.setItem('user', JSON.stringify(newUser));
       
@@ -62,17 +74,16 @@ export function AuthProvider({ children }) {
       };
     }
   };
-
+  
   const logout = () => {
     setUser(null);
-    setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
-  const updateUserData = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const updateUserData = (newUserData) => {
+    setUser(newUserData);
+    localStorage.setItem('user', JSON.stringify(newUserData));
   };
 
   const isAdmin = () => {
@@ -85,7 +96,6 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
-    token,
     loading,
     login,
     register,
@@ -97,7 +107,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
@@ -109,3 +119,4 @@ export function useAuth() {
   }
   return context;
 }
+
