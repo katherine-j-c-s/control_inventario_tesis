@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
-const allRoutes = {
+export const allRoutes = {
   dashboard: { href: "/dashboard", text: "Dashboard", icon: Home },
   inventory: { href: "/inventory", text: "Inventario", icon: Package },
   purchaseOrders: { href: "/ordenes-de-compra", text: "Órdenes de Compra", icon: ListOrdered },

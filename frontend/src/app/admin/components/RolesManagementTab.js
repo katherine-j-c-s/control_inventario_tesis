@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { roleAPI } from '@/lib/api';
+import { allRoutes } from '@/lib/roles';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -13,13 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, PlusCircle } from "lucide-react";
 
 // Estructura de permisos que manejaremos
-const PERMISSIONS_LIST = [
-  { id: 'entrega', label: 'Entrega de productos' },
-  { id: 'movimiento', label: 'Movimiento de inventario' },
-  { id: 'egreso', label: 'Egreso de productos' },
-  { id: 'admin_usuarios', label: 'Administrar Usuarios' },
-  { id: 'admin_roles', label: 'Administrar Roles' },
-];
+const PERMISSIONS_FROM_ROUTES = Object.entries(allRoutes).map(([key, value]) => ({
+  id: key, // ej: "dashboard"
+  label: value.text, // ej: "Dashboard"
+}));
 
 export function RolesManagementTab({ setSuccess, setError }) {
   const [roles, setRoles] = useState([]);
@@ -28,12 +26,13 @@ export function RolesManagementTab({ setSuccess, setError }) {
   const [editingRole, setEditingRole] = useState(null);
   
   // Estado inicial del formulario, incluyendo la estructura de permisos
-  const initialFormState = {
+   const initialFormState = {
     nombre: '',
     descripcion: '',
-    permisos: PERMISSIONS_LIST.reduce((acc, perm) => ({ ...acc, [perm.id]: false }), {})
+    permisos: PERMISSIONS_FROM_ROUTES.reduce((acc, perm) => ({ ...acc, [perm.id]: false }), {})
   };
   const [formData, setFormData] = useState(initialFormState);
+
 
   const fetchRoles = async () => {
     try {
@@ -54,7 +53,6 @@ export function RolesManagementTab({ setSuccess, setError }) {
   const handleOpenModal = (role = null) => {
     setEditingRole(role);
     if (role) {
-      // Si editamos, combinamos los permisos existentes con la lista completa
       const fullPermissions = { ...initialFormState.permisos, ...role.permisos };
       setFormData({ ...role, permisos: fullPermissions });
     } else {
@@ -138,7 +136,7 @@ export function RolesManagementTab({ setSuccess, setError }) {
                         {Object.entries(role.permisos)
                           .filter(([, value]) => value)
                           .map(([key]) => (
-                            <Badge key={key} variant="secondary">{PERMISSIONS_LIST.find(p => p.id === key)?.label || key}</Badge>
+                            <Badge key={key} variant="secondary">{allRoutes[key]?.text || key}</Badge>
                           ))}
                       </div>
                     </TableCell>
@@ -173,7 +171,7 @@ export function RolesManagementTab({ setSuccess, setError }) {
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label className="text-right pt-2">Permisos</Label>
                 <div className="col-span-3 space-y-2">
-                  {PERMISSIONS_LIST.map(perm => (
+                  {PERMISSIONS_FROM_ROUTES.map(perm => (
                     <div key={perm.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={perm.id}

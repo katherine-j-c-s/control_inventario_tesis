@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from "@/hooks/useAuth";
-import { rolesConfig } from '@/lib/roles';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,15 +70,15 @@ const DarkModeToggle = ({ isOpen }) => {
 };
 
 export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
-  const { user } = useAuth();
+  const { user, rolePermissions } = useAuth();
   const { theme } = useTheme();
 
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === 'dark' ? logoDarkMode : logoLightMode;
   const fullLogo = theme === 'dark' ? logoFullDarkMode : logoFullLightMode;
 
-  const userRole = user?.rol;
-  const allowedRoutes = rolesConfig[userRole]?.routes || [];
+  const userRole = user?.rol || 'default';
+  const allowedRoutes = rolePermissions[userRole]?.routes || [];
 
    return (
     <motion.aside 
