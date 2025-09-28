@@ -97,41 +97,41 @@ const updateUser = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rol } = req.body; // El nombre del rol, ej: "Supervisor"
+    const { rol: roleName } = req.body;
 
-    // 1. Obtener los repositorios necesarios
     const roleRepository = AppDataSource.getRepository('Role');
     const userRepository = AppDataSource.getRepository('User');
 
-    // 2. Validar que el rol recibido exista en la base de datos
-    const rolExiste = await roleRepository.findOne({ where: { nombre: rol, activo: true } });
+    // 1. Validar que el rol recibido exista en la base de datos
+    const roleToAssign = await roleRepository.findOne({ where: { nombre: roleName, activo: true } });
 
-    if (!rolExiste) {
-      return res.status(400).json({ message: `El rol '${rol}' no es un rol válido en el sistema.` });
+    if (!roleToAssign) {
+      return res.status(400).json({ message: `El rol '${roleName}' no es un rol válido.` });
     }
 
-    // 3. Buscar al usuario que se va a actualizar
+    // 2. Buscar al usuario que se va a actualizar
     const userToUpdate = await userRepository.findOne({ where: { id: parseInt(id), activo: true } });
 
     if (!userToUpdate) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    // 4. Actualizar el campo 'rol' y guardar los cambios
-    userToUpdate.rol = rol;
+    // 3. Asignamos tanto el nombre del rol como sus permisos al usuario
+    userToUpdate.rol = roleToAssign.nombre;
+    userToUpdate.permisos = roleToAssign.permisos; 
+
+    // 4. Guardamos los cambios en el usuario
     await userRepository.save(userToUpdate);
 
-    // 5. Devolver el usuario actualizado (sin la contraseña)
-    const updatedUserResponse = { ...userToUpdate };
-    delete updatedUserResponse.password; 
-
-    res.status(200).json({ 
-      message: 'Rol de usuario actualizado exitosamente.', 
-      user: updatedUserResponse 
+    // 5. Devolvemos el usuario actualizado
+    const { password, ...userResponse } = userToUpdate;
+    res.status(200).json({
+      message: 'Rol y permisos actualizados exitosamente.',
+      user: userResponse
     });
 
   } catch (error) {
-    console.error('Error actualizando rol:', error);
+    console.error('Error actualizando el rol del usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

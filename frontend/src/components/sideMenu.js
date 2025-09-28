@@ -1,11 +1,12 @@
 'use client';
 
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
+import { allRoutes } from "@/lib/roles";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Switch } from "@/components/ui/switch";
 import { HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card"; 
@@ -70,15 +71,20 @@ const DarkModeToggle = ({ isOpen }) => {
 };
 
 export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
-  const { user, rolePermissions } = useAuth();
+  const { user } = useAuth();
   const { theme } = useTheme();
 
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === 'dark' ? logoDarkMode : logoLightMode;
   const fullLogo = theme === 'dark' ? logoFullDarkMode : logoFullLightMode;
 
-  const userRole = user?.rol || 'default';
-  const allowedRoutes = rolePermissions[userRole]?.routes || [];
+  // Construimos las rutas permitidas directamente desde los permisos del usuario.
+   const allowedRoutes = user?.permisos
+    ? Object.entries(user.permisos)
+        .filter(([, hasAccess]) => hasAccess)
+        .map(([key]) => allRoutes[key])
+        .filter(Boolean)
+    : [];
 
    return (
     <motion.aside 

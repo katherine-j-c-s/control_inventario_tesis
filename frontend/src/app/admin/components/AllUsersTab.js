@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { userAPI } from '@/lib/api';
-import { rolesConfig } from '@/lib/roles';
 import ProfileImage from '@/components/ProfileImage';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { MoreHorizontal, Trash2 } from "lucide-react";
 
 export function AllUsersTab({ setSuccess, setError }) {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, rolePermissions } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,12 +87,12 @@ export function AllUsersTab({ setSuccess, setError }) {
                       <p className="text-sm text-muted-foreground">{user.puesto_laboral}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{rolesConfig[user.rol]?.name || user.rol}</Badge>
+                      <Badge variant="outline">{rolePermissions[user.rol]?.name || user.rol}</Badge>
                     </TableCell>
                     <TableCell>
                       <TooltipProvider>
                         <div className="flex flex-wrap gap-1 max-w-xs">
-                          {rolesConfig[user.rol]?.routes.map((route, i) => (
+                          {rolePermissions[user.rol]?.routes.map((route, i) => (
                             <Tooltip key={i} delayDuration={100}>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-7 w-7">

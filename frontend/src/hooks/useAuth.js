@@ -16,40 +16,40 @@ export function AuthProvider({ children }) {
       
       if (savedToken) {
         try {
-          // 1. Validamos la sesión del usuario
+          // 1. Validamos la sesión. La respuesta ya incluye los permisos del usuario actual.
           const profileResponse = await authAPI.getProfile();
           const freshUser = profileResponse.data;
           setUser(freshUser);
           localStorage.setItem('user', JSON.stringify(freshUser));
 
-          // 2. Obtenemos TODOS los roles y sus permisos (esto ahora funcionará)
-          const rolesResponse = await roleAPI.getRoles();
-          const rolesFromDB = rolesResponse.data;
-
-          // 3. Transformamos los datos
-          const dynamicRolesConfig = rolesFromDB.reduce((acc, role) => {
-            const allowedRouteKeys = Object.entries(role.permisos || {})
-              .filter(([, hasAccess]) => hasAccess)
-              .map(([key]) => key);
-
-            acc[role.nombre] = {
-              name: role.nombre,
-              routes: allowedRouteKeys.map(key => allRoutes[key]).filter(Boolean)
-            };
-            return acc;
-          }, {});
-
-          setRolePermissions(dynamicRolesConfig);
-
+          // 2. [CORRECCIÓN] Si el usuario es admin, CARGAMOS ADICIONALMENTE el mapa de todos los roles.
+          if (freshUser.rol === 'admin') {
+            const rolesResponse = await roleAPI.getRoles();
+            const rolesFromDB = rolesResponse.data;
+            
+            const dynamicRolesConfig = rolesFromDB.reduce((acc, role) => {
+              const allowedRouteKeys = Object.entries(role.permisos || {})
+                .filter(([, hasAccess]) => hasAccess)
+                .map(([key]) => key);
+              
+              acc[role.nombre] = {
+                name: role.nombre,
+                routes: allowedRouteKeys.map(key => allRoutes[key]).filter(Boolean)
+              };
+              return acc;
+            }, {});
+            
+            setRolePermissions(dynamicRolesConfig);
+          }
         } catch (error) {
-          // Si el token es inválido o expiró, limpiamos todo
-          console.error("Token inválido, cerrando sesión:", error);
+          console.error("Token inválido o error de sesión:", error);
+          // Limpiamos todo en caso de error
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);
+          setRolePermissions({});
         }
       }
-      
       setLoading(false);
     };
 

@@ -88,10 +88,12 @@ const login = async (req, res) => {
 
     const userRepository = AppDataSource.getRepository('User');
     
+    // 1. Primero, buscamos al usuario por su DNI.
     const user = await userRepository.findOne({ 
       where: { dni, activo: true } 
     });
-
+  
+    // 2. Validamos si el usuario existe y su contraseña es correcta.
     if (!user) {
       return res.status(401).json({ 
         message: 'Credenciales inválidas' 
@@ -105,20 +107,28 @@ const login = async (req, res) => {
         message: 'Credenciales inválidas' 
       });
     }
+    
+    // 3. [CORREGIDO] Una vez validado, buscamos su rol para obtener los permisos.
+    const roleRepository = AppDataSource.getRepository('Role');
+    const userRole = await roleRepository.findOne({ 
+      where: { nombre: user.rol } 
+    });
 
-    // Generar token
+    // 4. Adjuntamos los permisos al objeto de usuario.
+    const userWithPermissions = { ...user, permisos: userRole?.permisos || {} };
+    delete userWithPermissions.password; // Quitamos la contraseña del objeto final
+
+    // 5. Generamos el token.
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, rol: user.rol }, // Guardamos rol en el token para el middleware
       config.jwtSecret,
       { expiresIn: '24h' }
     );
 
-    // Remover password de la respuesta
-    const { password: _, ...userResponse } = user;
-
+    // 6. Enviamos la respuesta.
     res.json({
       message: 'Inicio de sesión exitoso',
-      user: userResponse,
+      user: userWithPermissions,
       token
     });
 
