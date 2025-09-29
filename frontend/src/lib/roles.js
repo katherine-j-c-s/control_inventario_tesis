@@ -15,7 +15,7 @@ const allRoutes = {
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
   pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
-  generateReports: { href: "/informes", text: "Generar Informes", icon: FileText },
+  generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver

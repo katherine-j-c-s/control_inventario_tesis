@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { OriginalWorkingScanner } from './OriginalWorkingScanner';
 import { Camera, QrCode } from 'lucide-react';
 
+// Componente para botón que abre el escáner QR
 export function QrScannerButton({ 
   onScanResult, 
   variant = 'default', 
@@ -45,7 +46,7 @@ export function QrScannerButton({
   );
 }
 
-// Componente específico para botón flotante
+// Componente para botón flotante que abre el escáner QR
 export function FloatingQrScannerButton({ onScanResult, className = '' }) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
