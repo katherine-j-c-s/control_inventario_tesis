@@ -8,7 +8,7 @@ export const allRoutes = {
   dashboard: { href: "/dashboard", text: "Dashboard", icon: Home },
   inventory: { href: "/inventory", text: "Inventario", icon: Package },
   purchaseOrders: { href: "/ordenes-de-compra", text: "Órdenes de Compra", icon: ListOrdered },
-  verifyRemito: { href: "/verificar-remito", text: "Verificar Remito", icon: FileCheck },
+  verifyRemito: { href: "/verify-remittance", text: "Verificar Remito", icon: FileCheck },
   productEntry: { href: "/ingreso-productos", text: "Ingreso de Productos", icon: ArrowRightLeft },
   productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
   generateQR: { href: "/generar-qr", text: "Generar QR", icon: QrCode },
