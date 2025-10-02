@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import { useAuth } from "@/hooks/useAuth";
 import { rolesConfig } from "@/lib/roles";
@@ -7,8 +8,14 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Switch } from "@/components/ui/switch";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import {
   HoverCard,
   HoverCardContent,
@@ -21,6 +28,10 @@ import logoLightMode from "@/assets/logoLighMode.png";
 import logoDarkMode from "@/assets/logoDarkMode.png";
 import logoFullLightMode from "@/assets/logoFullLighMode.png";
 import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
+import logoLightMode from "@/assets/logoLighMode.png";
+import logoDarkMode from "@/assets/logoDarkMode.png";
+import logoFullLightMode from "@/assets/logoFullLighMode.png";
+import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
 
 // Un componente interno para los links, es "inteligente" y muestra un HoverCard cuando está cerrado
 const NavLink = ({ href, icon: Icon, text, isOpen }) => {
@@ -28,6 +39,9 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
   const isActive = pathname === href;
 
   const linkClasses = `flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
+    isActive
+      ? "bg-primary/10 text-primary"
+      : "text-foreground/70 hover:bg-muted hover:text-foreground"
     isActive
       ? "bg-primary/10 text-primary"
       : "text-foreground/70 hover:bg-muted hover:text-foreground"
@@ -47,6 +61,11 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
           align="center"
           className="px-3 py-1.5 text-sm"
         >
+        <HoverCardContent
+          side="right"
+          align="center"
+          className="px-3 py-1.5 text-sm"
+        >
           {text}
         </HoverCardContent>
       </HoverCard>
@@ -55,6 +74,7 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
 
   // Si el menú está abierto, mostramos el texto normalmente
   return (
+    <Link href={href} className={linkClasses.replace("justify-center", "")}>
     <Link href={href} className={linkClasses.replace("justify-center", "")}>
       <Icon className="w-5 h-5" />
       <span className="ml-3 whitespace-nowrap">{text}</span>
@@ -82,6 +102,23 @@ const DarkModeToggle = ({ isOpen }) => {
       </Switch>
     </div>
   );
+  return (
+    <div className="flex items-center justify-between mt-4 p-2 rounded-lg bg-muted/50">
+      {isOpen && (
+        <span className="text-sm font-medium text-foreground/70 ml-2">
+          Modo Oscuro
+        </span>
+      )}
+      <Switch
+        checked={theme === "dark"}
+        onCheckedChange={() => setTheme(theme === "dark" ? "light" : "dark")}
+        className="ml-auto"
+      >
+        <Sun className="h-4 w-4 text-yellow-500" />
+        <Moon className="h-4 w-4 text-blue-300" />
+      </Switch>
+    </div>
+  );
 };
 
 export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
@@ -91,10 +128,23 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === "dark" ? logoDarkMode : logoLightMode;
   const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
+  const iconLogo = theme === "dark" ? logoDarkMode : logoLightMode;
+  const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
 
-  const userRole = user?.rol;
-  const allowedRoutes = rolesConfig[userRole]?.routes || [];
+  // Construimos las rutas permitidas directamente desde los permisos del usuario.
+  const allowedRoutes = user?.permisos
+    ? Object.entries(user.permisos)
+        .filter(([, hasAccess]) => hasAccess)
+        .map(([key]) => allRoutes[key])
+        .filter(Boolean)
+    : [];
 
+  return (
+    <motion.aside
+      animate={
+        isMobile
+          ? { x: isOpen ? 0 : "-100%" } // Animación para móvil (deslizamiento)
+          : { width: isOpen ? "16rem" : "5rem" } // Animación para escritorio (ancho)
   return (
     <motion.aside
       animate={
@@ -110,6 +160,13 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
       {/* Contenedor del Logo y Botón de Control */}
       <div className="mb-6">
         {/* Botón de abrir/cerrar */}
+        <div className={`flex ${isOpen ? "justify-end" : "justify-center"}`}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-1 rounded-full hover:bg-muted mb-4"
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         <div className={`flex ${isOpen ? "justify-end" : "justify-center"}`}>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -152,6 +209,37 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
               </motion.div>
             )}
           </AnimatePresence>
+          <AnimatePresence>
+            {isOpen ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Image
+                  src={fullLogo}
+                  alt="Control de Inventario"
+                  width={180}
+                  height={40}
+                  priority
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Image
+                  src={iconLogo}
+                  alt="Logo"
+                  width={32}
+                  height={32}
+                  priority
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -159,9 +247,12 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
         {allowedRoutes.map((link) => (
           <NavLink
             key={link.href}
+          <NavLink
+            key={link.href}
             href={link.href}
             icon={link.icon}
             text={link.text}
+            isOpen={isOpen}
             isOpen={isOpen}
           />
         ))}
@@ -190,3 +281,4 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
     </motion.aside>
   );
 };
+
