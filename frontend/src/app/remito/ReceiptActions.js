@@ -7,18 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   CheckCircle, 
   XCircle, 
-  List, 
-  BarChart3, 
-  Filter,
-  RefreshCw
+  List
 } from "lucide-react";
 
 const ReceiptActions = ({ 
   onGetAll, 
   onGetUnverified, 
   onGetVerified, 
-  onGetStatistics, 
-  onRefresh,
   loading = false 
 }) => {
   const { theme } = useTheme();
@@ -40,7 +35,7 @@ const ReceiptActions = ({
             variant="outline"
           >
             {loading ? (
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-blue-600 rounded-full" />
             ) : (
               <List className="w-4 h-4 mr-2" />
             )}
@@ -65,7 +60,7 @@ const ReceiptActions = ({
             variant="outline"
           >
             {loading ? (
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-red-600 rounded-full" />
             ) : (
               <XCircle className="w-4 h-4 mr-2" />
             )}
@@ -90,7 +85,7 @@ const ReceiptActions = ({
             variant="outline"
           >
             {loading ? (
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-green-600 rounded-full" />
             ) : (
               <CheckCircle className="w-4 h-4 mr-2" />
             )}
@@ -99,7 +94,7 @@ const ReceiptActions = ({
         </CardContent>
       </Card>
 
-      
+
     </div>
   );
 };

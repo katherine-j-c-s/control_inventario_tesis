@@ -14,7 +14,6 @@ const Remito = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [receipts, setReceipts] = useState([]);
-  const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -82,21 +81,6 @@ const Remito = () => {
     }
   };
 
-  // Función para obtener estadísticas
-  const handleGetStatistics = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await receiptAPI.getReceiptsStatistics();
-      setStatistics(response.data);
-      setCurrentView('statistics');
-      showSuccess('Estadísticas cargadas correctamente');
-    } catch (error) {
-      handleError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Función para verificar un remito
   const handleVerify = async (receiptId) => {
@@ -121,22 +105,9 @@ const Remito = () => {
   // Función para ver detalles de un remito
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
-    // Aquí puedes implementar un modal o navegación a una página de detalles
     showSuccess(`Viendo detalles del remito ${receipt.receipt_id}`);
   };
 
-  // Función para refrescar
-  const handleRefresh = () => {
-    if (currentView === 'statistics') {
-      handleGetStatistics();
-    } else if (currentView === 'unverified') {
-      handleGetUnverified();
-    } else if (currentView === 'verified') {
-      handleGetVerified();
-    } else {
-      handleGetAll();
-    }
-  };
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -171,38 +142,29 @@ const Remito = () => {
           onGetAll={handleGetAll}
           onGetUnverified={handleGetUnverified}
           onGetVerified={handleGetVerified}
-          onGetStatistics={handleGetStatistics}
-          onRefresh={handleRefresh}
           loading={loading}
         />
 
-        {/* Mostrar estadísticas si es la vista actual */}
-        {currentView === 'statistics' && (
-          <ReceiptStatistics statistics={statistics} />
-        )}
-
-        {/* Mostrar tabla de remitos si no es la vista de estadísticas */}
-        {currentView !== 'statistics' && (
-          <div className="bg-card rounded-lg shadow border">
-            <div className="p-4 border-b border-border">
-              <h2 className="text-xl font-semibold text-foreground">
-                {currentView === 'all' && 'Todos los Remitos'}
-                {currentView === 'unverified' && 'Remitos No Verificados'}
-                {currentView === 'verified' && 'Remitos Verificados'}
-              </h2>
-              <p className="text-muted-foreground">
-                {receipts.length} remito{receipts.length !== 1 ? 's' : ''} encontrado{receipts.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="p-4">
-              <ReceiptsTable
-                receipts={receipts}
-                onVerify={handleVerify}
-                onView={handleView}
-              />
-            </div>
+        {/* Mostrar tabla de remitos */}
+        <div className="bg-card rounded-lg shadow border">
+          <div className="p-4 border-b border-border">
+            <h2 className="text-xl font-semibold text-foreground">
+              {currentView === 'all' && 'Todos los Remitos'}
+              {currentView === 'unverified' && 'Remitos No Verificados'}
+              {currentView === 'verified' && 'Remitos Verificados'}
+            </h2>
+            <p className="text-muted-foreground">
+              {receipts.length} remito{receipts.length !== 1 ? 's' : ''} encontrado{receipts.length !== 1 ? 's' : ''}
+            </p>
           </div>
-        )}
+          <div className="p-4">
+            <ReceiptsTable
+              receipts={receipts}
+              onVerify={handleVerify}
+              onView={handleView}
+            />
+          </div>
+        </div>
       </div>
     </Layout>
   );
