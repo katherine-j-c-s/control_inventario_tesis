@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useContext, createContext } from 'react';
 import { authAPI, roleAPI } from '@/lib/api';
 import { allRoutes } from '@/lib/roles';

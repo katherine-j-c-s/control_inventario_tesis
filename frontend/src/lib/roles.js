@@ -11,7 +11,7 @@ export const allRoutes = {
   verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
   productEntry: { href: "/ingreso-productos", text: "Ingreso de Productos", icon: ArrowRightLeft },
   productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
-  generateQR: { href: "/generar-qr", text: "Generar QR", icon: QrCode },
+  generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
   pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },

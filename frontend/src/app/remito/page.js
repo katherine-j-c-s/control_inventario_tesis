@@ -91,13 +91,12 @@ const Remito = () => {
     setError(null);
     try {
       await receiptAPI.verifyReceipt(receiptId);
-      showSuccess('Remito verificado correctamente');
-      // Recargar la vista actual
-      if (currentView === 'unverified') {
-        handleGetUnverified();
-      } else if (currentView === 'all') {
-        handleGetAll();
-      }
+      showSuccess('Remito verificado correctamente. Redirigiendo a Generar QR...');
+      
+      // Redirigir a la página de Generar QR con el ID del remito
+      setTimeout(() => {
+        window.location.href = `/generate-qr?remitoId=${receiptId}`;
+      }, 1500);
     } catch (error) {
       handleError(error);
     } finally {
