@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -159,6 +159,33 @@ export const roleAPI = {
 
   getUsersByRole: (roleId) => {
     return api.get(`/roles/${roleId}/users`);
+  },
+};
+
+// Funciones de gestión de remitos
+export const receiptAPI = {
+  getAllReceipts: () => {
+    return api.get('/receipts');
+  },
+
+  getUnverifiedReceipts: () => {
+    return api.get('/receipts/unverified');
+  },
+
+  getVerifiedReceipts: () => {
+    return api.get('/receipts/verified');
+  },
+
+  getReceiptsByStatus: (status) => {
+    return api.get(`/receipts/status/${status}`);
+  },
+
+  getReceiptsStatistics: () => {
+    return api.get('/receipts/statistics');
+  },
+
+  verifyReceipt: (id) => {
+    return api.put(`/receipts/verify/${id}`);
   },
 };
 

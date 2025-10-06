@@ -44,9 +44,9 @@ const requirePermission = (permission) => {
     }
   };
 };
-
 module.exports = {
   authenticateToken,
   requireAdmin,
   requirePermission
 };
+
