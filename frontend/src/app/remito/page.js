@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { receiptAPI } from "@/lib/api";
 import ReceiptActions from "./ReceiptActions";
 import ReceiptsTable from "./ReceiptsTable";
+import ReceiptModal from "./ReceiptModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
@@ -18,6 +19,8 @@ const Remito = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [currentView, setCurrentView] = useState('all'); // 'all', 'unverified', 'verified'
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Función para manejar errores
   const handleError = (error) => {
@@ -105,7 +108,13 @@ const Remito = () => {
   // Función para ver detalles de un remito
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
-    showSuccess(`Viendo detalles del remito ${receipt.receipt_id}`);
+    setSelectedReceipt(receipt);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedReceipt(null);
   };
 
 
@@ -165,6 +174,13 @@ const Remito = () => {
             />
           </div>
         </div>
+
+        {/* Modal de detalles del remito */}
+        <ReceiptModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          receipt={selectedReceipt}
+        />
       </div>
     </Layout>
   );
