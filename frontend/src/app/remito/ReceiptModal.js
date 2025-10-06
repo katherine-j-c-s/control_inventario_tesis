@@ -107,14 +107,7 @@ const ReceiptModal = ({ isOpen, onClose, receipt }) => {
               <FileText className="w-6 h-6 mr-2 text-blue-600" />
               Detalles del Remito #{receipt.receipt_id}
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            
           </div>
         </DialogHeader>
 
