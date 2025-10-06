@@ -48,7 +48,7 @@ const ReceiptActions = ({
       <Card className="bg-card border-border">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
-            <XCircle className="w-4 h-4 mr-2 text-red-500" />
+            <XCircle className="w-4 h-4 mr-2 " />
             No Verificados
           </CardTitle>
         </CardHeader>
@@ -73,7 +73,7 @@ const ReceiptActions = ({
       <Card className="bg-card border-border">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
-            <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+            <CheckCircle className="w-4 h-4 mr-2" />
             Verificados
           </CardTitle>
         </CardHeader>

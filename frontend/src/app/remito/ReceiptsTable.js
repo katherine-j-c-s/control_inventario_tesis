@@ -19,7 +19,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
   const getStatusBadge = (status, verificationStatus) => {
     if (verificationStatus) {
       return (
-        <Badge variant="default" className="bg-green-500">
+        <Badge variant="default" className="bg-primary">
           <CheckCircle className="w-3 h-3 mr-1" />
           Verificado
         </Badge>
@@ -97,7 +97,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                         variant="default"
                         size="sm"
                         onClick={() => onVerify(receipt.receipt_id)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-primary hover:bg-primary-600 text-white"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Verificar
