@@ -7,27 +7,25 @@ const {
   verify, 
   getVerified, 
   getByStatus, 
-  getStatistics 
+  getStatistics,
+  getReceiptWithProducts
 } = require('../controllers/receiptController.js');
 
 const router = express.Router();
 
-// Rutas para obtener remitos
 router.get('/receipts', getAll);
 router.get('/receipts/unverified', getUnverified);
 router.get('/receipts/verified', getVerified);
 router.get('/receipts/status/:status', getByStatus);
 router.get('/receipts/statistics', getStatistics);
+router.get('/receipts/:id', getReceiptWithProducts);
 
-// Rutas para acciones
 router.put('/receipts/verify/:id', verify);
 
-// Ruta para obtener productos de un remito con QR
 router.get('/remitos/:id/productos', async (req, res) => {
   const remitoId = req.params.id;
 
   try {
-    // Consulta real a la base de datos
     const query = `
       SELECT 
         p.id,
@@ -52,7 +50,6 @@ router.get('/remitos/:id/productos', async (req, res) => {
       return res.json([]);
     }
 
-    // Obtener movimientos para cada producto
     const productosConMovimientos = await Promise.all(
       productos.map(async (producto) => {
         const movimientosQuery = `
@@ -84,10 +81,8 @@ router.get('/remitos/:id/productos', async (req, res) => {
       })
     );
 
-    // Generar QR para cada producto
     const productosConQR = await Promise.all(
       productosConMovimientos.map(async (prod) => {
-        // Información que quieres codificar en el QR
         const infoQR = {
           id: prod.id,
           nombre: prod.nombre,
@@ -103,7 +98,6 @@ router.get('/remitos/:id/productos', async (req, res) => {
           timestamp: new Date().toISOString()
         };
 
-        // Convertir a string y generar QR
         const qrDataUrl = await QRCode.toDataURL(JSON.stringify(infoQR));
         return { 
           ...prod, 
@@ -119,12 +113,10 @@ router.get('/remitos/:id/productos', async (req, res) => {
   }
 });
 
-// Ruta para obtener un producto específico por ID con QR
 router.get('/productos/:id', async (req, res) => {
   const productoId = req.params.id;
 
   try {
-    // Consulta real a la base de datos
     const productoQuery = `
       SELECT 
         p.id,
@@ -150,7 +142,6 @@ router.get('/productos/:id', async (req, res) => {
 
     const producto = productos[0];
 
-    // Obtener movimientos del producto
     const movimientosQuery = `
       SELECT 
         m.movement_type as tipo,
@@ -167,7 +158,6 @@ router.get('/productos/:id', async (req, res) => {
 
     const { rows: movimientos } = await pool.query(movimientosQuery, [productoId]);
 
-    // Información que quieres codificar en el QR
     const infoQR = {
       id: producto.id,
       nombre: producto.nombre,
@@ -189,7 +179,6 @@ router.get('/productos/:id', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // Convertir a string y generar QR
     const qrDataUrl = await QRCode.toDataURL(JSON.stringify(infoQR));
     
     const productoConQR = {
@@ -205,7 +194,6 @@ router.get('/productos/:id', async (req, res) => {
   }
 });
 
-// Ruta para generar PDF con QR
 router.post('/productos/:id/pdf', async (req, res) => {
   const productoId = req.params.id;
   const { qrDataUrl, productoData } = req.body;
@@ -214,18 +202,14 @@ router.post('/productos/:id/pdf', async (req, res) => {
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument();
     
-    // Configurar headers para descarga
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="producto-${productoId}-${productoData.nombre.replace(/\s+/g, '-')}-qr.pdf"`);
     
-    // Pipe del documento a la respuesta
     doc.pipe(res);
     
-    // Título principal
     doc.fontSize(24).text('INFORMACIÓN DEL PRODUCTO', 50, 50, { align: 'center' });
     doc.moveDown();
     
-    // Información del producto
     doc.fontSize(18).text(`${productoData.nombre}`, 50, 100);
     doc.fontSize(12);
     doc.text(`ID: ${productoData.id}`, 50, 130);
@@ -237,7 +221,6 @@ router.post('/productos/:id/pdf', async (req, res) => {
     doc.text(`Ubicación: ${productoData.ubicacion || 'N/A'}`, 50, 250);
     doc.text(`Stock Mínimo: ${productoData.stock_minimo}`, 50, 270);
     
-    // Movimientos recientes
     if (productoData.movimientos && productoData.movimientos.length > 0) {
       doc.moveDown();
       doc.fontSize(16).text('MOVIMIENTOS RECIENTES', 50, 320);
@@ -262,13 +245,11 @@ router.post('/productos/:id/pdf', async (req, res) => {
       });
     }
     
-    // Nota sobre el QR
     doc.addPage();
     doc.fontSize(16).text('CÓDIGO QR', 50, 50, { align: 'center' });
     doc.fontSize(12).text('El código QR contiene toda la información del producto y sus movimientos.', 50, 100, { align: 'center' });
     doc.text('Puede ser escaneado para obtener información actualizada en tiempo real.', 50, 120, { align: 'center' });
     
-    // Finalizar el documento
     doc.end();
   } catch (error) {
     console.error('Error generando PDF:', error);

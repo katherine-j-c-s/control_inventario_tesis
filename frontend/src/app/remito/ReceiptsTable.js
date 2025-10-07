@@ -24,13 +24,13 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
           Verificado
         </Badge>
       );
-    } else if (status === 'pending') {
-      return (
-        <Badge variant="secondary" className="bg-yellow-500">
-          <Clock className="w-3 h-3 mr-1" />
-          Pendiente
-        </Badge>
-      );
+    // } else if (status === 'pending') {
+    //   return (
+    //     <Badge variant="secondary" className="bg-yellow-500">
+    //       <Clock className="w-3 h-3 mr-1" />
+    //       Pendiente
+    //     </Badge>
+    //   );
     } else {
       return (
         <Badge variant="destructive">
@@ -63,7 +63,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
             <TableHead className="text-foreground">Fecha de Entrada</TableHead>
             <TableHead className="text-foreground">Estado</TableHead>
             <TableHead className="text-foreground">Orden ID</TableHead>
-            <TableHead className="text-foreground">Producto ID</TableHead>
+            {/* <TableHead className="text-foreground">Producto ID</TableHead> */}
             <TableHead className="text-foreground">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -81,7 +81,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                   {getStatusBadge(receipt.status, receipt.verification_status)}
                 </TableCell>
                 <TableCell className="text-foreground">{receipt.order_id || 'N/A'}</TableCell>
-                <TableCell className="text-foreground">{receipt.product_id || 'N/A'}</TableCell>
+                {/* <TableCell className="text-foreground">{receipt.product_id || 'N/A'}</TableCell> */}
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
@@ -92,7 +92,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
-                    {!receipt.verification_status && (
+                    {/* {!receipt.verification_status && (
                       <Button
                         variant="default"
                         size="sm"
@@ -102,7 +102,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Verificar
                       </Button>
-                    )}
+                    )} */}
                   </div>
                 </TableCell>
               </TableRow>

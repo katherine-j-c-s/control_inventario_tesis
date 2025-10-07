@@ -10,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar token a las peticiones
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -26,14 +25,12 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -44,7 +41,6 @@ api.interceptors.response.use(
   }
 );
 
-// Funciones de autenticación
 export const authAPI = {
   register: (userData, file) => {
     const formData = new FormData();
@@ -87,7 +83,6 @@ export const authAPI = {
   },
 };
 
-// Funciones de gestión de usuarios
 export const userAPI = {
   getUsers: () => {
     return api.get('/users');
@@ -127,7 +122,6 @@ export const userAPI = {
   },
 };
 
-// Funciones de gestión de roles
 export const roleAPI = {
   getRoles: () => {
     return api.get('/roles');
@@ -162,7 +156,6 @@ export const roleAPI = {
   },
 };
 
-// Funciones de gestión de remitos
 export const receiptAPI = {
   getAllReceipts: () => {
     return api.get('/receipts');
@@ -186,6 +179,10 @@ export const receiptAPI = {
 
   verifyReceipt: (id) => {
     return api.put(`/receipts/verify/${id}`);
+  },
+
+  getReceiptWithProducts: (id) => {
+    return api.get(`/receipts/${id}`);
   },
 };
 

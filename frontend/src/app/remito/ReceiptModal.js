@@ -1,5 +1,7 @@
 "use client";
 
+// modal para ver los detalles de los remitos 
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "next-themes";
 import { 
@@ -12,6 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   X, 
   Package, 
@@ -25,13 +35,12 @@ import {
 } from "lucide-react";
 import { receiptAPI } from "@/lib/api";
 
-const ReceiptModal = ({ isOpen, onClose, receipt }) => {
+const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
   const { theme } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cargar productos del remito cuando se abre el modal
   useEffect(() => {
     if (isOpen && receipt) {
       loadReceiptProducts();
@@ -42,30 +51,8 @@ const ReceiptModal = ({ isOpen, onClose, receipt }) => {
     setLoading(true);
     setError(null);
     try {
-      // Simular carga de productos (aquí iría la llamada real a la API)
-      // Por ahora usaremos datos mock
-      const mockProducts = [
-        {
-          id: 1,
-          name: "Producto A",
-          quantity: 50,
-          unit: "unidades",
-          description: "Descripción del producto A",
-          category: "Categoría 1"
-        },
-        {
-          id: 2,
-          name: "Producto B", 
-          quantity: 30,
-          unit: "unidades",
-          description: "Descripción del producto B",
-          category: "Categoría 2"
-        }
-      ];
-      
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProducts(mockProducts);
+      const response = await receiptAPI.getReceiptWithProducts(receipt.receipt_id);
+      setProducts(response.data.products || []);
     } catch (error) {
       console.error('Error cargando productos:', error);
       setError('Error al cargar los productos del remito');
@@ -211,26 +198,49 @@ const ReceiptModal = ({ isOpen, onClose, receipt }) => {
                   <p className="text-sm text-muted-foreground">No hay productos registrados</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {products.map((product, index) => (
-                    <div key={product.id || index}>
-                      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">{product.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {product.category}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              Cantidad: {product.quantity} {product.unit}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {index < products.length - 1 && <Separator className="my-2" />}
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border">
+                        <TableHead className="text-foreground">ID Producto</TableHead>
+                        <TableHead className="text-foreground">Nombre</TableHead>
+                        <TableHead className="text-foreground">Categoría</TableHead>
+                        <TableHead className="text-foreground">Cantidad</TableHead>
+                        <TableHead className="text-foreground">Unidad</TableHead>
+                        <TableHead className="text-foreground">Precio Unit.</TableHead>
+                        <TableHead className="text-foreground">Descripción</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((product, index) => (
+                        <TableRow key={product.product_id || index} className="border-border hover:bg-muted/50">
+                          <TableCell className="font-medium text-foreground">
+                            #{product.product_id}
+                          </TableCell>
+                          <TableCell className="text-foreground font-medium">
+                            {product.product_name}
+                          </TableCell>
+                          <TableCell className="text-foreground">
+                            <Badge variant="secondary" className="text-xs">
+                              {product.product_category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-foreground font-semibold">
+                            {product.quantity}
+                          </TableCell>
+                          <TableCell className="text-foreground">
+                            {product.product_unit}
+                          </TableCell>
+                          <TableCell className="text-foreground">
+                            ${product.product_price}
+                          </TableCell>
+                          <TableCell className="text-foreground text-sm">
+                            {product.product_description || 'Sin descripción'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>
@@ -277,7 +287,10 @@ const ReceiptModal = ({ isOpen, onClose, receipt }) => {
             Cerrar
           </Button>
           {!receipt.verification_status && (
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => onVerify && onVerify(receipt.receipt_id)}
+            >
               <CheckCircle className="w-4 h-4 mr-2" />
               Verificar Remito
             </Button>

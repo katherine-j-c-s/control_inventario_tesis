@@ -22,21 +22,18 @@ const Remito = () => {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Función para manejar errores
   const handleError = (error) => {
     console.error('Error:', error);
     setError(error.response?.data?.error || 'Error al procesar la solicitud');
     setSuccess(null);
   };
 
-  // Función para mostrar mensajes de éxito
   const showSuccess = (message) => {
     setSuccess(message);
     setError(null);
     setTimeout(() => setSuccess(null), 3000);
   };
 
-  // Función para obtener todos los remitos
   const handleGetAll = async () => {
     setLoading(true);
     setError(null);
@@ -52,7 +49,6 @@ const Remito = () => {
     }
   };
 
-  // Función para obtener remitos no verificados
   const handleGetUnverified = async () => {
     setLoading(true);
     setError(null);
@@ -68,7 +64,6 @@ const Remito = () => {
     }
   };
 
-  // Función para obtener remitos verificados
   const handleGetVerified = async () => {
     setLoading(true);
     setError(null);
@@ -85,7 +80,6 @@ const Remito = () => {
   };
 
 
-  // Función para verificar un remito
   const handleVerify = async (receiptId) => {
     setLoading(true);
     setError(null);
@@ -93,7 +87,6 @@ const Remito = () => {
       await receiptAPI.verifyReceipt(receiptId);
       showSuccess('Remito verificado correctamente. Redirigiendo a Generar QR...');
       
-      // Redirigir a la página de Generar QR con el ID del remito
       setTimeout(() => {
         window.location.href = `/generate-qr?remitoId=${receiptId}`;
       }, 1500);
@@ -104,7 +97,6 @@ const Remito = () => {
     }
   };
 
-  // Función para ver detalles de un remito
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
     setSelectedReceipt(receipt);
@@ -117,7 +109,6 @@ const Remito = () => {
   };
 
 
-  // Cargar datos iniciales
   useEffect(() => {
     handleGetAll();
   }, []);
@@ -179,6 +170,7 @@ const Remito = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           receipt={selectedReceipt}
+          onVerify={handleVerify}
         />
       </div>
     </Layout>

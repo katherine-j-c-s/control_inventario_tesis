@@ -42,39 +42,140 @@ module.exports = new EntitySchema({
 
 const { pool } = require('../db.js');
 
-// Traer remitos no verificados
 async function getUnverifiedReceipts() {
-  const result = await pool.query('SELECT * FROM get_unverified_receipts();');
+  const query = `
+    SELECT 
+      r.receipt_id,
+      r.warehouse_id,
+      COALESCE((
+        SELECT COUNT(*)::INTEGER 
+        FROM receipt_products rp 
+        WHERE rp.receipt_id = r.receipt_id
+      ), 0) as quantity_products,
+      r.entry_date,
+      r.verification_status,
+      r.order_id,
+      NULL::INTEGER as product_id,
+      r.status
+    FROM receipts r
+    WHERE r.verification_status = false 
+    AND r.status != 'deleted'
+    ORDER BY r.entry_date DESC;
+  `;
+  const result = await pool.query(query);
   return result.rows;
 }
 
-// Traer todos los remitos
 async function getAllReceipts() {
-  const result = await pool.query('SELECT * FROM get_all_receipts();');
+  const query = `
+    SELECT 
+      r.receipt_id,
+      r.warehouse_id,
+      COALESCE((
+        SELECT COUNT(*)::INTEGER 
+        FROM receipt_products rp 
+        WHERE rp.receipt_id = r.receipt_id
+      ), 0) as quantity_products,
+      r.entry_date,
+      r.verification_status,
+      r.order_id,
+      NULL::INTEGER as product_id,
+      r.status
+    FROM receipts r
+    WHERE r.status != 'deleted'
+    ORDER BY r.entry_date DESC;
+  `;
+  const result = await pool.query(query);
   return result.rows;
 }
 
-// Verificar un remito
 async function verifyReceipt(receiptId) {
-  const result = await pool.query('SELECT * FROM verify_receipt($1);', [receiptId]);
+  await pool.query(`
+    UPDATE receipts 
+    SET verification_status = true,
+        status = 'verified'
+    WHERE receipt_id = $1;
+  `, [receiptId]);
+  
+  const query = `
+    SELECT 
+      r.receipt_id,
+      r.warehouse_id,
+      COALESCE((
+        SELECT COUNT(*)::INTEGER 
+        FROM receipt_products rp 
+        WHERE rp.receipt_id = r.receipt_id
+      ), 0) as quantity_products,
+      r.entry_date,
+      r.verification_status,
+      r.order_id,
+      NULL::INTEGER as product_id,
+      r.status
+    FROM receipts r
+    WHERE r.receipt_id = $1;
+  `;
+  const result = await pool.query(query, [receiptId]);
   return result.rows[0];
 }
 
-// Obtener remitos verificados
 async function getVerifiedReceipts() {
-  const result = await pool.query('SELECT * FROM get_verified_receipts();');
+  const query = `
+    SELECT 
+      r.receipt_id,
+      r.warehouse_id,
+      COALESCE((
+        SELECT COUNT(*)::INTEGER 
+        FROM receipt_products rp 
+        WHERE rp.receipt_id = r.receipt_id
+      ), 0) as quantity_products,
+      r.entry_date,
+      r.verification_status,
+      r.order_id,
+      NULL::INTEGER as product_id,
+      r.status
+    FROM receipts r
+    WHERE r.verification_status = true 
+    AND r.status != 'deleted'
+    ORDER BY r.entry_date DESC;
+  `;
+  const result = await pool.query(query);
   return result.rows;
 }
 
-// Obtener remitos por estado
 async function getReceiptsByStatus(status) {
-  const result = await pool.query('SELECT * FROM get_receipts_by_status($1);', [status]);
+  const query = `
+    SELECT 
+      r.receipt_id,
+      r.warehouse_id,
+      COALESCE((
+        SELECT COUNT(*)::INTEGER 
+        FROM receipt_products rp 
+        WHERE rp.receipt_id = r.receipt_id
+      ), 0) as quantity_products,
+      r.entry_date,
+      r.verification_status,
+      r.order_id,
+      NULL::INTEGER as product_id,
+      r.status
+    FROM receipts r
+    WHERE r.status = $1
+    ORDER BY r.entry_date DESC;
+  `;
+  const result = await pool.query(query, [status]);
   return result.rows;
 }
 
-// Obtener estadísticas de remitos
 async function getReceiptsStatistics() {
-  const result = await pool.query('SELECT * FROM get_receipts_statistics();');
+  const query = `
+    SELECT 
+      COUNT(*) as total_receipts,
+      COUNT(CASE WHEN verification_status = true THEN 1 END) as verified_receipts,
+      COUNT(CASE WHEN verification_status = false THEN 1 END) as unverified_receipts,
+      COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_receipts
+    FROM receipts 
+    WHERE status != 'deleted';
+  `;
+  const result = await pool.query(query);
   return result.rows[0];
 }
 
