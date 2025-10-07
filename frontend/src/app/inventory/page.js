@@ -7,15 +7,15 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 import { DataTable } from './inventaryTable'; // Renombrado para claridad
-import { sampleProducts } from './_data/sample-data'; // Datos de ejemplo movidos
 import { FloatingQrScannerButton } from '@/components/QrScanner';
+import api from '@/lib/api';
 
 // --- Componentes de ShadCN/UI ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
 // Importar Dialog para el modal
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,8 @@ function InventoryContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Manejar resultado del scanner QR
   const handleQrScanResult = (data) => {
@@ -58,17 +60,32 @@ function InventoryContent() {
     }
   };
 
+  // Función para cargar productos desde la API
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await api.get('/productos');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+      setError('Error al cargar los productos. Intenta nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
       router.push('/login');
       return;
     }
-    // Simulación de carga de datos
-    setProducts(sampleProducts);
+    loadProducts();
   }, [user, router, loading]);
 
-  const categories = ['all', 'Combustibles', 'Lubricantes', 'Aditivos'];
+  // Obtener categorías únicas de los productos
+  const categories = ['all', ...new Set(products.map(product => product.categoria).filter(Boolean))];
 
   const filteredProducts = products.filter(product => {
     const searchLower = searchTerm.toLowerCase();
@@ -86,6 +103,32 @@ function InventoryContent() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Cargando inventario...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button onClick={loadProducts}>Reintentar</Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -98,9 +141,15 @@ function InventoryContent() {
                 Gestiona y visualiza el stock de todos los productos.
               </p>
             </div>
-            <Button onClick={() => setShowAddModal(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Agregar Producto
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={loadProducts} disabled={isLoading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Actualizar
+              </Button>
+              <Button onClick={() => setShowAddModal(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Agregar Producto
+              </Button>
+            </div>
           </div>
         </motion.div>
 

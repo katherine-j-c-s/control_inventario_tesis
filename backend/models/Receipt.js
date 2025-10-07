@@ -47,6 +47,8 @@ async function getUnverifiedReceipts() {
     SELECT 
       r.receipt_id,
       r.warehouse_id,
+      w.name as warehouse_name,
+      w.location as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -58,6 +60,7 @@ async function getUnverifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
+    LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.verification_status = false 
     AND r.status != 'deleted'
     ORDER BY r.entry_date DESC;
@@ -71,6 +74,8 @@ async function getAllReceipts() {
     SELECT 
       r.receipt_id,
       r.warehouse_id,
+      w.name as warehouse_name,
+      w.location as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -82,6 +87,7 @@ async function getAllReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
+    LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.status != 'deleted'
     ORDER BY r.entry_date DESC;
   `;
@@ -123,6 +129,8 @@ async function getVerifiedReceipts() {
     SELECT 
       r.receipt_id,
       r.warehouse_id,
+      w.name as warehouse_name,
+      w.location as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -134,6 +142,7 @@ async function getVerifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
+    LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.verification_status = true 
     AND r.status != 'deleted'
     ORDER BY r.entry_date DESC;
@@ -147,6 +156,8 @@ async function getReceiptsByStatus(status) {
     SELECT 
       r.receipt_id,
       r.warehouse_id,
+      w.name as warehouse_name,
+      w.location as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -158,6 +169,7 @@ async function getReceiptsByStatus(status) {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
+    LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.status = $1
     ORDER BY r.entry_date DESC;
   `;

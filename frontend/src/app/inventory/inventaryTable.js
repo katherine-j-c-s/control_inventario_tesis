@@ -133,7 +133,7 @@ export function DataTable({ products }) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Productos en Stock</CardTitle>
+            <CardTitle>Productos en Almacen</CardTitle>
             <CardDescription>
               {table.getFilteredRowModel().rows.length} producto(s) encontrado(s).
             </CardDescription>

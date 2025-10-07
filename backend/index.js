@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const roleRoutes = require('./routes/roles');
 const receiptRoutes = require('./routes/receiptRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api', receiptRoutes);
+app.use('/api', productRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {
