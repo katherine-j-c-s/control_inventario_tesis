@@ -125,7 +125,21 @@ function RegisterForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="puesto_laboral">Puesto Laboral *</Label>
-                  <Input id="puesto_laboral" name="puesto_laboral" value={formData.puesto_laboral} onChange={handleChange} required />
+                  <Select onValueChange={(value) => handleSelectChange('puesto_laboral', value)} value={formData.puesto_laboral} required>
+                  <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="contol calidad ">Control de Calidad</SelectItem>
+                      <SelectItem value="operario">Operario de almacen</SelectItem>
+                      <SelectItem value="gerente">Gerente de almacen</SelectItem>
+                      <SelectItem value="supervisor">Supervisor de proyectos</SelectItem>
+                      <SelectItem value="operador maquinaria">Operador de maquinaria pesada</SelectItem>
+                      <SelectItem value="ingeniero">Ingeniero de perforación</SelectItem>
+                      <SelectItem value="operador planta">Operador de planta</SelectItem>
+                      <SelectItem value="analista stock">Analista de control de stock</SelectItem>
+                      <SelectItem value="gerente admin">Gerente administrativo</SelectItem>
+                      <SelectItem value="supervisor hse">Supervisor HSE</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edad">Edad *</Label>
