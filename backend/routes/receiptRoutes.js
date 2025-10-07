@@ -26,6 +26,25 @@ router.get('/remitos/:id/productos', async (req, res) => {
   const remitoId = req.params.id;
 
   try {
+    // Primero verificar si el remito existe y está verificado
+    const remitoQuery = `
+      SELECT 
+        r.receipt_id,
+        r.verification_status,
+        r.status
+      FROM receipts r
+      WHERE r.receipt_id = $1;
+    `;
+
+    const { rows: remitoRows } = await pool.query(remitoQuery, [remitoId]);
+
+    if (remitoRows.length === 0) {
+      return res.status(404).json({ error: "Remito no encontrado" });
+    }
+
+    const remito = remitoRows[0];
+
+    // Buscar productos del remito usando la tabla receipt_products
     const query = `
       SELECT 
         p.id,
@@ -36,10 +55,13 @@ router.get('/remitos/:id/productos', async (req, res) => {
         p.precio_unitario as precio,
         p.stock_actual as cantidad,
         p.ubicacion,
+        rp.quantity as cantidad_remito,
         r.receipt_id,
-        r.entry_date as fecha_remito
+        r.entry_date as fecha_remito,
+        r.verification_status as verificado
       FROM products p
-      INNER JOIN receipts r ON p.id = r.product_id
+      INNER JOIN receipt_products rp ON p.id = rp.product_id
+      INNER JOIN receipts r ON rp.receipt_id = r.receipt_id
       WHERE r.receipt_id = $1 AND p.activo = true
       ORDER BY p.nombre;
     `;
@@ -70,6 +92,8 @@ router.get('/remitos/:id/productos', async (req, res) => {
 
         return {
           ...producto,
+          cantidad: producto.cantidad_remito, // Usar la cantidad del remito
+          verificado: producto.verificado,
           movimientos: movimientos.map(mov => ({
             tipo: mov.tipo,
             cantidad: mov.cantidad,
@@ -94,6 +118,7 @@ router.get('/remitos/:id/productos', async (req, res) => {
           ubicacion: prod.ubicacion,
           remito_id: remitoId,
           fecha_remito: prod.fecha_remito,
+          verificado: prod.verificado,
           movimientos: prod.movimientos,
           timestamp: new Date().toISOString()
         };
