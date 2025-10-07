@@ -8,21 +8,29 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["inventario", "petroleo", "control"],
+  "keywords": [
+    "inventario",
+    "petroleo",
+    "control"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "morgan": "^1.10.0",
     "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.3",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "typeorm": "^0.3.17",
-    "pg": "^8.11.3",
+    "pdfkit": "^0.17.2",
+    "pg": "^8.16.3",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.1.13",
-    "dotenv": "^16.3.1"
+    "typeorm": "^0.3.17"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

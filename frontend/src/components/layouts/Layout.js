@@ -44,7 +44,7 @@ export default function Layout({ children }) {
   const MobileHeader = () => {
     const logo = theme === 'dark' ? logoFullDarkMode : logoFullLightMode;
     return (
-      <header className="bg-card border-b h-16 flex items-center justify-between px-4 md:hidden">
+      <header className="bg-card border-b h-screen flex items-center justify-between px-4 md:hidden">
         <Image src={logo} alt="Control de Inventario" width={150} height={35} priority />
         <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
           <Menu className="h-6 w-6" />

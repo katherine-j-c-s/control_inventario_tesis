@@ -8,14 +8,14 @@ export const allRoutes = {
   dashboard: { href: "/dashboard", text: "Dashboard", icon: Home },
   inventory: { href: "/inventory", text: "Inventario", icon: Package },
   purchaseOrders: { href: "/ordenes-de-compra", text: "Órdenes de Compra", icon: ListOrdered },
-  verifyRemito: { href: "/verificar-remito", text: "Verificar Remito", icon: FileCheck },
+  verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
   productEntry: { href: "/ingreso-productos", text: "Ingreso de Productos", icon: ArrowRightLeft },
   productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
-  generateQR: { href: "/generar-qr", text: "Generar QR", icon: QrCode },
+  generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
   pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
-  generateReports: { href: "/informes", text: "Generar Informes", icon: FileText },
+  generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver

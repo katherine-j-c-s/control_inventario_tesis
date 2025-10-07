@@ -9,7 +9,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
   const videoRef = useRef(null);
   const qrScannerRef = useRef(null);
 
-  // Función para detectar tipo de contenido
+  // Función para detectar tipo de contenido del qr escaneado
   const detectContentType = (content) => {
     if (!content || content === "Esperando escaneo...") return "text";
     
@@ -36,7 +36,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
     return "text";
   };
 
-  // Inicializar scanner cuando el video esté listo - CÓDIGO ORIGINAL QUE FUNCIONABA
+  // Inicializar scanner cuando el video esté listo 
   useEffect(() => {
     if (isOpen && videoRef.current && !qrScannerRef.current) {
       const initScanner = async () => {
@@ -52,7 +52,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
                   setData(scannedData);
                   setShowModal(true);
                   
-                  // Llamar callback si existe
+                  // Llamar al callback con el resultado
                   if (onScanResult) {
                     onScanResult(scannedData);
                   }
@@ -96,7 +96,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
     }
   }, [isOpen, onScanResult]);
 
-  // Cleanup al desmontar
+  // Cleanup al limpiar y cerrar 
   useEffect(() => {
     return () => {
       if (qrScannerRef.current) {

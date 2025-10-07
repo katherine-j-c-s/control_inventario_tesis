@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -10,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar token a las peticiones
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -26,14 +25,12 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -44,7 +41,6 @@ api.interceptors.response.use(
   }
 );
 
-// Funciones de autenticación
 export const authAPI = {
   register: (userData, file) => {
     const formData = new FormData();
@@ -87,7 +83,6 @@ export const authAPI = {
   },
 };
 
-// Funciones de gestión de usuarios
 export const userAPI = {
   getUsers: () => {
     return api.get('/users');
@@ -127,7 +122,6 @@ export const userAPI = {
   },
 };
 
-// Funciones de gestión de roles
 export const roleAPI = {
   getRoles: () => {
     return api.get('/roles');
@@ -159,6 +153,36 @@ export const roleAPI = {
 
   getUsersByRole: (roleId) => {
     return api.get(`/roles/${roleId}/users`);
+  },
+};
+
+export const receiptAPI = {
+  getAllReceipts: () => {
+    return api.get('/receipts');
+  },
+
+  getUnverifiedReceipts: () => {
+    return api.get('/receipts/unverified');
+  },
+
+  getVerifiedReceipts: () => {
+    return api.get('/receipts/verified');
+  },
+
+  getReceiptsByStatus: (status) => {
+    return api.get(`/receipts/status/${status}`);
+  },
+
+  getReceiptsStatistics: () => {
+    return api.get('/receipts/statistics');
+  },
+
+  verifyReceipt: (id) => {
+    return api.put(`/receipts/verify/${id}`);
+  },
+
+  getReceiptWithProducts: (id) => {
+    return api.get(`/receipts/${id}`);
   },
 };
 

@@ -10,8 +10,15 @@ const AppDataSource = require('./database');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const roleRoutes = require('./routes/roles');
+const receiptRoutes = require('./routes/receiptRoutes');
 
 const app = express();
+
+app.use(express.json());
+// app.use('/api', receiptRoutes); // Temporalmente comentado hasta convertir a CommonJS
+
+// Comentamos esta línea duplicada
+
 
 // CORS simple - permitir todo
 app.use(cors({
@@ -44,6 +51,7 @@ app.get('/test-cors', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api', receiptRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {
@@ -161,7 +169,6 @@ const startServer = async () => {
       console.log(`Servidor ejecutándose en puerto ${config.port}`);
       console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
     });
-
   } catch (error) {
     console.error('❌ Error al inicializar el servidor:', error.message);
     
@@ -183,3 +190,4 @@ const startServer = async () => {
 };
 
 startServer();
+
