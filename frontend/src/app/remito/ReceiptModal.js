@@ -75,7 +75,7 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
 
   const getStatusBadge = (status, verified) => {
     if (verified) {
-      return <Badge className="bg-green-100 text-green-800 border-green-200">Verificado</Badge>;
+      return <Badge className="bg-primary-600 text-primary-foreground border-primary-200">Verificado</Badge>;
     }
     if (status === 'Pending') {
       return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pendiente</Badge>;
@@ -144,7 +144,7 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-foreground">Verificación:</span>
                     {receipt.verification_status ? (
-                      <div className="flex items-center text-green-600">
+                      <div className="flex items-center text-primary-400">
                         <CheckCircle className="w-4 h-4 mr-1" />
                         <span className="text-sm">Verificado</span>
                       </div>
@@ -288,7 +288,7 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
           </Button>
           {!receipt.verification_status && (
             <Button 
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-primary-600 hover:bg-primary-700"
               onClick={() => onVerify && onVerify(receipt.receipt_id)}
             >
               <CheckCircle className="w-4 h-4 mr-2" />

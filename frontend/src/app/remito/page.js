@@ -130,9 +130,9 @@ const Remito = () => {
         )}
 
         {success && (
-          <Alert className="mb-4 border-green-500 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-green-700">{success}</AlertDescription>
+          <Alert className="mb-4 border-primary500 bg-primary-50">
+            <CheckCircle className="h-4 w-4 text-primary-500" />
+            <AlertDescription className="text-gray-700">{success}</AlertDescription>
           </Alert>
         )}
 
@@ -161,6 +161,7 @@ const Remito = () => {
               receipts={receipts}
               onVerify={handleVerify}
               onView={handleView}
+
             />
           </div>
         </div>

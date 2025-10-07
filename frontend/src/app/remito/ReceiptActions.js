@@ -85,7 +85,7 @@ const ReceiptActions = ({
             variant="outline"
           >
             {loading ? (
-              <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-green-600 rounded-full" />
+              <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-primary-600 rounded-full" />
             ) : (
               <CheckCircle className="w-4 h-4 mr-2" />
             )}
