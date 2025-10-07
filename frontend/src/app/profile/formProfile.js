@@ -15,7 +15,7 @@ import { Loader2, Terminal, Upload, Trash2 } from "lucide-react";
 export function FormProfile({ user }) {
   const { updateUserData } = useAuth();
   const fileInputRef = useRef(null);
-  
+
   const [formData, setFormData] = useState({
     nombre: user?.nombre || "",
     apellido: user?.apellido || "",
@@ -35,8 +35,8 @@ export function FormProfile({ user }) {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSelectChange = (value) => {
-    setFormData(prev => ({ ...prev, genero: value }));
+  const handleSelectChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -54,9 +54,9 @@ export function FormProfile({ user }) {
     try {
       const file = fileInputRef.current?.files[0];
       const response = await authAPI.updateProfile(formData, file);
-      
+
       updateUserData(response.data.user);
-      
+
       setMessage({ type: 'success', text: 'Perfil actualizado exitosamente' });
       setIsEditing(false);
       setPreviewImage(null); // Limpiar previsualización
@@ -72,12 +72,16 @@ export function FormProfile({ user }) {
     setFormData({
       nombre: user?.nombre || "",
       apellido: user?.apellido || "",
-      // ... restaurar otros campos
+      dni: user?.dni || "",
+      email: user?.email || "",
+      puesto_laboral: user?.puesto_laboral || "",
+      edad: user?.edad || "",
+      genero: user?.genero || ""
     });
     setPreviewImage(null);
     setIsEditing(false);
   };
-  
+
   const userPhoto = user?.foto ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${user.foto}` : null;
 
   return (
@@ -129,7 +133,21 @@ export function FormProfile({ user }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="puesto_laboral">Puesto Laboral</Label>
-            <Input id="puesto_laboral" name="puesto_laboral" value={formData.puesto_laboral} onChange={handleInputChange} disabled={!isEditing} />
+            <Select onValueChange={(value) => handleSelectChange('puesto_laboral', value)} value={formData.puesto_laboral} disabled={!isEditing}>
+              <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="contol calidad ">Control de Calidad</SelectItem>
+                <SelectItem value="operario">Operario de almacen</SelectItem>
+                <SelectItem value="gerente">Gerente de almacen</SelectItem>
+                <SelectItem value="supervisor">Supervisor de proyectos</SelectItem>
+                <SelectItem value="operador maquinaria">Operador de maquinaria pesada</SelectItem>
+                <SelectItem value="ingeniero">Ingeniero de perforación</SelectItem>
+                <SelectItem value="operador planta">Operador de planta</SelectItem>
+                <SelectItem value="analista stock">Analista de control de stock</SelectItem>
+                <SelectItem value="gerente admin">Gerente administrativo</SelectItem>
+                <SelectItem value="supervisor hse">Supervisor HSE</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="edad">Edad</Label>
@@ -137,7 +155,7 @@ export function FormProfile({ user }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="genero">Género</Label>
-            <Select onValueChange={handleSelectChange} value={formData.genero} disabled={!isEditing}>
+            <Select onValueChange={(value) => handleSelectChange('genero', value)} value={formData.genero} disabled={!isEditing}>
               <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Masculino">Masculino</SelectItem>

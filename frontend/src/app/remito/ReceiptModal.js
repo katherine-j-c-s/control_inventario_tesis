@@ -31,13 +31,15 @@ import {
   XCircle,
   FileText,
   User,
-  Hash
+  Hash,
+  Check
 } from "lucide-react";
 import { receiptAPI } from "@/lib/api";
 
 const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
   const { theme } = useTheme();
   const [products, setProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -83,6 +85,29 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
     return <Badge className="bg-gray-100 text-gray-800 border-gray-200">{status}</Badge>;
   };
 
+  const handleProductSelect = (productId) => {
+    setSelectedProducts(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(productId)) {
+        newSelected.delete(productId);
+      } else {
+        newSelected.add(productId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map(p => p.product_id)));
+    }
+  };
+
+  const isProductSelected = (productId) => selectedProducts.has(productId);
+  const isAllSelected = selectedProducts.size === products.length && products.length > 0;
+
   if (!receipt) return null;
 
   return (
@@ -119,7 +144,16 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                   <div className="flex items-center space-x-2">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-foreground">Almacén:</span>
-                    <span className="text-sm text-muted-foreground">#{receipt.warehouse_id}</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm text-muted-foreground font-medium">
+                        {receipt.warehouse_name || 'Sin almacén'}
+                      </span>
+                      {receipt.warehouse_location && (
+                        <span className="text-xs text-muted-foreground">
+                          {receipt.warehouse_location}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -163,11 +197,18 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
           {/* Productos del Remito */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground flex items-center">
-                <Package className="w-5 h-5 mr-2" />
-                Productos del Remito
-                {loading && (
-                  <div className="ml-2 w-4 h-4 animate-spin border-2 border-gray-300 border-t-blue-600 rounded-full" />
+              <CardTitle className="text-lg font-semibold text-foreground flex items-center justify-between">
+                <div className="flex items-center">
+                  <Package className="w-5 h-5 mr-2" />
+                  Productos del Remito
+                  {loading && (
+                    <div className="ml-2 w-4 h-4 animate-spin border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                  )}
+                </div>
+                {selectedProducts.size > 0 && (
+                  <Badge variant="secondary" className="text-sm">
+                    {selectedProducts.size} seleccionado{selectedProducts.size !== 1 ? 's' : ''}
+                  </Badge>
                 )}
               </CardTitle>
             </CardHeader>
@@ -202,6 +243,24 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border">
+                        <TableHead className="w-12">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleSelectAll}
+                            className={`h-8 w-8 p-0 ${
+                              isAllSelected 
+                                ? 'bg-primary hover:bg-primary/90 text-white' 
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-500'
+                            }`}
+                          >
+                            <Check className={`h-4 w-4 ${
+                              isAllSelected 
+                                ? 'text-white' 
+                                : 'text-gray-400'
+                            }`} />
+                          </Button>
+                        </TableHead>
                         <TableHead className="text-foreground">ID Producto</TableHead>
                         <TableHead className="text-foreground">Nombre</TableHead>
                         <TableHead className="text-foreground">Categoría</TableHead>
@@ -211,9 +270,28 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                         <TableHead className="text-foreground">Descripción</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody  >
                       {products.map((product, index) => (
-                        <TableRow key={product.product_id || index} className="border-border hover:bg-muted/50">
+                        
+                        <TableRow key={product.product_id || index}  className="border-border hover:bg-muted/50" >
+                          <TableCell className="text-center text-white ">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleProductSelect(product.product_id)}
+                              className={`h-8 w-8 p-0 ${
+                                isProductSelected(product.product_id) 
+                                  ? 'bg-primary hover:bg-primary/90 text-white' 
+                                  : 'bg-gray-200 hover:bg-gray-300 text-gray-500'
+                              }`}
+                            >
+                              <Check className={`h-4 w-4 ${
+                                isProductSelected(product.product_id) 
+                                  ? 'text-white' 
+                                  : 'text-gray-400'
+                              }`} />
+                            </Button>
+                          </TableCell>
                           <TableCell className="font-medium text-foreground">
                             #{product.product_id}
                           </TableCell>
@@ -282,19 +360,33 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex justify-end space-x-2 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose}>
-            Cerrar
-          </Button>
-          {!receipt.verification_status && (
-            <Button 
-              className="bg-primary-600 hover:bg-primary-700"
-              onClick={() => onVerify && onVerify(receipt.receipt_id)}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Verificar Remito
+        <div className="flex justify-between items-center pt-4 border-t border-border">
+          <div className="flex space-x-2">
+            {selectedProducts.size > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedProducts(new Set())}
+                className="text-muted-foreground"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Limpiar Selección
+              </Button>
+            )}
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={onClose}>
+              Cerrar
             </Button>
-          )}
+            {!receipt.verification_status && (
+              <Button 
+                className="bg-primary-600 hover:bg-primary-700"
+                onClick={() => onVerify && onVerify(receipt.receipt_id)}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Verificar Remito
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

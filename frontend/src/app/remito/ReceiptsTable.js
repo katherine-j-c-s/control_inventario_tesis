@@ -74,7 +74,14 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                 <TableCell className="font-medium text-foreground">
                   {receipt.receipt_id}
                 </TableCell>
-                <TableCell className="text-foreground">{receipt.warehouse_id || 'N/A'}</TableCell>
+                <TableCell className="text-foreground">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{receipt.warehouse_name || 'Sin almacén'}</span>
+                    {receipt.warehouse_location && (
+                      <span className="text-xs text-muted-foreground">{receipt.warehouse_location}</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-foreground">{receipt.quantity_products || 'N/A'}</TableCell>
                 <TableCell className="text-foreground">{formatDate(receipt.entry_date)}</TableCell>
                 <TableCell>
