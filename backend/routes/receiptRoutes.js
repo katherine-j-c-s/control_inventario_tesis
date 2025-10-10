@@ -1,6 +1,7 @@
 const express = require('express');
 const QRCode = require('qrcode');
 const { pool } = require('../db.js');
+const upload = require('../middleware/fileUpload.js');
 const { 
   getUnverified, 
   getAll, 
@@ -8,7 +9,9 @@ const {
   getVerified, 
   getByStatus, 
   getStatistics,
-  getReceiptWithProducts
+  getReceiptWithProducts,
+  createReceipt,
+  uploadReceiptFile
 } = require('../controllers/receiptController.js');
 
 const router = express.Router();
@@ -19,6 +22,9 @@ router.get('/receipts/verified', getVerified);
 router.get('/receipts/status/:status', getByStatus);
 router.get('/receipts/statistics', getStatistics);
 router.get('/receipts/:id', getReceiptWithProducts);
+
+router.post('/receipts', createReceipt);
+router.post('/receipts/upload', upload.single('file'), uploadReceiptFile);
 
 router.put('/receipts/verify/:id', verify);
 

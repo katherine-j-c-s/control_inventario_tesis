@@ -1,0 +1,4 @@
+warehouse_id,entry_date,order_id,status,product_name,description,quantity,unit_price
+1,2025-10-10,101,Pending,Tornillos,M3x15 zincado,100,0.50
+1,2025-10-10,101,Pending,Tuercas,M3 hexagonal,100,0.30
+1,2025-10-10,101,Pending,Arandelas,M3 planas,200,0.10

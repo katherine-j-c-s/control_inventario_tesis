@@ -184,6 +184,14 @@ export const receiptAPI = {
   getReceiptWithProducts: (id) => {
     return api.get(`/receipts/${id}`);
   },
+
+  createReceipt: (receiptData) => {
+    return api.post('/receipts', receiptData);
+  },
+
+  uploadReceiptFile: (fileData) => {
+    return api.post('/receipts/upload', fileData);
+  },
 };
 
 export default api;

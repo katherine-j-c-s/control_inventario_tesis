@@ -1,4 +1,3 @@
--- Anotaciones para las dos tener la misma base de datos.
 -- Crear la base de datos
 CREATE DATABASE controlInventario
     WITH 
@@ -10,9 +9,6 @@ CREATE DATABASE controlInventario
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
 
--- Comentario sobre la base de datos
-COMMENT ON DATABASE controlInventario IS 'Base de datos para el sistema de control de inventario de productos petroleros';
-
 -- Conectar a la base de datos recién creada
 \c controlInventario;
 
@@ -20,14 +16,7 @@ COMMENT ON DATABASE controlInventario IS 'Base de datos para el sistema de contr
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Verificar que la base de datos se creó correctamente
-SELECT current_database();
-
-
--- copia de aca las otras tablas para que sean iguales (kathe)
-
-
----Almacenes
+-- Almacenes
 
 CREATE TABLE warehouses (
   warehouse_id SERIAL PRIMARY KEY,
@@ -39,7 +28,7 @@ CREATE TABLE warehouses (
 
 
 
----proyectos
+-- Proyectos
 
 CREATE TABLE projects (
   project_id SERIAL PRIMARY KEY,
@@ -49,7 +38,7 @@ CREATE TABLE projects (
 );
 
 
----productos (ya los tenemos creados)---
+-- Productos
 
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
@@ -64,7 +53,7 @@ CREATE TABLE products (
   warehouse_id INTEGER REFERENCES warehouses(warehouse_id)
 );
 
----ordenes
+-- Órdenes
 CREATE TABLE orders (
   order_id SERIAL PRIMARY KEY,
   date DATE DEFAULT CURRENT_DATE,
@@ -74,7 +63,7 @@ CREATE TABLE orders (
 );
 
 
----detalles de ordenes
+-- Detalles de órdenes
 CREATE TABLE order_details (
   order_id INTEGER REFERENCES orders(order_id) ON DELETE CASCADE,
   product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
@@ -82,7 +71,7 @@ CREATE TABLE order_details (
 );
 
 
----+codigo qr
+-- Código QR
 CREATE TABLE qr_codes (
   sku_id SERIAL PRIMARY KEY,
   qr_image TEXT,
@@ -91,7 +80,7 @@ CREATE TABLE qr_codes (
   product_id INTEGER REFERENCES products(id)
 );
 
----remitos
+-- Remitos
 CREATE TABLE receipts (
   receipt_id SERIAL PRIMARY KEY,
   warehouse_id INTEGER REFERENCES warehouses(warehouse_id),
@@ -103,7 +92,7 @@ CREATE TABLE receipts (
   status TEXT
 );
 
----movimientos
+-- Movimientos
 CREATE TABLE movements (
   movement_id SERIAL PRIMARY KEY,
   movement_type VARCHAR(50),
@@ -114,7 +103,7 @@ CREATE TABLE movements (
   user_id INTEGER
 );
 
-----detalles de remitos (para la relacion uno a muchos con productos )
+-- Detalles de remitos
 CREATE TABLE receipt_products (
     id SERIAL PRIMARY KEY,
     receipt_id INTEGER REFERENCES receipts(receipt_id) ON DELETE CASCADE,
@@ -124,7 +113,7 @@ CREATE TABLE receipt_products (
 
 
 
----insertar datos para probarlos 
+-- Datos de prueba 
 
 Insert into projects (project_id ,admin_id , name , description)
 VALUES
@@ -175,7 +164,7 @@ Values
 
 
 
----SP / funciones para remitos (todo esto es desde la bd kathe)
+-- Funciones para remitos
 
 
 -- 1) Traer los remitos NO verificados
@@ -242,7 +231,7 @@ AS $$
 $$;
 
 
----verifiacar si te funcionan . 
+-- Verificar funciones
 -- Todos los no verificados
 SELECT * FROM get_unverified_receipts();
 

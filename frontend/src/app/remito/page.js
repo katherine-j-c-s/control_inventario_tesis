@@ -8,8 +8,10 @@ import { receiptAPI } from "@/lib/api";
 import ReceiptActions from "./ReceiptActions";
 import ReceiptsTable from "./ReceiptsTable";
 import ReceiptModal from "./ReceiptModal";
+import ModalRemito from "./ModalRemito";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Remito = () => {
   const { user } = useAuth();
@@ -21,6 +23,7 @@ const Remito = () => {
   const [currentView, setCurrentView] = useState('all'); // 'all', 'unverified', 'verified'
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
 
   const handleError = (error) => {
     console.error('Error:', error);
@@ -28,12 +31,14 @@ const Remito = () => {
     setSuccess(null);
   };
 
+  // Mostrar mensaje de éxito
   const showSuccess = (message) => {
     setSuccess(message);
     setError(null);
     setTimeout(() => setSuccess(null), 3000);
   };
 
+// Obtener todos los remitos
   const handleGetAll = async () => {
     setLoading(true);
     setError(null);
@@ -49,6 +54,7 @@ const Remito = () => {
     }
   };
 
+// Obtener remitos no verificados
   const handleGetUnverified = async () => {
     setLoading(true);
     setError(null);
@@ -63,7 +69,7 @@ const Remito = () => {
       setLoading(false);
     }
   };
-
+// Obtener remitos verificados
   const handleGetVerified = async () => {
     setLoading(true);
     setError(null);
@@ -79,7 +85,7 @@ const Remito = () => {
     }
   };
 
-
+// Verificar remito
   const handleVerify = async (receiptId) => {
     setLoading(true);
     setError(null);
@@ -97,15 +103,25 @@ const Remito = () => {
     }
   };
 
+  // Ver detalles del remito
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
     setSelectedReceipt(receipt);
     setIsModalOpen(true);
   };
 
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReceipt(null);
+  };
+
+  const handleOpenLoadModal = () => {
+    setIsLoadModalOpen(true);
+  };
+
+  const handleCloseLoadModal = () => {
+    setIsLoadModalOpen(false);
   };
 
 
@@ -117,8 +133,19 @@ const Remito = () => {
     <Layout>
       <div className="container mx-auto p-4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Gestión de Remitos</h1>
-          <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Gestión de Remitos</h1>
+              <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
+            </div>
+            <Button 
+              onClick={handleOpenLoadModal}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Cargar Remito
+            </Button>
+          </div>
         </div>
 
         {/* Mensajes de error y éxito */}
@@ -172,6 +199,12 @@ const Remito = () => {
           onClose={handleCloseModal}
           receipt={selectedReceipt}
           onVerify={handleVerify}
+        />
+
+        {/* Modal para cargar remito */}
+        <ModalRemito
+          isOpen={isLoadModalOpen}
+          onClose={handleCloseLoadModal}
         />
       </div>
     </Layout>
