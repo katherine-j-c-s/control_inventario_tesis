@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadReceipt from "./LoadReceipt";
 import { receiptAPI } from "@/lib/api";
 
-const ModalRemito = ({ isOpen, onClose }) => {
+const ModalRemito = ({ isOpen, onClose, onReceiptCreated }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileError, setFileError] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -75,6 +75,10 @@ const ModalRemito = ({ isOpen, onClose }) => {
         console.log('Archivo procesado correctamente:', response.data.message);
         setSuccess(`✅ ${response.data.message}`);
         
+        if (onReceiptCreated) {
+          onReceiptCreated();
+        }
+        
         setTimeout(() => {
           setUploading(false);
           onClose();
@@ -107,7 +111,6 @@ const ModalRemito = ({ isOpen, onClose }) => {
     React.createElement(
       "div",
       { className: "bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" },
-      // Header del modal
       React.createElement(
         "div",
         { className: "flex items-center justify-between p-6 border-b border-border" },
@@ -119,11 +122,9 @@ const ModalRemito = ({ isOpen, onClose }) => {
           className: "h-8 w-8 p-0"
         }, React.createElement(X, { className: "h-4 w-4" }))
       ),
-      // Contenido del modal
       React.createElement(
         "div",
         { className: "p-6 space-y-6" },
-        // Opción 1: Carga manual
         React.createElement(Card, null,
           React.createElement(CardHeader, null,
             React.createElement(CardTitle, { className: "flex items-center gap-2" },
@@ -132,10 +133,12 @@ const ModalRemito = ({ isOpen, onClose }) => {
             )
           ),
           React.createElement(CardContent, null,
-            React.createElement(LoadReceipt, { onClose: onClose })
+            React.createElement(LoadReceipt, { 
+              onClose: onClose,
+              onReceiptCreated: onReceiptCreated 
+            })
           )
         ),
-        // Opción 2: Carga de archivo PDF
         React.createElement(Card, null,
           React.createElement(CardHeader, null,
             React.createElement(CardTitle, { className: "flex items-center gap-2" },
@@ -205,7 +208,6 @@ const ModalRemito = ({ isOpen, onClose }) => {
           )
         )
       ),
-      // Footer del modal
       React.createElement(
         "div",
         { className: "flex justify-end gap-3 p-6 border-t border-border" },

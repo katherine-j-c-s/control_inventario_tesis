@@ -1,3 +1,0 @@
-warehouse_id,entry_date,order_id,status,product_name,description,quantity,unit_price
-1,2025-01-10,,Pending,Tornillo de prueba,TOR-001,10,0.50
-1,2025-01-10,,Pending,Tuerca de prueba,TUE-001,20,0.30

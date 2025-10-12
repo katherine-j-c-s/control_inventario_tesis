@@ -11,7 +11,8 @@ const {
   getStatistics,
   getReceiptWithProducts,
   createReceipt,
-  uploadReceiptFile
+  uploadReceiptFile,
+  getWarehouses
 } = require('../controllers/receiptController.js');
 
 const router = express.Router();
@@ -22,6 +23,7 @@ router.get('/receipts/verified', getVerified);
 router.get('/receipts/status/:status', getByStatus);
 router.get('/receipts/statistics', getStatistics);
 router.get('/receipts/:id', getReceiptWithProducts);
+router.get('/warehouses', getWarehouses);
 
 router.post('/receipts', createReceipt);
 router.post('/receipts/upload', upload.single('file'), uploadReceiptFile);

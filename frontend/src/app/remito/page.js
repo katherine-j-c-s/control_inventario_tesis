@@ -1,5 +1,5 @@
 "use client";
-// 
+
 import Layout from "@/components/layouts/Layout";
 import React, { useState, useEffect } from "react";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
@@ -31,14 +31,12 @@ const Remito = () => {
     setSuccess(null);
   };
 
-  // Mostrar mensaje de éxito
   const showSuccess = (message) => {
     setSuccess(message);
     setError(null);
     setTimeout(() => setSuccess(null), 3000);
   };
 
-// Obtener todos los remitos
   const handleGetAll = async () => {
     setLoading(true);
     setError(null);
@@ -54,7 +52,6 @@ const Remito = () => {
     }
   };
 
-// Obtener remitos no verificados
   const handleGetUnverified = async () => {
     setLoading(true);
     setError(null);
@@ -69,7 +66,7 @@ const Remito = () => {
       setLoading(false);
     }
   };
-// Obtener remitos verificados
+
   const handleGetVerified = async () => {
     setLoading(true);
     setError(null);
@@ -85,7 +82,6 @@ const Remito = () => {
     }
   };
 
-// Verificar remito
   const handleVerify = async (receiptId) => {
     setLoading(true);
     setError(null);
@@ -103,7 +99,6 @@ const Remito = () => {
     }
   };
 
-  // Ver detalles del remito
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
     setSelectedReceipt(receipt);
@@ -122,6 +117,10 @@ const Remito = () => {
 
   const handleCloseLoadModal = () => {
     setIsLoadModalOpen(false);
+  };
+
+  const handleReceiptCreated = () => {
+    handleGetAll();
   };
 
 
@@ -148,7 +147,6 @@ const Remito = () => {
           </div>
         </div>
 
-        {/* Mensajes de error y éxito */}
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -163,7 +161,6 @@ const Remito = () => {
           </Alert>
         )}
 
-        {/* Botones de acción */}
         <ReceiptActions
           onGetAll={handleGetAll}
           onGetUnverified={handleGetUnverified}
@@ -171,7 +168,6 @@ const Remito = () => {
           loading={loading}
         />
 
-        {/* Mostrar tabla de remitos */}
         <div className="bg-card rounded-lg shadow border">
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">
@@ -193,7 +189,6 @@ const Remito = () => {
           </div>
         </div>
 
-        {/* Modal de detalles del remito */}
         <ReceiptModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
@@ -201,10 +196,10 @@ const Remito = () => {
           onVerify={handleVerify}
         />
 
-        {/* Modal para cargar remito */}
         <ModalRemito
           isOpen={isLoadModalOpen}
           onClose={handleCloseLoadModal}
+          onReceiptCreated={handleReceiptCreated}
         />
       </div>
     </Layout>

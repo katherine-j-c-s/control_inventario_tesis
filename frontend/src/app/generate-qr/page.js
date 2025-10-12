@@ -28,7 +28,6 @@ export default function GenerateQR() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // 🔹 Qr 
   const crearObjetoQRSimplificado = (producto) => ({
     i: producto.id,
     n: producto.nombre,
@@ -44,7 +43,6 @@ export default function GenerateQR() {
     t: new Date().toISOString()
   });
 
-  // 🔹 Buscar productos por remito
   const buscarRemito = async () => {
     if (!remitoId.trim()) {
       setError("Por favor ingresa un ID de remito válido");
@@ -85,7 +83,6 @@ export default function GenerateQR() {
     }
   };
 
-  // 🔹 Descargar QR de un producto
   const descargarQR = (producto) => {
     try {
       const tempDiv = document.createElement('div');
@@ -109,7 +106,7 @@ export default function GenerateQR() {
         React.createElement(QRCodeSVG, {
           value: JSON.stringify(crearObjetoQRSimplificado(producto)),
           size: 256,
-          level: 'M', 
+          level: 'M',
           includeMargin: true
         })
       );
@@ -158,7 +155,6 @@ export default function GenerateQR() {
     }
   };
 
-  // 🔹 Descargar todos los QR
   const descargarTodosQR = () => {
     productos.forEach((producto, index) => {
       setTimeout(() => {

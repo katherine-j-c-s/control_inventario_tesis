@@ -14,7 +14,6 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
   return React.createElement(
     "div",
     { className: "flex flex-row justify-between items-center w-full wrap md:flex-row gap-4 p-4 border border-border rounded-lg bg-card" },
-    // ID o código del producto
     React.createElement(
       "div",
       { className: "space-y-2 " },
@@ -32,7 +31,6 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
         className: "w-full"
       })
     ),
-    // Nombre o descripción
     React.createElement(
       "div",
       { className: "space-y-2" },
@@ -50,7 +48,6 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
         className: "w-full"
       })
     ),
-    // Cantidad
     React.createElement(
       "div",
       { className: "space-y-2" },
@@ -69,7 +66,6 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
         className: "w-full"
       })
     ),
-    // Precio unitario
     React.createElement(
       "div",
       { className: "space-y-2" },
@@ -89,7 +85,6 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
         className: "w-full"
       })
     ),
-    // Botón eliminar
     React.createElement(
       "div",
       { className: "flex items-end" },

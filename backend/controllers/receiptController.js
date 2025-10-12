@@ -169,12 +169,7 @@ const createReceipt = async (req, res) => {
                 `, [receiptId, productId, quantity]);
             }
             
-            // 4. Actualizar quantity_products en el remito
-            await pool.query(`
-                UPDATE receipts 
-                SET quantity_products = $1
-                WHERE receipt_id = $2;
-            `, [products.length, receiptId]);
+            // 4. No necesitamos actualizar quantity_products ya que no existe en la tabla
             
             // Confirmar transacción
             await pool.query('COMMIT');
@@ -313,10 +308,17 @@ const getReceiptWithProducts = async (req, res) => {
 
 const uploadReceiptFile = async (req, res) => {
     try {
+        console.log('📁 Iniciando procesamiento de archivo...');
+        console.log('📋 Headers:', req.headers);
+        console.log('📋 Body:', req.body);
+        console.log('📋 File:', req.file);
+        console.log('📋 Files:', req.files);
+        
         const FileProcessor = require('../services/fileProcessor');
         const { pool } = require('../db.js');
         
         if (!req.file) {
+            console.log('❌ No se encontró archivo en req.file');
             return res.status(400).json({ 
                 error: 'No se proporcionó ningún archivo' 
             });
@@ -440,12 +442,7 @@ const uploadReceiptFile = async (req, res) => {
                 `, [receiptId, productId, quantity]);
             }
             
-            // 4. Actualizar quantity_products en el remito
-            await pool.query(`
-                UPDATE receipts 
-                SET quantity_products = $1
-                WHERE receipt_id = $2;
-            `, [products.length, receiptId]);
+            // 4. No necesitamos actualizar quantity_products ya que no existe en la tabla
             
             // Confirmar transacción
             await pool.query('COMMIT');
@@ -483,6 +480,28 @@ const uploadReceiptFile = async (req, res) => {
     }
 }
 
+const getWarehouses = async (req, res) => {
+    try {
+        const { pool } = require('../db.js');
+        
+        const query = `
+            SELECT 
+                id,
+                name,
+                location,
+                NULL as capacity
+            FROM warehouses
+            ORDER BY name;
+        `;
+        
+        const { rows } = await pool.query(query);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error obteniendo almacenes:', error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getUnverified,
     getAll,
@@ -490,6 +509,7 @@ module.exports = {
     getVerified,
     getByStatus,
     getStatistics,
+    getWarehouses,
     createReceipt,
     updateReceipt,
     deleteReceipt,

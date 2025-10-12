@@ -1,4 +1,3 @@
-// app/inventory/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,17 +5,14 @@ import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
-import { DataTable } from './inventaryTable'; // Renombrado para claridad
+import { DataTable } from './inventaryTable';
 import { FloatingQrScannerButton } from '@/components/QrScanner';
 import api from '@/lib/api';
-
-// --- Componentes de ShadCN/UI ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
-// Importar Dialog para el modal
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
@@ -31,11 +27,9 @@ function InventoryContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Manejar resultado del scanner QR
   const handleQrScanResult = (data) => {
     try {
       const productData = JSON.parse(data);
-      // Buscar producto por código o ID
       const foundProduct = products.find(p => 
         p.codigo === productData.codigo || 
         p.id === productData.id
@@ -47,7 +41,6 @@ function InventoryContent() {
         alert('Producto no encontrado en el inventario');
       }
     } catch (error) {
-      // Si no es JSON, buscar por código de barras simple
       const foundProduct = products.find(p => 
         p.codigo.toLowerCase().includes(data.toLowerCase())
       );
@@ -60,7 +53,6 @@ function InventoryContent() {
     }
   };
 
-  // Función para cargar productos desde la API
   const loadProducts = async () => {
     try {
       setIsLoading(true);
@@ -84,7 +76,6 @@ function InventoryContent() {
     loadProducts();
   }, [user, router, loading]);
 
-  // Obtener categorías únicas de los productos
   const categories = ['all', ...new Set(products.map(product => product.categoria).filter(Boolean))];
 
   const filteredProducts = products.filter(product => {
@@ -132,7 +123,6 @@ function InventoryContent() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* --- Header --- */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
@@ -153,7 +143,6 @@ function InventoryContent() {
           </div>
         </motion.div>
 
-        {/* --- Filtros --- */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardContent className="pt-6">
@@ -181,13 +170,11 @@ function InventoryContent() {
           </Card>
         </motion.div>
 
-        {/* --- Tabla de Datos --- */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <DataTable products={filteredProducts} />
         </motion.div>
       </div>
       
-      {/* --- Modal para Agregar Producto --- */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent>
           <DialogHeader>
@@ -203,7 +190,6 @@ function InventoryContent() {
               <Label htmlFor="codigo" className="text-right">Código</Label>
               <Input id="codigo" className="col-span-3" />
             </div>
-            {/* ... Aquí agregarías más campos del formulario ... */}
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
@@ -212,7 +198,6 @@ function InventoryContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Botón flotante del scanner QR */}
       <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
   );

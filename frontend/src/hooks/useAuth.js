@@ -18,13 +18,11 @@ export function AuthProvider({ children }) {
       
       if (savedToken) {
         try {
-          // 1. Validamos la sesión. La respuesta ya incluye los permisos del usuario actual.
           const profileResponse = await authAPI.getProfile();
           const freshUser = profileResponse.data;
           setUser(freshUser);
           localStorage.setItem('user', JSON.stringify(freshUser));
 
-          // 2. [CORRECCIÓN] Si el usuario es admin, CARGAMOS ADICIONALMENTE el mapa de todos los roles.
           if (freshUser.rol === 'admin') {
             const rolesResponse = await roleAPI.getRoles();
             const rolesFromDB = rolesResponse.data;
@@ -45,7 +43,6 @@ export function AuthProvider({ children }) {
           }
         } catch (error) {
           console.error("Token inválido o error de sesión:", error);
-          // Limpiamos todo en caso de error
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);

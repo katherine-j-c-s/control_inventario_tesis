@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { rolesConfig } from '@/lib/roles';
-
-// Componentes de ShadCN/UI y Lucide Icons
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,7 +43,6 @@ function LoginForm() {
     if (!result.success) {
       setError(result.error);
     }
-    // La redirección ahora se maneja en el useEffect de arriba
     
     setIsLoading(false);
   };

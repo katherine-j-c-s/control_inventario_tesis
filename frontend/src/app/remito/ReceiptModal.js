@@ -1,7 +1,5 @@
 "use client";
 
-// modal para ver los detalles de los remitos 
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "next-themes";
 import { 
@@ -119,12 +117,10 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
               <FileText className="w-6 h-6 mr-2 text-blue-600" />
               Detalles del Remito #{receipt.receipt_id}
             </DialogTitle>
-            
           </div>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Información General del Remito */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-foreground flex items-center">
@@ -194,7 +190,6 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
             </CardContent>
           </Card>
 
-          {/* Productos del Remito */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-foreground flex items-center justify-between">
@@ -324,7 +319,6 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
             </CardContent>
           </Card>
 
-          {/* Información Adicional */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-foreground flex items-center">
@@ -359,7 +353,6 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
           </Card>
         </div>
 
-        {/* Botones de Acción */}
         <div className="flex justify-between items-center pt-4 border-t border-border">
           <div className="flex space-x-2">
             {selectedProducts.size > 0 && (

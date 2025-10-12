@@ -6,9 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { rolesConfig } from '@/lib/roles'; // Importamos la config para los accesos directos
-
-// --- Componentes de ShadCN/UI y Lucide Icons ---
+import { rolesConfig } from '@/lib/roles';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, Package, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -17,7 +15,6 @@ function DashboardContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  // Datos de ejemplo para las tarjetas de estadísticas
   const [stats, setStats] = useState({
     totalUsuarios: 15,
     productosActivos: 124,
@@ -30,22 +27,18 @@ function DashboardContent() {
     if (!user) {
       router.push("/login");
     }
-    // Aquí harías las llamadas a la API para obtener las estadísticas reales
   }, [user, loading, router]);
 
   if (loading || !user) {
-    // Puedes usar un componente Skeleton aquí para una mejor UX
     return <div className="flex h-screen items-center justify-center">Cargando...</div>;
   }
 
-  // Obtenemos los accesos directos permitidos para el rol del usuario
   const userRole = user.rol || 'default';
   const quickActions = rolesConfig[userRole]?.routes || [];
 
   return (
     <Layout>
       <div className="space-y-8">
-        {/* --- Header de Bienvenida --- */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-bold">
             Bienvenido, {user.nombre}
@@ -55,7 +48,6 @@ function DashboardContent() {
           </p>
         </motion.div>
 
-        {/* --- Tarjetas de Estadísticas --- */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -99,9 +91,7 @@ function DashboardContent() {
           </Card>
         </div>
 
-        {/* --- Acciones Rápidas y Actividad Reciente --- */}
         <div className="grid gap-8 md:grid-cols-3">
-          {/* Columna de Acciones Rápidas */}
           <div className="md:col-span-2">
             <Card>
               <CardHeader>
@@ -126,7 +116,6 @@ function DashboardContent() {
             </Card>
           </div>
 
-          {/* Columna de Actividad Reciente */}
           <div className="md:col-span-1">
             <Card>
               <CardHeader>

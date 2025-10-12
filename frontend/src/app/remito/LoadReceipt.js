@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import ProductRow from "./ProductRow";
 import { receiptAPI } from "@/lib/api";
 
-const LoadReceipt = ({ onClose }) => {
+const LoadReceipt = ({ onClose, onReceiptCreated }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0], // Fecha actual por defecto
     warehouse_id: "",
@@ -29,22 +29,22 @@ const LoadReceipt = ({ onClose }) => {
   const [success, setSuccess] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
 
-  // Cargar almacenes al montar el componente
   React.useEffect(() => {
     loadWarehouses();
   }, []);
 
   const loadWarehouses = async () => {
     try {
-      // Simular datos de almacenes - en un caso real vendría de la API
+      const response = await receiptAPI.getWarehouses();
+      setWarehouses(response.data);
+    } catch (error) {
+      console.error("Error cargando almacenes:", error);
       const mockWarehouses = [
         { id: 1, name: "Almacén Principal", location: "Sede Central" },
         { id: 2, name: "Almacén Secundario", location: "Sede Norte" },
         { id: 3, name: "Depósito Sur", location: "Sede Sur" }
       ];
       setWarehouses(mockWarehouses);
-    } catch (error) {
-      console.error("Error cargando almacenes:", error);
     }
   };
 
@@ -72,13 +72,11 @@ const LoadReceipt = ({ onClose }) => {
   };
 
   const validateForm = () => {
-    // Validar campos básicos
-    if (!formData.date || !formData.warehouse_id) {
+    if (!formData.date || !formData.warehouse_id || !formData.orderNumber) {
       setError("Por favor, completa todos los campos obligatorios del remito");
       return false;
     }
 
-    // Validar productos
     const validProducts = products.filter(product => 
       product.id && product.name && product.quantity > 0
     );
@@ -88,7 +86,6 @@ const LoadReceipt = ({ onClose }) => {
       return false;
     }
 
-    // Verificar que todos los productos tengan los campos obligatorios
     const hasInvalidProducts = products.some(product => 
       product.id && product.name && product.quantity > 0 && 
       (!product.id || !product.name || product.quantity <= 0)
@@ -117,7 +114,6 @@ const LoadReceipt = ({ onClose }) => {
         product.id && product.name && product.quantity > 0
       );
 
-      // Preparar datos para la API
       const receiptData = {
         warehouse_id: parseInt(formData.warehouse_id),
         entry_date: formData.date,
@@ -125,7 +121,7 @@ const LoadReceipt = ({ onClose }) => {
         status: formData.status,
         products: validProducts.map(product => ({
           name: product.name,
-          description: product.id, // Usar el ID como descripción
+          description: product.id,
           quantity: parseInt(product.quantity),
           unit_price: parseFloat(product.price) || 0
         }))
@@ -141,7 +137,10 @@ const LoadReceipt = ({ onClose }) => {
       if (response.data.success) {
         setSuccess(`✅ ${response.data.message}`);
         
-        // Limpiar formulario después de guardar
+        if (onReceiptCreated) {
+          onReceiptCreated();
+        }
+        
         setTimeout(() => {
           setFormData({
             date: new Date().toISOString().split('T')[0],
@@ -175,7 +174,6 @@ const LoadReceipt = ({ onClose }) => {
 
   return (
     <div className="space-y-6">
-      {/* Mensajes de error y éxito */}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -189,14 +187,12 @@ const LoadReceipt = ({ onClose }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Información básica del remito */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Información del Remito</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Fecha del remito */}
               <div className="space-y-2">
                 <Label htmlFor="date" className="text-sm font-medium">
                    Fecha del Remito *
@@ -211,7 +207,6 @@ const LoadReceipt = ({ onClose }) => {
                 />
               </div>
 
-              {/* Warehouse */}
               <div className="space-y-2">
                 <Label htmlFor="warehouse_id" className="text-sm font-medium">
                    Depósito *
@@ -233,10 +228,9 @@ const LoadReceipt = ({ onClose }) => {
                 </Select>
               </div>
 
-              {/* Número de orden */}
               <div className="space-y-2">
                 <Label htmlFor="orderNumber" className="text-sm font-medium">
-                   Número de Orden/Código (Opcional)
+                   Número de Orden/Código *
                 </Label>
                 <Input
                   id="orderNumber"
@@ -245,10 +239,10 @@ const LoadReceipt = ({ onClose }) => {
                   onChange={(e) => handleInputChange("orderNumber", e.target.value)}
                   placeholder="Ej: REM-2024-001"
                   className="w-full"
+                  required
                 />
               </div>
 
-              {/* Estado */}
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
                    Estado *
@@ -269,7 +263,6 @@ const LoadReceipt = ({ onClose }) => {
                 </Select>
               </div>
 
-              {/* Verificador */}
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="verifier" className="text-sm font-medium">
                    Verificador/Responsable
@@ -287,7 +280,6 @@ const LoadReceipt = ({ onClose }) => {
           </CardContent>
         </Card>
 
-        {/* Sección de productos */}
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -323,7 +315,6 @@ const LoadReceipt = ({ onClose }) => {
           </CardContent>
         </Card>
 
-        {/* Botones de acción */}
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button
             type="button"

@@ -2,30 +2,66 @@ const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
+const pdf2pic = require('pdf2pic');
 
 class FileProcessor {
   
   static async processPDF(filePath) {
     try {
       console.log('Procesando PDF:', filePath);
-      const receiptData = {
-        warehouse_id: 1,
-        entry_date: new Date().toISOString().split('T')[0],
-        order_id: null,
-        status: 'Pending',
-        products: [
+      
+      // Convertir PDF a imagen usando pdf2pic
+      const convert = pdf2pic.fromPath(filePath, {
+        density: 100,
+        saveFilename: "converted",
+        savePath: path.dirname(filePath),
+        format: "png",
+        width: 2000,
+        height: 2000
+      });
+      
+      // Convertir solo la primera página
+      const result = await convert(1, { responseType: "image" });
+      
+      if (!result || result.length === 0) {
+        throw new Error('No se pudo convertir el PDF a imagen');
+      }
+      
+      const imagePath = result[0].path;
+      console.log('PDF convertido a imagen:', imagePath);
+      
+      // Procesar la imagen con OCR
+      const { data: { text } } = await Tesseract.recognize(imagePath, 'spa', {
+        logger: m => console.log(m)
+      });
+      
+      console.log('Texto extraído del PDF:', text.substring(0, 500) + '...');
+      
+      // Extraer datos del remito del texto
+      const receiptData = this.extractReceiptDataFromText(text);
+      
+      // Si no se encontraron productos, crear un producto por defecto
+      if (receiptData.products.length === 0) {
+        receiptData.products = [
           {
-            name: 'Producto del PDF',
-            description: 'Extraído de PDF',
+            name: 'Producto extraído de PDF',
+            description: 'Extraído automáticamente del PDF',
             quantity: 1,
             unit_price: 0
           }
-        ]
-      };
+        ];
+      }
+      
+      // Limpiar archivo temporal de imagen
+      try {
+        fs.unlinkSync(imagePath);
+      } catch (cleanupError) {
+        console.warn('No se pudo limpiar archivo temporal:', cleanupError.message);
+      }
       
       return {
         success: true,
-        text: 'PDF procesado - datos de ejemplo',
+        text: text,
         data: receiptData
       };
     } catch (error) {
@@ -37,24 +73,47 @@ class FileProcessor {
   static async processImage(filePath) {
     try {
       console.log('Procesando imagen:', filePath);
-      const receiptData = {
-        warehouse_id: 1,
-        entry_date: new Date().toISOString().split('T')[0],
-        order_id: null,
-        status: 'Pending',
-        products: [
+      
+      // Procesar la imagen con Sharp para mejorar la calidad
+      const processedImageBuffer = await sharp(filePath)
+        .resize(2000, 2000, { fit: 'inside', withoutEnlargement: true })
+        .sharpen()
+        .normalize()
+        .png()
+        .toBuffer();
+      
+      // Guardar la imagen procesada temporalmente
+      const processedImagePath = filePath.replace(/\.[^/.]+$/, '_processed.png');
+      fs.writeFileSync(processedImagePath, processedImageBuffer);
+      
+      // Usar Tesseract para extraer texto de la imagen
+      const { data: { text } } = await Tesseract.recognize(processedImagePath, 'spa', {
+        logger: m => console.log(m)
+      });
+      
+      console.log('Texto extraído de la imagen:', text.substring(0, 500) + '...');
+      
+      // Extraer datos del remito del texto
+      const receiptData = this.extractReceiptDataFromText(text);
+      
+      // Si no se encontraron productos, crear un producto por defecto
+      if (receiptData.products.length === 0) {
+        receiptData.products = [
           {
-            name: 'Producto de la imagen',
-            description: 'Extraído de imagen',
+            name: 'Producto extraído de imagen',
+            description: 'Extraído automáticamente de la imagen',
             quantity: 1,
             unit_price: 0
           }
-        ]
-      };
+        ];
+      }
+      
+      // Limpiar archivo temporal
+      fs.unlinkSync(processedImagePath);
       
       return {
         success: true,
-        text: 'Imagen procesada - datos de ejemplo',
+        text: text,
         data: receiptData
       };
     } catch (error) {
@@ -127,40 +186,78 @@ class FileProcessor {
       products: []
     };
     
-    // Buscar fecha en el texto
-    const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/g;
-    const dateMatch = text.match(dateRegex);
-    if (dateMatch) {
-      data.entry_date = this.formatDate(dateMatch[0]);
-    }
+    // Buscar fecha en el texto (múltiples formatos)
+    const dateRegexes = [
+      /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/g,
+      /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/g,
+      /(\d{1,2}\s+de\s+\w+\s+de\s+\d{4})/gi,
+      /(\d{1,2}\s+\w+\s+\d{4})/gi
+    ];
     
-    // Buscar número de orden
-    const orderRegex = /(?:orden|order|pedido|pedido\s+no\.?|n[úu]mero)\s*:?\s*([A-Z0-9\-]+)/i;
-    const orderMatch = text.match(orderRegex);
-    if (orderMatch) {
-      data.order_id = orderMatch[1];
-    }
-    
-    // Buscar productos (patrones comunes en remitos)
-    const productRegex = /(\d+)\s+([A-Za-z0-9\s\-\.]+?)\s+(\d+(?:\.\d+)?)\s*$/gm;
-    let match;
-    
-    while ((match = productRegex.exec(text)) !== null) {
-      const quantity = parseInt(match[1]);
-      const name = match[2].trim();
-      const price = parseFloat(match[3]);
-      
-      if (quantity > 0 && name.length > 2) {
-        data.products.push({
-          name: name,
-          description: '',
-          quantity: quantity,
-          unit_price: price || 0
-        });
+    for (const regex of dateRegexes) {
+      const dateMatch = text.match(regex);
+      if (dateMatch) {
+        data.entry_date = this.formatDate(dateMatch[0]);
+        break;
       }
     }
     
-    // Si no se encontraron productos con el patrón anterior, buscar líneas que contengan números
+    // Buscar número de orden (múltiples patrones)
+    const orderRegexes = [
+      /(?:orden|order|pedido|pedido\s+no\.?|n[úu]mero|remito|remito\s+no\.?)\s*:?\s*([A-Z0-9\-]+)/i,
+      /(?:ref|referencia|ref\.?)\s*:?\s*([A-Z0-9\-]+)/i,
+      /(?:cod|codigo|código)\s*:?\s*([A-Z0-9\-]+)/i
+    ];
+    
+    for (const regex of orderRegexes) {
+      const orderMatch = text.match(regex);
+      if (orderMatch) {
+        data.order_id = orderMatch[1];
+        break;
+      }
+    }
+    
+    // Buscar productos con múltiples patrones
+    const productPatterns = [
+      // Patrón: cantidad + nombre + precio
+      /(\d+)\s+([A-Za-z0-9\s\-\.]+?)\s+(\d+(?:\.\d+)?)\s*$/gm,
+      // Patrón: cantidad + nombre (sin precio)
+      /(\d+)\s+([A-Za-z0-9\s\-\.]+?)(?:\s|$)/gm,
+      // Patrón: nombre + cantidad + precio
+      /([A-Za-z0-9\s\-\.]+?)\s+(\d+)\s+(\d+(?:\.\d+)?)\s*$/gm,
+      // Patrón: nombre + cantidad (sin precio)
+      /([A-Za-z0-9\s\-\.]+?)\s+(\d+)(?:\s|$)/gm
+    ];
+    
+    for (const pattern of productPatterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        let quantity, name, price;
+        
+        if (pattern === productPatterns[0] || pattern === productPatterns[1]) {
+          // Patrones que empiezan con cantidad
+          quantity = parseInt(match[1]);
+          name = match[2].trim();
+          price = match[3] ? parseFloat(match[3]) : 0;
+        } else {
+          // Patrones que empiezan con nombre
+          name = match[1].trim();
+          quantity = parseInt(match[2]);
+          price = match[3] ? parseFloat(match[3]) : 0;
+        }
+        
+        if (quantity > 0 && name.length > 2 && !this.isCommonWord(name)) {
+          data.products.push({
+            name: name,
+            description: '',
+            quantity: quantity,
+            unit_price: price || 0
+          });
+        }
+      }
+    }
+    
+    // Si no se encontraron productos con los patrones anteriores, buscar líneas que contengan números
     if (data.products.length === 0) {
       const lines = text.split('\n');
       lines.forEach(line => {
@@ -175,7 +272,7 @@ class FileProcessor {
             const price = parseFloat(lastWord);
             const name = words.slice(1, -1).join(' ').trim();
             
-            if (name.length > 2) {
+            if (name.length > 2 && !this.isCommonWord(name)) {
               data.products.push({
                 name: name,
                 description: '',
@@ -188,7 +285,36 @@ class FileProcessor {
       });
     }
     
+    // Filtrar productos duplicados
+    data.products = this.removeDuplicateProducts(data.products);
+    
     return data;
+  }
+  
+  // Verificar si una palabra es común (no es un producto)
+  static isCommonWord(word) {
+    const commonWords = [
+      'total', 'subtotal', 'iva', 'impuesto', 'descuento', 'precio', 'cantidad',
+      'producto', 'item', 'articulo', 'unidad', 'pieza', 'metro', 'kg', 'litro',
+      'fecha', 'hora', 'cliente', 'proveedor', 'empresa', 'direccion', 'telefono',
+      'email', 'web', 'pagina', 'numero', 'codigo', 'referencia', 'orden',
+      'pedido', 'remito', 'factura', 'nota', 'recibo', 'comprobante'
+    ];
+    
+    return commonWords.includes(word.toLowerCase());
+  }
+  
+  // Remover productos duplicados
+  static removeDuplicateProducts(products) {
+    const seen = new Set();
+    return products.filter(product => {
+      const key = product.name.toLowerCase().trim();
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
   
   // Formatear fecha

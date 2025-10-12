@@ -190,7 +190,15 @@ export const receiptAPI = {
   },
 
   uploadReceiptFile: (fileData) => {
-    return api.post('/receipts/upload', fileData);
+    return api.post('/receipts/upload', fileData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  getWarehouses: () => {
+    return api.get('/warehouses');
   },
 };
 

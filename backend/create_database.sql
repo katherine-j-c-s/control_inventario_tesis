@@ -115,9 +115,16 @@ CREATE TABLE receipt_products (
 
 -- Datos de prueba 
 
+-- Insertar almacenes de prueba
+INSERT INTO warehouses (warehouse_id, name, address_sector, user_id, capacity)
+VALUES
+(1, 'Almacén Principal', 'Sede Central', 1, 1000),
+(2, 'Almacén Secundario', 'Sede Norte', 1, 500),
+(3, 'Depósito Sur', 'Sede Sur', 1, 750);
+
 Insert into projects (project_id ,admin_id , name , description)
 VALUES
-(1 ,2 , 'Armado de Pozo', 'armamos el entorno de maquinarias del pozo ' )
+(1 ,2 , 'Armado de Pozo', 'armamos el entorno de maquinarias del pozo ' )
 
 
 
