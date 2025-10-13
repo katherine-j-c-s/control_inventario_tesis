@@ -8,8 +8,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Users, Settings, UserPlus, Terminal } from "lucide-react";
-
-// Importamos los componentes de las pestañas
 import { AllUsersTab } from './components/AllUsersTab';
 import { RolesManagementTab } from './components/RolesManagementTab';
 import { RoleAssignmentTab } from './components/RoleAssignmentTab';

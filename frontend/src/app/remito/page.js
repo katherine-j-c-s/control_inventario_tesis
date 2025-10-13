@@ -1,15 +1,17 @@
 "use client";
-// 
+
 import Layout from "@/components/layouts/Layout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { useTheme } from "next-themes";
 import { receiptAPI } from "@/lib/api";
 import ReceiptActions from "./ReceiptActions";
 import ReceiptsTable from "./ReceiptsTable";
 import ReceiptModal from "./ReceiptModal";
+import ModalRemito from "./ModalRemito";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Remito = () => {
   const { user } = useAuth();
@@ -21,6 +23,7 @@ const Remito = () => {
   const [currentView, setCurrentView] = useState('all'); // 'all', 'unverified', 'verified'
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
 
   const handleError = (error) => {
     console.error('Error:', error);
@@ -79,7 +82,6 @@ const Remito = () => {
     }
   };
 
-
   const handleVerify = async (receiptId) => {
     setLoading(true);
     setError(null);
@@ -103,9 +105,22 @@ const Remito = () => {
     setIsModalOpen(true);
   };
 
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReceipt(null);
+  };
+
+  const handleOpenLoadModal = () => {
+    setIsLoadModalOpen(true);
+  };
+
+  const handleCloseLoadModal = () => {
+    setIsLoadModalOpen(false);
+  };
+
+  const handleReceiptCreated = () => {
+    handleGetAll();
   };
 
 
@@ -117,11 +132,21 @@ const Remito = () => {
     <Layout>
       <div className="container mx-auto p-4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Gestión de Remitos</h1>
-          <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Gestión de Remitos</h1>
+              <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
+            </div>
+            <Button 
+              onClick={handleOpenLoadModal}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Cargar Remito
+            </Button>
+          </div>
         </div>
 
-        {/* Mensajes de error y éxito */}
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -136,7 +161,6 @@ const Remito = () => {
           </Alert>
         )}
 
-        {/* Botones de acción */}
         <ReceiptActions
           onGetAll={handleGetAll}
           onGetUnverified={handleGetUnverified}
@@ -144,7 +168,6 @@ const Remito = () => {
           loading={loading}
         />
 
-        {/* Mostrar tabla de remitos */}
         <div className="bg-card rounded-lg shadow border">
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">
@@ -166,12 +189,17 @@ const Remito = () => {
           </div>
         </div>
 
-        {/* Modal de detalles del remito */}
         <ReceiptModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           receipt={selectedReceipt}
           onVerify={handleVerify}
+        />
+
+        <ModalRemito
+          isOpen={isLoadModalOpen}
+          onClose={handleCloseLoadModal}
+          onReceiptCreated={handleReceiptCreated}
         />
       </div>
     </Layout>

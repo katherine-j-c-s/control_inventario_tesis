@@ -1,6 +1,6 @@
-const { EntitySchema } = require('typeorm');
+import { EntitySchema } from 'typeorm';
 
-module.exports = new EntitySchema({
+export default new EntitySchema({
     name: 'Receipt',
     tableName: 'receipts',
     columns:{
@@ -40,7 +40,7 @@ module.exports = new EntitySchema({
       },
 })
 
-const { pool } = require('../db.js');
+import { pool } from '../db.js';
 
 async function getUnverifiedReceipts() {
   const query = `
@@ -191,7 +191,7 @@ async function getReceiptsStatistics() {
   return result.rows[0];
 }
 
-module.exports = {
+export {
   getUnverifiedReceipts,
   getAllReceipts,
   verifyReceipt,

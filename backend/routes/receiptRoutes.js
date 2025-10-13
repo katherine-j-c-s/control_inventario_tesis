@@ -1,15 +1,19 @@
-const express = require('express');
-const QRCode = require('qrcode');
-const { pool } = require('../db.js');
-const { 
+import express from 'express';
+import QRCode from 'qrcode';
+import { pool } from '../db.js';
+import upload from '../middleware/fileUpload.js';
+import { 
   getUnverified, 
   getAll, 
   verify, 
   getVerified, 
   getByStatus, 
   getStatistics,
-  getReceiptWithProducts
-} = require('../controllers/receiptController.js');
+  getReceiptWithProducts,
+  createReceipt,
+  uploadReceiptFile,
+  getWarehouses
+} from '../controllers/receiptController.js';
 
 const router = express.Router();
 
@@ -19,6 +23,10 @@ router.get('/receipts/verified', getVerified);
 router.get('/receipts/status/:status', getByStatus);
 router.get('/receipts/statistics', getStatistics);
 router.get('/receipts/:id', getReceiptWithProducts);
+router.get('/warehouses', getWarehouses);
+
+router.post('/receipts', createReceipt);
+router.post('/receipts/upload', upload.single('file'), uploadReceiptFile);
 
 router.put('/receipts/verify/:id', verify);
 
@@ -224,7 +232,7 @@ router.post('/productos/:id/pdf', async (req, res) => {
   const { qrDataUrl, productoData } = req.body;
 
   try {
-    const PDFDocument = require('pdfkit');
+    const PDFDocument = await import('pdfkit');
     const doc = new PDFDocument();
     
     res.setHeader('Content-Type', 'application/pdf');
@@ -282,4 +290,4 @@ router.post('/productos/:id/pdf', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

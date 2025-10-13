@@ -1,15 +1,15 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const upload = require('../middleware/upload');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const {
+import upload from '../middleware/upload.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import {
   getAllUsers,
   getUserById,
   updateUser,
   updateUserRole,
   updateUserPermissions,
   deleteUser
-} = require('../controllers/userController');
+} from '../controllers/userController.js';
 
 // Todas las rutas requieren autenticación y permisos de admin
 router.use(authenticateToken);
@@ -33,4 +33,4 @@ router.patch('/:id/permissions', updateUserPermissions);
 // Eliminar usuario (soft delete)
 router.delete('/:id', deleteUser);
 
-module.exports = router;
+export default router;

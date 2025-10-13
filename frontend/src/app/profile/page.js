@@ -1,7 +1,7 @@
 // app/profile/page.js
 'use client';
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Layout from "@/components/layouts/Layout";
 import { useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";

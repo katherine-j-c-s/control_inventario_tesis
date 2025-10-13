@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Camera, QrCode, History, Info, Package, Calendar, MapPin, Tag, DollarSign, CheckCircle, X, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ScanHistory } from './scanHistory';
 
 function QrScannerContent() {
   const { user } = useAuth();
@@ -295,7 +296,7 @@ function QrScannerContent() {
           </Card>
         </motion.div>
 
-        {/* Last Scan Result */}
+        {/* ultimo escaneo realizado */}
         {lastScanResult && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -320,59 +321,10 @@ function QrScannerContent() {
           </motion.div>
         )}
 
-        {/* Scan History */}
-        {scanHistory.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  Historial de Escaneos
-                </CardTitle>
-                <CardDescription>
-                  Últimos códigos QR escaneados
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {scanHistory.map((scan) => (
-                    <div 
-                      key={scan.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {truncateText(scan.data)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatTimestamp(scan.timestamp)}
-                        </p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => navigator.clipboard.writeText(scan.data)}
-                      >
-                        Copiar
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                
-                {scanHistory.length >= 10 && (
-                  <p className="text-xs text-muted-foreground mt-3 text-center">
-                    Mostrando los últimos 10 escaneos
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {/* historial scaneos */}
+        <ScanHistory history={scanHistory} />
 
+        
         {/* QR Scanner Overlay */}
         <OriginalWorkingScanner
           isOpen={isOverlayOpen}

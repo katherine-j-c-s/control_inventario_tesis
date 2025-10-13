@@ -1,17 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const path = require('path');
-const config = require('./config');
-const AppDataSource = require('./database');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import config from './config.js';
+import AppDataSource from './database.js';
 
 // Importar rutas
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const roleRoutes = require('./routes/roles');
-const receiptRoutes = require('./routes/receiptRoutes');
-const productRoutes = require('./routes/productRoutes');
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import roleRoutes from './routes/roles.js';
+import receiptRoutes from './routes/receiptRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+
+// Para usar __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -140,7 +145,7 @@ const startServer = async () => {
     });
 
     if (!adminExists) {
-      const bcrypt = require('bcryptjs');
+      const bcrypt = await import('bcryptjs');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       
       const adminUser = userRepository.create({

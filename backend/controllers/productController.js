@@ -1,5 +1,5 @@
-const bcrypt = require('bcryptjs');
-const AppDataSource = require('../database');
+import bcrypt from 'bcryptjs';
+import AppDataSource from '../database.js';
 
 const getAllProducts = async (req, res) => {
     try {
@@ -89,7 +89,7 @@ const createProduct = async (req, res) => {
 }
 
 
-module.exports = {
+export {
     getAllProducts,
     getProductById,
     updateProduct,

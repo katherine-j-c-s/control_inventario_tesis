@@ -1,5 +1,5 @@
-const express = require('express');
-const { pool } = require('../db');
+import express from 'express';
+import { pool } from '../db.js';
 const router = express.Router();
 
 // Obtener todos los productos
@@ -182,4 +182,4 @@ router.delete('/productos/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

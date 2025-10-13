@@ -1,0 +1,6 @@
+warehouse_id,entry_date,order_id,status,product_name,description,quantity,unit_price
+1,2024-01-15,ORD-001,Pending,Tornillo de acero 6mm,Tornillo galvanizado de 6mm x 50mm,100,50.00
+1,2024-01-15,ORD-001,Pending,Pintura Latex Blanca 4L,Pintura blanca para interiores 4L,25,3200.00
+1,2024-01-15,ORD-001,Pending,Cemento Portland 50kg,Bolsa de cemento Portland 50kg,40,4500.00
+1,2024-01-15,ORD-001,Pending,Cable eléctrico 2mm,Cable cobre 2mm - rollo 50m,15,3800.00
+1,2024-01-15,ORD-001,Pending,Ladrillo hueco 18x18x33,Ladrillo cerámico hueco 18x18x33 cm,2500,300.00

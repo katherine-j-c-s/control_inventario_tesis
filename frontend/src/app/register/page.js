@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { rolesConfig } from '@/lib/roles';
-
-// Componentes de ShadCN/UI y Lucide Icons
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

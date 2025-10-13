@@ -1,4 +1,4 @@
-const AppDataSource = require('../database');
+import AppDataSource from '../database.js';
 
 // Obtener todos los roles
 const getAllRoles = async (req, res) => {
@@ -318,7 +318,7 @@ const getUsersByRole = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getAllRoles,
   createRole,
   updateRole,

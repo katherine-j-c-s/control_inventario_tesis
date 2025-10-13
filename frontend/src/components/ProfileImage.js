@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const ProfileImage = ({ user, size = 'md', className = '' }) => {
   const [imageError, setImageError] = useState(false);

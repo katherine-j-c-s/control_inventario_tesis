@@ -1,7 +1,7 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const AppDataSource = require('../database');
-const config = require('../config');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import AppDataSource from '../database.js';
+import config from '../config.js';
 
 const register = async (req, res) => {
   try {
@@ -211,7 +211,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   register,
   login,
   getProfile,
