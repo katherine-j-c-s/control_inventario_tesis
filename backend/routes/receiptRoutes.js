@@ -1,8 +1,8 @@
-const express = require('express');
-const QRCode = require('qrcode');
-const { pool } = require('../db.js');
-const upload = require('../middleware/fileUpload.js');
-const { 
+import express from 'express';
+import QRCode from 'qrcode';
+import { pool } from '../db.js';
+import upload from '../middleware/fileUpload.js';
+import { 
   getUnverified, 
   getAll, 
   verify, 
@@ -13,7 +13,7 @@ const {
   createReceipt,
   uploadReceiptFile,
   getWarehouses
-} = require('../controllers/receiptController.js');
+} from '../controllers/receiptController.js';
 
 const router = express.Router();
 
@@ -232,7 +232,7 @@ router.post('/productos/:id/pdf', async (req, res) => {
   const { qrDataUrl, productoData } = req.body;
 
   try {
-    const PDFDocument = require('pdfkit');
+    const PDFDocument = await import('pdfkit');
     const doc = new PDFDocument();
     
     res.setHeader('Content-Type', 'application/pdf');
@@ -290,4 +290,4 @@ router.post('/productos/:id/pdf', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

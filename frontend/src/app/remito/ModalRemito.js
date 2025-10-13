@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { X, Upload, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,115 +105,123 @@ const ModalRemito = ({ isOpen, onClose, onReceiptCreated }) => {
 
   if (!isOpen) return null;
 
-  return React.createElement(
-    "div",
-    { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" },
-    React.createElement(
-      "div",
-      { className: "bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" },
-      React.createElement(
-        "div",
-        { className: "flex items-center justify-between p-6 border-b border-border" },
-        React.createElement("h2", { className: "text-2xl font-bold text-foreground" }, "Cargar Remito"),
-        React.createElement(Button, {
-          variant: "ghost",
-          size: "sm",
-          onClick: handleClose,
-          className: "h-8 w-8 p-0"
-        }, React.createElement(X, { className: "h-4 w-4" }))
-      ),
-      React.createElement(
-        "div",
-        { className: "p-6 space-y-6" },
-        React.createElement(Card, null,
-          React.createElement(CardHeader, null,
-            React.createElement(CardTitle, { className: "flex items-center gap-2" },
-              React.createElement(FileText, { className: "h-5 w-5" }),
-              "Carga Manual"
-            )
-          ),
-          React.createElement(CardContent, null,
-            React.createElement(LoadReceipt, { 
-              onClose: onClose,
-              onReceiptCreated: onReceiptCreated 
-            })
-          )
-        ),
-        React.createElement(Card, null,
-          React.createElement(CardHeader, null,
-            React.createElement(CardTitle, { className: "flex items-center gap-2" },
-              React.createElement(Upload, { className: "h-5 w-5" }),
-              "Subir Archivo (PDF/Imagen/CSV)"
-            )
-          ),
-          React.createElement(CardContent, { className: "space-y-4" },
-            React.createElement(
-              "div",
-              { className: "space-y-2" },
-              React.createElement("label", {
-                htmlFor: "file-upload",
-                className: "block text-sm font-medium text-foreground"
-              }, "Seleccionar archivo"),
-              React.createElement("input", {
-                id: "file-upload",
-                type: "file",
-                accept: ".pdf,.jpg,.jpeg,.png,.gif,.csv,.txt",
-                onChange: handleFileChange,
-                className: "block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80 file:cursor-pointer cursor-pointer border border-input rounded-md p-2 bg-background"
-              }),
-              React.createElement("p", { className: "text-xs text-muted-foreground" },
-                "Máximo 10MB para PDFs/imágenes, 5MB para CSV. Formatos: PDF, JPG, PNG, GIF, CSV, TXT"
-              ),
-              React.createElement("p", { className: "text-xs text-muted-foreground" },
-                "El sistema extraerá automáticamente los datos del remito y productos del archivo."
-              ),
-              React.createElement("div", { className: "flex gap-2" },
-                React.createElement("a", {
-                  href: "/remito/template.csv",
-                  download: "plantilla-remito.csv",
-                  className: "text-xs text-blue-600 hover:text-blue-800 underline"
-                }, "Descargar plantilla CSV")
-              )
-            ),
-            fileError && React.createElement(Alert, { variant: "destructive" },
-              React.createElement(AlertDescription, null, fileError)
-            ),
-            success && React.createElement(Alert, { className: "border-green-500 bg-green-50" },
-              React.createElement(AlertDescription, { className: "text-green-700" }, success)
-            ),
-            selectedFile && React.createElement(
-              "div",
-              { className: "p-3 bg-muted rounded-md" },
-              React.createElement("p", { className: "text-sm font-medium text-foreground" },
-                `Archivo seleccionado: ${selectedFile.name}`
-              ),
-              React.createElement("p", { className: "text-xs text-muted-foreground" },
-                `Tamaño: ${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
-              ),
-              React.createElement("p", { className: "text-xs text-muted-foreground" },
-                `Tipo: ${selectedFile.type}`
-              )
-            ),
-            React.createElement(Button, {
-              onClick: handleFileUpload,
-              disabled: !selectedFile || uploading,
-              className: "w-full"
-            }, uploading ? React.createElement(React.Fragment, null,
-              React.createElement("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" }),
-              "Procesando archivo..."
-            ) : React.createElement(React.Fragment, null,
-              React.createElement(Upload, { className: "h-4 w-4 mr-2" }),
-              "Procesar Archivo"
-            ))
-          )
-        )
-      ),
-      React.createElement(
-        "div",
-        { className: "flex justify-end gap-3 p-6 border-t border-border" },
-        React.createElement(Button, { variant: "outline", onClick: handleClose }, "Cerrar")
-      )
-    )
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="text-2xl font-bold text-foreground">Cargar Remito</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClose}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="p-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Carga Manual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LoadReceipt 
+                onClose={onClose}
+                onReceiptCreated={onReceiptCreated} 
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Subir Archivo (PDF/Imagen/CSV)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="file-upload"
+                  className="block text-sm font-medium text-foreground"
+                >
+                  Seleccionar archivo
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.gif,.csv,.txt"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80 file:cursor-pointer cursor-pointer border border-input rounded-md p-2 bg-background"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Máximo 10MB para PDFs/imágenes, 5MB para CSV. Formatos: PDF, JPG, PNG, GIF, CSV, TXT
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  El sistema extraerá automáticamente los datos del remito y productos del archivo.
+                </p>
+                <div className="flex gap-2">
+                  <a
+                    href="/remito/template.csv"
+                    download="plantilla-remito.csv"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Descargar plantilla CSV
+                  </a>
+                </div>
+              </div>
+              {fileError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{fileError}</AlertDescription>
+                </Alert>
+              )}
+              {success && (
+                <Alert className="border-green-500 bg-green-50">
+                  <AlertDescription className="text-green-700">{success}</AlertDescription>
+                </Alert>
+              )}
+              {selectedFile && (
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="text-sm font-medium text-foreground">
+                    Archivo seleccionado: {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Tamaño: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Tipo: {selectedFile.type}
+                  </p>
+                </div>
+              )}
+              <Button
+                onClick={handleFileUpload}
+                disabled={!selectedFile || uploading}
+                className="w-full"
+              >
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Procesando archivo...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Procesar Archivo
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="flex justify-end gap-3 p-6 border-t border-border">
+          <Button variant="outline" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

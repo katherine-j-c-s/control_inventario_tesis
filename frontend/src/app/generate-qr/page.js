@@ -83,7 +83,7 @@ export default function GenerateQR() {
     }
   };
 
-  const descargarQR = (producto) => {
+  const descargarQR = async (producto) => {
     try {
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
@@ -99,16 +99,16 @@ export default function GenerateQR() {
       qrContainer.style.height = '256px';
       tempDiv.appendChild(qrContainer);
       
-      const { createRoot } = require('react-dom/client');
+      const { createRoot } = await import('react-dom/client');
       const root = createRoot(qrContainer);
       
       root.render(
-        React.createElement(QRCodeSVG, {
-          value: JSON.stringify(crearObjetoQRSimplificado(producto)),
-          size: 256,
-          level: 'M',
-          includeMargin: true
-        })
+        <QRCodeSVG
+          value={JSON.stringify(crearObjetoQRSimplificado(producto))}
+          size={256}
+          level="M"
+          includeMargin={true}
+        />
       );
       
       setTimeout(() => {

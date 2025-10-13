@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const AppDataSource = require('../database');
+import jwt from 'jsonwebtoken';
+import config from '../config.js';
+import AppDataSource from '../database.js';
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -44,7 +44,7 @@ const requirePermission = (permission) => {
     }
   };
 };
-module.exports = {
+export {
   authenticateToken,
   requireAdmin,
   requirePermission

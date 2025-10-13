@@ -1,7 +1,7 @@
 "use client";
 
 import Layout from "@/components/layouts/Layout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { useTheme } from "next-themes";
 import { receiptAPI } from "@/lib/api";

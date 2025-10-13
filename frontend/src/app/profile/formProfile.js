@@ -1,7 +1,7 @@
 // app/profile/formProfile.js
 'use client';
 
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { authAPI } from "@/lib/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

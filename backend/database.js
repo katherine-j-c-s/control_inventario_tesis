@@ -1,11 +1,11 @@
-const { DataSource } = require('typeorm');
-const config = require('./config');
-require('reflect-metadata');
+import { DataSource } from 'typeorm';
+import config from './config.js';
+import 'reflect-metadata';
 
-const User = require('./models/User');
-const Product = require('./models/Product');
-const Role = require('./models/Role');
-const UserRole = require('./models/UserRole');
+import User from './models/User.js';
+import Product from './models/Product.js';
+import Role from './models/Role.js';
+import UserRole from './models/UserRole.js';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -21,4 +21,4 @@ const AppDataSource = new DataSource({
   subscribers: [],
 });
 
-module.exports = AppDataSource;
+export default AppDataSource;

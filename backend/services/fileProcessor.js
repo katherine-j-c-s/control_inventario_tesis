@@ -1,8 +1,8 @@
-const Tesseract = require('tesseract.js');
-const sharp = require('sharp');
-const fs = require('fs');
-const path = require('path');
-const pdf2pic = require('pdf2pic');
+import Tesseract from 'tesseract.js';
+import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+import pdf2pic from 'pdf2pic';
 
 class FileProcessor {
   
@@ -328,4 +328,4 @@ class FileProcessor {
   }
 }
 
-module.exports = FileProcessor;
+export default FileProcessor;

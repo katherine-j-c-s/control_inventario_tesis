@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const {
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import {
   getAllRoles,
   createRole,
   updateRole,
@@ -10,7 +10,7 @@ const {
   removeRoleFromUser,
   getUserRoles,
   getUsersByRole
-} = require('../controllers/roleController');
+} from '../controllers/roleController.js';
 
 // Todas las rutas requieren autenticación y permisos de admin
 router.use(authenticateToken);
@@ -30,4 +30,4 @@ router.post('/remove', removeRoleFromUser);
 router.get('/user/:userId', getUserRoles);
 router.get('/:roleId/users', getUsersByRole);
 
-module.exports = router;
+export default router;

@@ -256,9 +256,7 @@ const LoadReceipt = ({ onClose, onReceiptCreated }) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Verified">Verified</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
+                    {/* <SelectItem value="Verified">Verified</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>

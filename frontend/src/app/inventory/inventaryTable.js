@@ -1,7 +1,7 @@
 // app/inventory/inventaryTable.js
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   flexRender,
   getCoreRowModel,

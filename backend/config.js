@@ -1,6 +1,8 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
 
-module.exports = {
+dotenv.config();
+
+export default {
   port: process.env.PORT || 5001,
   jwtSecret: process.env.JWT_SECRET || 'tu_secreto_jwt_muy_seguro_aqui',
   database: {

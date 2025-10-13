@@ -1,11 +1,11 @@
-const { 
+import { 
   getUnverifiedReceipts, 
   getAllReceipts, 
   verifyReceipt, 
   getVerifiedReceipts, 
   getReceiptsByStatus, 
   getReceiptsStatistics 
-} = require('../models/Receipt.js');
+} from '../models/Receipt.js';
 
 async function getUnverified(req, res) {
     try {
@@ -75,7 +75,7 @@ const createReceipt = async (req, res) => {
             });
         }
 
-        const { pool } = require('../db.js');
+        const { pool } = await import('../db.js');
         
         // Iniciar transacción
         await pool.query('BEGIN');
@@ -242,7 +242,7 @@ const getReceiptById = async (req, res) => {
 const getReceiptWithProducts = async (req, res) => {
     try {
         const { id } = req.params;
-        const { pool } = require('../db.js');
+        const { pool } = await import('../db.js');
         
         const query = `
             SELECT 
@@ -314,8 +314,8 @@ const uploadReceiptFile = async (req, res) => {
         console.log('📋 File:', req.file);
         console.log('📋 Files:', req.files);
         
-        const FileProcessor = require('../services/fileProcessor');
-        const { pool } = require('../db.js');
+        const FileProcessor = await import('../services/fileProcessor.js');
+        const { pool } = await import('../db.js');
         
         if (!req.file) {
             console.log('❌ No se encontró archivo en req.file');
@@ -448,7 +448,7 @@ const uploadReceiptFile = async (req, res) => {
             await pool.query('COMMIT');
             
             // Limpiar archivo temporal
-            const fs = require('fs');
+            const fs = await import('fs');
             fs.unlinkSync(filePath);
             
             res.json({
@@ -482,7 +482,7 @@ const uploadReceiptFile = async (req, res) => {
 
 const getWarehouses = async (req, res) => {
     try {
-        const { pool } = require('../db.js');
+        const { pool } = await import('../db.js');
         
         const query = `
             SELECT 
@@ -502,7 +502,7 @@ const getWarehouses = async (req, res) => {
     }
 }
 
-module.exports = {
+export {
     getUnverified,
     getAll,
     verify,

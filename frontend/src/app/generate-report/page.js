@@ -1,7 +1,7 @@
 "use client";
 
 import Layout from "@/components/layouts/Layout";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 
 
