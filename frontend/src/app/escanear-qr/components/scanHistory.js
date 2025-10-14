@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { History } from 'lucide-react';
+import { History, Trash2 } from 'lucide-react';
 
 
 
@@ -14,11 +14,31 @@ export function ScanHistory({ history }) {
     const now = Date.now();
     const stored = JSON.parse(localStorage.getItem('qrHistory')) || [];
     
-    // Agregar los nuevos escaneos y filtrar por 4 días
-    const combined = [...history, ...stored].filter(item => now - item.timestamp < FOUR_DAYS);
+    // Crear un mapa para evitar duplicados basado en el ID
+    const historyMap = new Map();
+    
+    // Agregar escaneos almacenados primero
+    stored.forEach(item => {
+      if (now - item.timestamp < FOUR_DAYS) {
+        historyMap.set(item.id, item);
+      }
+    });
+    
+    // Agregar nuevos escaneos del historial
+    history.forEach(item => {
+      if (now - item.timestamp < FOUR_DAYS) {
+        historyMap.set(item.id, item);
+      }
+    });
+    
+    
+    const combined = Array.from(historyMap.values())
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 100);
 
+    // Guardar en localStorage
     localStorage.setItem('qrHistory', JSON.stringify(combined));
-    setLocalHistory(combined.slice(0,100)); 
+    setLocalHistory(combined);
   }, [history]);
 
   const formatTimestamp = (timestamp) =>
@@ -35,16 +55,34 @@ export function ScanHistory({ history }) {
 
   const copyToClipboard = (text) => navigator.clipboard.writeText(text);
 
+  const clearHistory = () => {
+    localStorage.removeItem('qrHistory');
+    setLocalHistory([]);
+  };
+
   if (localHistory.length === 0) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <History className="h-5 w-5" />
-          Historial de Escaneos
-        </CardTitle>
-        <CardDescription>Últimos códigos QR escaneados</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Historial de Escaneos
+            </CardTitle>
+            <CardDescription>Últimos códigos QR escaneados ({localHistory.length})</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={clearHistory}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Limpiar
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

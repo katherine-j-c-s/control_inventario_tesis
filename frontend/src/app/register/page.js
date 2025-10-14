@@ -42,7 +42,16 @@ function RegisterForm() {
   }, [user, router]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Validación especial para DNI
+    if (name === 'dni') {
+      // Solo permitir números y máximo 8 dígitos
+      const numericValue = value.replace(/\D/g, '').slice(0, 8);
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
   
   const handleSelectChange = (name, value) => {
@@ -57,6 +66,13 @@ function RegisterForm() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Validación del DNI antes de enviar
+    if (formData.dni.length !== 8) {
+      setError('El DNI debe tener exactamente 8 dígitos');
+      setIsLoading(false);
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
@@ -115,7 +131,16 @@ function RegisterForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dni">DNI *</Label>
-                  <Input id="dni" name="dni" value={formData.dni} onChange={handleChange} required />
+                  <Input 
+                    id="dni" 
+                    name="dni" 
+                    value={formData.dni} 
+                    onChange={handleChange} 
+                    placeholder="12345678"
+                    maxLength="8"
+                    pattern="[0-9]{8}"
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
