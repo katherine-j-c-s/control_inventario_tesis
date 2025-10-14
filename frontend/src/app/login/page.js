@@ -30,13 +30,29 @@ function LoginForm() {
   }, [user, router]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Validación especial para DNI
+    if (name === 'dni') {
+      // Solo permitir números y máximo 8 dígitos
+      const numericValue = value.replace(/\D/g, '').slice(0, 8);
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Validación del DNI antes de enviar
+    if (formData.dni.length !== 8) {
+      setError('El DNI debe tener exactamente 8 dígitos');
+      setIsLoading(false);
+      return;
+    }
 
     const result = await login(formData);
     
@@ -78,9 +94,11 @@ function LoginForm() {
                   id="dni"
                   name="dni"
                   type="text"
-                  placeholder="Tu número de DNI"
+                  placeholder="12345678"
                   value={formData.dni}
                   onChange={handleChange}
+                  maxLength="8"
+                  pattern="[0-9]{8}"
                   required
                 />
               </div>
