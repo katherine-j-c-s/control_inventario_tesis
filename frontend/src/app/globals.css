@@ -30,9 +30,9 @@
   --muted: 230 15% 92%;            /* #ECEEF1 */
   --muted-foreground: 230 10% 40%; /* Texto gris medio */
 
-  /* Acento (celeste limpio) */
-  --accent: 190 80% 45%;           /* #14B8D4 */
-  --accent-foreground: 0 0% 100%;  /* Blanco sobre celeste */
+  /* Acento */
+  --accent: 220 85% 55%;            /* celeste */
+  --accent-foreground:  0 0% 100%; 
 
   /* Bordes, inputs y focus */
   --border: 220 15% 85%;           /* #D4D8E0 — gris azulado claro */
@@ -70,9 +70,10 @@
   --muted: 230 15% 20%;
   --muted-foreground: 200 100% 85%;
 
-  /* Otro acento */
-  --accent: 170 80% 45%;             /* tono verdoso/aguamarina moderado */
-  --accent-foreground: 230 15% 12%;
+  /* Acento */
+  --accent: 199 92% 60%;            /* celeste */
+  --accent-foreground: 210 15% 10%; 
+  
 
   /* Bordes y líneas */
   --border: 230 15% 18%;

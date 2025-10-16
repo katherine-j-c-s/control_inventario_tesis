@@ -1,38 +1,33 @@
 import fs from "fs";
-import { createRequire } from 'module';
-import Tesseract from 'tesseract.js';
+import { createRequire } from "module";
+import Tesseract from "tesseract.js";
 
 const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+const pdfParse = require("pdf-parse");
 
 class FileProcessor {
-  // Procesar PDF para extraer texto y datos
+  // Procesar PDF
   static async processPDF(filePath) {
     try {
-      console.log("Procesando PDF:", filePath);
+      console.log("📄 Procesando PDF:", filePath);
 
-      // Leer el PDF como buffer
       const fileBuffer = fs.readFileSync(filePath);
-
-      // Intentar extraer texto usando pdf-parse (para PDFs digitales)
       const pdfData = await pdfParse(fileBuffer);
-      let text = pdfData.text;
-      
-      console.log("Texto extraído del PDF (longitud):", text.length);
+      let text = pdfData.text || "";
 
-      // Si el texto está vacío o muy corto, probablemente es un PDF escaneado
+      console.log("🧾 Texto extraído (longitud):", text.length);
+
+      // Si el PDF no tiene texto (escaneado)
       if (!text || text.trim().length < 50) {
-        console.log("⚠️ PDF parece estar escaneado (poco o ningún texto). Intentando OCR...");
+        console.log("⚠️ PDF parece escaneado. Intentando OCR...");
         text = await this.processScannedPDF(filePath);
       }
 
-      console.log("Texto extraído del PDF:", text.substring(0, 500) + "...");
-
-      // Extraer datos del remito del texto
+      // Extraer datos
       const receiptData = this.extractReceiptDataFromText(text);
 
-      // Si no se encontraron productos, crear un producto por defecto
-      if (receiptData.products.length === 0) {
+      if (!receiptData.products || receiptData.products.length === 0) {
+        console.warn("⚠️ No se detectaron productos, creando uno por defecto.");
         receiptData.products = [
           {
             name: "Producto extraído de PDF",
@@ -43,71 +38,72 @@ class FileProcessor {
         ];
       }
 
-      return {
-        success: true,
-        text,
-        data: receiptData,
-      };
+      return { success: true, text, data: receiptData };
     } catch (error) {
-      console.error("Error procesando PDF:", error);
+      console.error("❌ Error procesando PDF:", error);
       throw new Error("Error al procesar el archivo PDF: " + error.message);
     }
   }
 
-  // Procesar PDF escaneado usando OCR con Tesseract
+  // Procesar PDF escaneado (OCR)
   static async processScannedPDF(filePath) {
     try {
-      console.log("🔍 Iniciando OCR en PDF escaneado...");
-      
-      // Por ahora, retornar un mensaje indicando que es un PDF escaneado
-      // En una implementación completa, necesitarías:
-      // 1. Convertir PDF a imágenes (usando pdf-poppler o similar)
-      // 2. Aplicar OCR a cada imagen con Tesseract
-      
-      console.log("⚠️ Detección de PDF escaneado: se requiere conversión PDF->imagen");
-      console.log("💡 Sugerencia: Para PDFs escaneados, convierte primero a imágenes");
-      
-      return "PDF escaneado detectado - requiere procesamiento OCR adicional";
-      
+      console.log("🔍 Iniciando OCR...");
+      const result = await Tesseract.recognize(filePath, "spa", {
+        logger: (m) => {
+          if (m.status === "recognizing text") {
+            console.log(`🧠 OCR progreso: ${Math.round(m.progress * 100)}%`);
+          }
+        },
+      });
+      console.log("✅ OCR completado");
+      return result.data.text;
     } catch (error) {
-      console.error("Error en OCR:", error);
+      console.error("❌ Error en OCR:", error);
       return "";
     }
   }
 
-  // Procesar imagen directamente con OCR (para imágenes JPG, PNG, etc.)
+  // Procesar imagen directamente
   static async processImageWithOCR(filePath) {
     try {
-      console.log("🔍 Procesando imagen con OCR:", filePath);
-
-      const result = await Tesseract.recognize(filePath, 'spa', {
+      console.log("🖼️ Procesando imagen con OCR:", filePath);
+      const result = await Tesseract.recognize(filePath, "spa", {
         logger: (m) => {
-          if (m.status === 'recognizing text') {
-            console.log(`OCR progreso: ${Math.round(m.progress * 100)}%`);
+          if (m.status === "recognizing text") {
+            console.log(`📊 OCR progreso: ${Math.round(m.progress * 100)}%`);
           }
         },
       });
-
       console.log("✅ OCR completado");
       return result.data.text;
-
     } catch (error) {
-      console.error("Error en OCR de imagen:", error);
+      console.error("❌ Error en OCR de imagen:", error);
       throw new Error("Error al procesar imagen con OCR: " + error.message);
     }
   }
 
-  // Extraer datos del remito del texto
+  // 🔹 Extraer datos del remito del texto
   static extractReceiptDataFromText(text) {
     const data = {
-      warehouse_id: 1, // Por defecto
+      warehouse_id: 1,
       entry_date: new Date().toISOString().split("T")[0],
       order_id: null,
       status: "Pending",
       products: [],
     };
 
-    // Buscar fecha en el texto (múltiples formatos)
+    if (!text || typeof text !== "string") return data;
+
+    // Normalizar texto
+    text = text
+      .replace(/\u00A0/g, " ")
+      .replace(/\r\n?/g, "\n")
+      .replace(/\t/g, " ")
+      .replace(/ +/g, " ")
+      .trim();
+
+    // 🔹 Buscar fecha
     const dateRegexes = [
       /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/g,
       /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/g,
@@ -122,98 +118,109 @@ class FileProcessor {
       }
     }
 
-    // Buscar número de orden (múltiples patrones)
-    const orderRegexes = [
-      /(?:orden|order|pedido|pedido\s+no\.?|n[úu]mero|remito|remito\s+no\.?)\s*:?\s*([A-Z0-9\-]+)/i,
-      /(?:ref|referencia|ref\.?)\s*:?\s*([A-Z0-9\-]+)/i,
-      /(?:cod|codigo|código)\s*:?\s*([A-Z0-9\-]+)/i,
-    ];
-    for (const regex of orderRegexes) {
-      const orderMatch = text.match(regex);
-      if (orderMatch) {
-        data.order_id = orderMatch[1];
-        break;
+    // 🔹 Buscar número de remito / orden
+    const orderRegex =
+      /(remito|orden|n[°º]\s*|pedido)\s*:?\s*(\d{1,6})/i;
+    const orderMatch = text.match(orderRegex);
+    if (orderMatch) {
+      data.order_id = orderMatch[2];
+    } else {
+      // Generar uno único si no lo encuentra
+      data.order_id = "ORD-" + Date.now().toString().slice(-6);
+    }
+
+    // 🔹 Buscar productos (nombre $precio cantidad descripción)
+    const productRegex =
+      /^([A-Za-zÁÉÍÓÚÜÑ0-9\s\.\-]+?)\s+\$?([\d\.,]+)\s+(\d{1,6})\s+([A-Za-zÁÉÍÓÚÜÑ0-9\s\.\-]+)/gm;
+
+    let match;
+    while ((match = productRegex.exec(text)) !== null) {
+      const name = match[1].trim();
+      const price = parseFloat(match[2].replace(/[^\d,\.]/g, "").replace(",", ".")) || 0;
+      const quantity = parseInt(match[3]);
+      const description = match[4].trim();
+
+      if (
+        name &&
+        price > 0 &&
+        quantity > 0 &&
+        !this.isCommonWord(name) &&
+        !isNaN(quantity) &&
+        this.isLikelyProductName(name)
+      ) {
+        data.products.push({
+          name,
+          description,
+          quantity,
+          unit_price: price,
+        });
       }
     }
 
-    // Buscar productos con patrones de cantidad, nombre y precio
-    // Limitar cantidades a máximo 6 dígitos para evitar confusión con teléfonos
-    const productPatterns = [
-      /(\d{1,6})\s+([A-Za-z0-9\s\-\.]+?)\s+(\d+(?:\.\d+)?)/gm, // cantidad + nombre + precio
-      /(\d{1,6})\s+([A-Za-z0-9\s\-\.]+)/gm, // cantidad + nombre
-      /([A-Za-z0-9\s\-\.]+?)\s+(\d{1,6})\s+(\d+(?:\.\d+)?)/gm, // nombre + cantidad + precio
-      /([A-Za-z0-9\s\-\.]+?)\s+(\d{1,6})/gm, // nombre + cantidad
-    ];
-    for (const pattern of productPatterns) {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
-        let quantity, name, price;
-        if (pattern === productPatterns[0] || pattern === productPatterns[1]) {
-          quantity = parseInt(match[1]);
-          name = match[2].trim();
-          price = match[3] ? parseFloat(match[3]) : 0;
-        } else {
-          name = match[1].trim();
-          quantity = parseInt(match[2]);
-          price = match[3] ? parseFloat(match[3]) : 0;
-        }
-        
-        // Validar cantidad razonable (evitar teléfonos y números muy grandes)
-        const isReasonableQuantity = quantity > 0 && quantity <= 999999;
-        const isValidName = name.length > 2 && !this.isCommonWord(name);
-        const isNotPhoneNumber = !this.looksLikePhoneNumber(name + " " + quantity);
-        
-        if (isReasonableQuantity && isValidName && isNotPhoneNumber) {
+    // Fallback (por si falla el regex principal)
+    if (data.products.length === 0) {
+      const fallbackRegex = /^([A-Za-zÁÉÍÓÚÜÑ0-9\s\.\-]+?)\s+\$?([\d\.,]+)/gm;
+      while ((match = fallbackRegex.exec(text)) !== null) {
+        const name = match[1].trim();
+        const price = parseFloat(match[2].replace(/[^\d,\.]/g, "").replace(",", ".")) || 0;
+        if (name && price > 0 && !this.isCommonWord(name) && this.isLikelyProductName(name)) {
           data.products.push({
             name,
             description: "",
-            quantity,
-            unit_price: price || 0,
+            quantity: 1,
+            unit_price: price,
           });
         }
       }
     }
 
-    // Filtrar productos duplicados
+    // 🔹 Eliminar duplicados
     data.products = this.removeDuplicateProducts(data.products);
 
     return data;
   }
 
+  // Validar si un nombre es probablemente un producto real
+  static isLikelyProductName(name) {
+    if (!name || typeof name !== "string") return false;
+
+    // Descartar si contiene patrones numéricos tipo teléfono o código: 15-1234-5678, 11/2345/6789
+    if (/\d{2,}[-\/]\d+/.test(name)) return false;
+
+    // Descartar si contiene palabras típicas de direcciones
+    if (/\b(calle|av|avenida|ruta|barrio|provincia|ciudad|localidad|piso|dpto)\b/i.test(name)) return false;
+
+    // Descartar si parece una fecha con mes en texto: "15 de Octubre de", "20 de enero"
+    if (/\b\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i.test(name)) return false;
+
+    // Debe tener al menos una palabra alfabética con mínimo 2 letras consecutivas
+    if (!/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]{2,}/.test(name)) return false;
+
+    return true;
+  }
+
+  // Palabras comunes que no deben considerarse productos
   static isCommonWord(word) {
     const commonWords = [
       "total","subtotal","iva","impuesto","descuento","precio","cantidad",
-      "producto","item","articulo","unidad","pieza","metro","kg","litro",
-      "fecha","hora","cliente","proveedor","empresa","direccion","telefono",
-      "email","web","pagina","numero","codigo","referencia","orden","pedido",
-      "remito","factura","nota","recibo","comprobante",
+      "producto","unidad","fecha","hora","cliente","empresa","direccion",
+      "telefono","contacto","pago","remito","presupuesto","informacion","envio"
     ];
     return commonWords.includes(word.toLowerCase());
   }
 
-  static looksLikePhoneNumber(text) {
-    // Detectar patrones de teléfono comunes
-    const phonePatterns = [
-      /\b\d{10}\b/,           // 2995954318
-      /\b\d{3}[-\s]?\d{3}[-\s]?\d{4}\b/,  // 299-595-4318 o 299 595 4318
-      /\b\d{2}[-\s]?\d{4}[-\s]?\d{4}\b/,  // 29-9595-4318
-      /\b15[-\s]?\d{4}[-\s]?\d{4}\b/,     // 15-1234-5678
-      /\btel[eé]fono|phone|cel|contacto/i, // Palabras relacionadas
-    ];
-    
-    return phonePatterns.some(pattern => pattern.test(text));
-  }
-
+  // Evitar duplicados por nombre
   static removeDuplicateProducts(products) {
     const seen = new Set();
-    return products.filter(p => {
-      const key = p.name.toLowerCase().trim();
+    return products.filter((p) => {
+      const key = p.name.toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
   }
 
+  // Formato de fecha
   static formatDate(dateStr) {
     try {
       const date = new Date(dateStr);
