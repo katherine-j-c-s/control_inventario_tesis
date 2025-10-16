@@ -16,7 +16,6 @@ export default new EntitySchema({
     codigo: {
       type: 'varchar',
       length: 100,
-      unique: true,
     },
     categoria: {
       type: 'varchar',

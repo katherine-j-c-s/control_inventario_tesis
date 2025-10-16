@@ -20,7 +20,7 @@ import ProfileImage from "./ProfileImage";
 import logoLightMode from "@/assets/logoLighMode.png";
 import logoDarkMode from "@/assets/logoDarkMode.png";
 import logoFullLightMode from "@/assets/logoFullLighMode.png";
-import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
+// import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
 
 // Un componente interno para los links, es "inteligente" y muestra un HoverCard cuando está cerrado
 const NavLink = ({ href, icon: Icon, text, isOpen }) => {
@@ -90,7 +90,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
 
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === "dark" ? logoDarkMode : logoLightMode;
-  const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
+  const fullLogo = theme === "dark" ? logoDarkMode : logoLightMode;
 
   // Construimos las rutas permitidas directamente desde los permisos del usuario.
   const allowedRoutes = user?.permisos
@@ -113,7 +113,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
       }`}
     >
       {/* Contenedor del Logo y Botón de Control */}
-      <div className="mb-6">
+      <div className="">
         {/* Botón de abrir/cerrar */}
         <div className={`flex ${isOpen ? "justify-end" : "justify-center"}`}>
           <button
@@ -125,7 +125,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
         </div>
 
         {/* Logo */}
-        <div className="flex justify-center">
+        <div className="flex justify-start items-start ">
           <AnimatePresence>
             {isOpen ? (
               <motion.div
@@ -133,19 +133,20 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <Image
+                {/* <Image
                   src={fullLogo}
                   alt="Control de Inventario"
-                  width={180}
+                  width={60}
                   height={40}
                   priority
-                />
+                /> */}
               </motion.div>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                className="mb-6 items-center"
               >
                 <Image
                   src={iconLogo}
@@ -160,6 +161,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
         </div>
       </div>
 
+{/* // Navegación principal con links  */}
       <nav className="flex-grow space-y-2">
         {allowedRoutes.map((link) => (
           <NavLink
@@ -171,6 +173,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
           />
         ))}
       </nav>
+
 
       <div className="mt-auto ">
         <DarkModeToggle isOpen={isOpen} />
