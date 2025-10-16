@@ -5,60 +5,79 @@
 
 @layer base {
   /* MODO CLARO (por defecto) */
-  :root {
-    --background: 200 100% 96%;  /* #E6FCFF (crema) */
-    --foreground: 233 11% 24%;  /* #393944 (gris) */
+ :root {
+  /* Fondo general: gris muy claro neutro, más suave que el crema */
+  --background: 220 25% 97%;       /* #F6F8FA */
+  --foreground: 230 20% 15%;       /* #262833 — gris oscuro para texto principal */
 
-    --card: 200 100% 96%;       /* #E6FCFF (crema) */
-    --card-foreground: 233 11% 24%; /* #393944 (gris) */
+  /* Tarjetas y contenedores */
+  --card: 0 0% 100%;               /* #FFFFFF */
+  --card-foreground: 230 20% 15%;
 
-    --popover: 200 100% 96%;    /* #E6FCFF (crema) */
-    --popover-foreground: 233 11% 24%; /* #393944 (gris) */
+  /* Popovers, modales */
+  --popover: 0 0% 100%;
+  --popover-foreground: 230 20% 15%;
 
-    --primary: 239 85% 35%;     /* #0D0EAB (azul) */
-    --primary-foreground: 200 100% 96%; /* #E6FCFF (crema) para texto sobre azul */
+  /* Color principal (azul profesional y limpio) */
+  --primary: 220 85% 55%;          /* #2A66F0 */
+  --primary-foreground: 0 0% 100%; /* Blanco sobre azul */
 
-    --secondary: 233 11% 24%;   /* #393944 (gris) */
-    --secondary-foreground: 200 100% 96%; /* #E6FCFF (crema) */
+  /* Secundario (gris medio) */
+  --secondary: 230 15% 90%;        /* #E6E8EC */
+  --secondary-foreground: 230 20% 15%; /* Gris oscuro para texto */
 
-    --muted: 233 11% 40%;       /* Un gris un poco más claro para fondos sutiles */
-    --muted-foreground: 200 100% 90%; /* Texto sobre el fondo muted */
+  /* Muted (para fondos sutiles o desactivados) */
+  --muted: 230 15% 92%;            /* #ECEEF1 */
+  --muted-foreground: 230 10% 40%; /* Texto gris medio */
 
-    --accent: 186 85% 46%;      /* #13C8DA (celeste) */
-    --accent-foreground: 233 11% 24%; /* #393944 (gris) */
-    
-    --border: 239 85% 85%;      /* Un borde azul claro */
-    --input: 239 85% 90%;       /* Un fondo de input azul muy claro */
-    --ring: 239 85% 35%;        /* #0D0EAB (azul) para focus */
+  /* Acento (celeste limpio) */
+  --accent: 190 80% 45%;           /* #14B8D4 */
+  --accent-foreground: 0 0% 100%;  /* Blanco sobre celeste */
 
-    --radius: 0.8rem;
-  }
+  /* Bordes, inputs y focus */
+  --border: 220 15% 85%;           /* #D4D8E0 — gris azulado claro */
+  --input: 220 15% 95%;            /* #F1F3F6 */
+  --ring: 220 85% 55%;             /* mismo azul que el primary */
+
+  /* Radio general */
+  --radius: 0.8rem;
+}
+
 
   /* MODO OSCURO */
   .dark {
-    --background: 233 11% 24%;  /* #393944 (gris) */
-    --foreground: 200 100% 96%;  /* #E6FCFF (crema) */
+  /* Fondo general muy oscuro */
+  --background: 230 15% 8%;         /* ~ #181A21 o similar */
+  --foreground: 200 100% 96%;       /* conservar un claro para texto principal */
 
-    --card: 233 11% 24%;       /* #393944 (gris) */
-    --card-foreground: 200 100% 96%; /* #E6FCFF (crema) */
+  /* Tarjetas / contenedores interiores */
+  --card: 230 15% 12%;               /* un poco más claro que el fondo general */
+  --card-foreground: 200 100% 96%;
 
-    --popover: 233 11% 24%;    /* #393944 (gris) */
-    --popover-foreground: 200 100% 96%; /* #E6FCFF (crema) */
+  /* Popovers, modales internos */
+  --popover: 230 15% 12%;
+  --popover-foreground: 200 100% 96%;
 
-    --primary: 239 85% 55%;     /* Un azul un poco más brillante para dark mode */
-    --primary-foreground: 200 100% 96%; /* #E6FCFF (crema) */
+  /* Color principal/acento */
+  --primary: 200 90% 60%;            /* un azul “más vivo” */
+  --primary-foreground: 200 100% 96%;
 
-    --secondary: 200 100% 96%;   /* #E6FCFF (crema) */
-    --secondary-foreground: 233 11% 24%; /* #393944 (gris) */
+  /* Colores secundarios invertidos (texto claro sobre fondo oscuro) */
+  --secondary: 200 100% 96%;
+  --secondary-foreground: 230 15% 12%;
 
-    --muted: 233 11% 30%;       /* Un gris un poco más oscuro */
-    --muted-foreground: 200 100% 90%;
+  /* Muted / gris intermedio para elementos de menor jerarquía */
+  --muted: 230 15% 20%;
+  --muted-foreground: 200 100% 85%;
 
-    --accent: 186 85% 46%;      /* #13C8DA (celeste) */
-    --accent-foreground: 233 11% 24%;
+  /* Otro acento */
+  --accent: 170 80% 45%;             /* tono verdoso/aguamarina moderado */
+  --accent-foreground: 230 15% 12%;
 
-    --border: 233 11% 35%;
-    --input: 233 11% 35%;
-    --ring: 186 85% 46%;        /* Celeste para focus en dark mode */
-  }
+  /* Bordes y líneas */
+  --border: 230 15% 18%;
+  --input: 230 15% 18%;
+  --ring: 200 90% 60%;              /* usar mismo color que primary para focus */
+}
+
 }
