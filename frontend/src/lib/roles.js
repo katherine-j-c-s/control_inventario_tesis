@@ -7,7 +7,7 @@ import {
 export const allRoutes = {
   dashboard: { href: "/dashboard", text: "Dashboard", icon: Home },
   inventory: { href: "/inventory", text: "Inventario", icon: Package },
-  purchaseOrders: { href: "/ordenes-de-compra", text: "Órdenes de Compra", icon: ListOrdered },
+  purchaseOrders: { href: "/purchase_order", text: "Órdenes de Compra", icon: ListOrdered },
   verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
   productEntry: { href: "/ingreso-productos", text: "Ingreso de Productos", icon: ArrowRightLeft },
   productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
