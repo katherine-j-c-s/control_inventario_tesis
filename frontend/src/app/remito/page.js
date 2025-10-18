@@ -168,7 +168,7 @@ const Remito = () => {
           loading={loading}
         />
 
-        <div className="bg-card rounded-lg shadow border">
+        <div className="bg-card rounded-lg shadow ">
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">
               {currentView === 'all' && 'Todos los Remitos'}
