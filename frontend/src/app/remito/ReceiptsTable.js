@@ -52,10 +52,10 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full border-none">
       <Table>
         <TableHeader>
-          <TableRow className="border-border">
+          <TableRow className="">
             <TableHead className="text-foreground">ID</TableHead>
             <TableHead className="text-foreground">Almacén</TableHead>
             <TableHead className="text-foreground">Cantidad</TableHead>

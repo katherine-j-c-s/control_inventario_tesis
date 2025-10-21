@@ -61,6 +61,84 @@ CREATE TABLE orders (
   status BOOLEAN DEFAULT FALSE,
   project_id INTEGER REFERENCES projects(project_id)
 );
+-- // actualizas orders 
+ALTER TABLE orders
+ADD COLUMN issue_date DATE,
+ADD COLUMN delivery_date DATE,
+ADD COLUMN amount DECIMAL(10,2),
+ADD COLUMN total DECIMAL(10,2),
+ADD COLUMN responsible_person VARCHAR(100),
+ADD COLUMN delivery_status VARCHAR(50),
+ADD COLUMN contact VARCHAR(100),
+ADD COLUMN item_quantity INT,
+ADD COLUMN company_name VARCHAR(150),
+ADD COLUMN company_address VARCHAR(200),
+ADD COLUMN notes TEXT;
+
+-- //eliminas date en orders
+ALTER TABLE orders DROP COLUMN date;
+
+-- // actualizas las ordenes existentes 
+UPDATE orders
+SET
+  supplier = 'Carlos Isla',
+  status = false,
+  project_id = 1,
+  issue_date = '2025-10-20',
+  delivery_date = '2025-10-24',
+  amount = 100000,
+  total = 120000,
+  responsible_person = 'Gustavo Mercado',
+  delivery_status = 'Pending',
+  contact = '2995965326',
+  item_quantity = 10,
+  company_name = 'Simetra S.R.L',
+  company_address = 'Contador Rodriguez Mza 532',
+  notes = 'Notas del envío QCY'
+WHERE order_id = 1;
+
+
+UPDATE orders
+SET
+  supplier = 'María López',
+  status = true,
+  project_id = 1,
+  issue_date = '2025-10-22',
+  delivery_date = '2025-10-26',
+  amount = 75000,
+  total = 90000,
+  responsible_person = 'Gustavo Mercado',
+  delivery_status = 'Delivered',
+  contact = '2995123456',
+  item_quantity = 7,
+  company_name = 'Simetra S.R.L',
+  company_address = 'Av. San Martín 1245',
+  notes = 'Entrega realizada sin inconvenientes'
+WHERE order_id = 2;
+
+UPDATE orders
+SET
+  supplier = 'Juan Pérez',
+  status = false,
+  project_id = 1,
+  issue_date = '2025-10-25',
+  delivery_date = '2025-10-30',
+  amount = 50000,
+  total = 60000,
+  responsible_person = 'Gustavo Mercado',
+  delivery_status = 'Pending',
+  contact = '2995987654',
+  item_quantity = 5,
+  company_name = ' Simetra S.R.L',
+  company_address = 'Calle Falsa 742',
+  notes = 'Pendiente de envío'
+WHERE order_id = 3;
+
+
+
+
+
+
 
 
 -- Detalles de órdenes
