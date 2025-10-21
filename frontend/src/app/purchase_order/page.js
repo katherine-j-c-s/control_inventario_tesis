@@ -12,17 +12,35 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, FileText } from "lucide-react";
 import TableOrders from "./components/TableOrders";
 import CardLoadNewOrder from "./components/CardLoadNewOrder";
+import GenerateReportComponent from "./components/GenerateReportComponent";
 
 const PurchaseOrderContent = () => {
   const { user } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  const [isGenerateReportModalOpen, setIsGenerateReportModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleOrderCreated = () => {
-    // Aquí podrías recargar la lista de órdenes
-    console.log("Orden creada exitosamente");
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleOpenNewOrderModal = () => {
+    setIsNewOrderModalOpen(true);
+  };
+
+  const handleCloseNewOrderModal = () => {
+    setIsNewOrderModalOpen(false);
+  };
+
+  const handleOpenGenerateReportModal = () => {
+    setIsGenerateReportModalOpen(true);
+  };
+
+  const handleCloseGenerateReportModal = () => {
+    setIsGenerateReportModalOpen(false);
   };
 
   return (
@@ -41,11 +59,14 @@ const PurchaseOrderContent = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setIsModalOpen(true)}>
+              <Button onClick={handleOpenNewOrderModal}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Nueva Orden
               </Button>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Generar Informe
+              <Button 
+                variant="outline" 
+                onClick={handleOpenGenerateReportModal}
+              >
+                <FileText className="mr-2 h-4 w-4" /> Generar Informe
               </Button>
             </div>
           </div>
@@ -57,12 +78,12 @@ const PurchaseOrderContent = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <TableOrders />
+          <TableOrders key={refreshKey} />
         </motion.div>
       </div>
 
       {/* Modal para Nueva Orden */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isNewOrderModalOpen} onOpenChange={setIsNewOrderModalOpen}>
         <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
@@ -73,8 +94,25 @@ const PurchaseOrderContent = () => {
             </DialogDescription>
           </DialogHeader>
           <CardLoadNewOrder
-            onClose={() => setIsModalOpen(false)}
+            onClose={handleCloseNewOrderModal}
             onOrderCreated={handleOrderCreated}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para Generar Informe */}
+      <Dialog open={isGenerateReportModalOpen} onOpenChange={setIsGenerateReportModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              Generar Informe de Orden de Compra
+            </DialogTitle>
+            <DialogDescription>
+              Busca una orden por su ID y genera un informe en formato PDF
+            </DialogDescription>
+          </DialogHeader>
+          <GenerateReportComponent
+            onClose={handleCloseGenerateReportModal}
           />
         </DialogContent>
       </Dialog>

@@ -202,4 +202,53 @@ export const receiptAPI = {
   },
 };
 
+export const orderAPI = {
+  getOrderById: (id) => {
+    return api.get(`/orders/${id}`);
+  },
+
+  getAllOrders: () => {
+    return api.get('/orders');
+  },
+
+  createOrder: (orderData) => {
+    return api.post('/orders', orderData);
+  },
+
+  updateOrder: (id, orderData) => {
+    return api.put(`/orders/${id}`, orderData);
+  },
+
+  deleteOrder: (id) => {
+    return api.delete(`/orders/${id}`);
+  },
+
+  getStatistics: () => {
+    return api.get('/orders/statistics');
+  },
+
+  getOrderProducts: (id) => {
+    return api.get(`/orders/${id}/products`);
+  },
+
+  // Generar informe PDF de una orden
+  // Retorna un blob que debe ser manejado para descargar el archivo
+  generateOrderReport: async (id) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    const response = await fetch(`${API_URL}/order-report/${id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al generar el informe: ${response.statusText}`);
+    }
+
+    return response.blob();
+  },
+};
+
 export default api;

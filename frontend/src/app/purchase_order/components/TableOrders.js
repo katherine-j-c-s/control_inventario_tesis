@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,8 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Pencil, Trash2, FileText, Search } from "lucide-react";
+import { Eye, Pencil, Trash2, FileText, Search, Loader2 } from "lucide-react";
 import CardViewOrder from "./CardViewOrder";
+import { orderAPI } from "@/lib/api";
 
 const TableOrders = () => {
   // Estados para filtrado
@@ -27,93 +28,62 @@ const TableOrders = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Datos de ejemplo
-  const [orders] = useState([
-    {
-      id: 1,
-      proveedor: "Proveedor ABC",
-      fecha_emision: "2025-10-15",
-      fecha_entrega: "2025-10-25",
-      cantidad_articulos: 15,
-      estado_entrega: "Pendiente",
-      total: 15000.50,
-      encargado: "Juan Pérez",
-      contacto: "+54 11 1234-5678",
-    },
-    {
-      id: 2,
-      proveedor: "Distribuidora XYZ",
-      fecha_emision: "2025-10-14",
-      fecha_entrega: "2025-10-24",
-      cantidad_articulos: 32,
-      estado_entrega: "En Tránsito",
-      total: 28500.00,
-      encargado: "María González",
-      contacto: "+54 11 2345-6789",
-    },
-    {
-      id: 3,
-      proveedor: "Importaciones DEF",
-      fecha_emision: "2025-10-13",
-      fecha_entrega: "2025-10-20",
-      cantidad_articulos: 48,
-      estado_entrega: "Entregado",
-      total: 42300.75,
-      encargado: "Carlos Rodríguez",
-      contacto: "+54 11 3456-7890",
-    },
-    {
-      id: 4,
-      proveedor: "Proveedor ABC",
-      fecha_emision: "2025-10-12",
-      fecha_entrega: "2025-10-22",
-      cantidad_articulos: 20,
-      estado_entrega: "Cancelado",
-      total: 19800.00,
-      encargado: "Ana Martínez",
-      contacto: "+54 11 4567-8901",
-    },
-    {
-      id: 5,
-      proveedor: "Suministros GHI",
-      fecha_emision: "2025-10-11",
-      fecha_entrega: "2025-10-21",
-      cantidad_articulos: 28,
-      estado_entrega: "En Tránsito",
-      total: 33750.25,
-      encargado: "Luis Fernández",
-      contacto: "+54 11 5678-9012",
-    },
-  ]);
+  // Estados para datos y carga
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cargar órdenes al montar el componente
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await orderAPI.getAllOrders();
+      if (response.data.success) {
+        setOrders(response.data.data || []);
+      } else {
+        setError("Error al cargar las órdenes");
+      }
+    } catch (err) {
+      console.error("Error cargando órdenes:", err);
+      setError("Error al cargar las órdenes. Verifica tu conexión.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "Pendiente":
+      case "Pending":
         return (
-          <Badge variant="secondary" className="bg-primary-500 hover:bg-primary-600">
+          <Badge variant="secondary" className="bg-primary-300 hover:bg-primary-600">
             Pendiente
           </Badge>
         );
-      case "En Tránsito":
+      case "In Transit":
         return (
           <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
             En Tránsito
           </Badge>
         );
-      case "Entregado":
+      case "Delivered":
         return (
           <Badge variant="default" className="bg-primary-500 hover:bg-primary-600">
             Entregado
           </Badge>
         );
-      case "Cancelado":
+      case "Cancelled":
         return (
           <Badge variant="destructive">
             Cancelado
           </Badge>
         );
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary">{status || "Pendiente"}</Badge>;
     }
   };
 
@@ -143,24 +113,30 @@ const TableOrders = () => {
     alert(`Editar orden #${order.id}`);
   };
 
-  const handleDelete = (order) => {
-    console.log('Eliminar orden:', order);
-    if (confirm(`¿Estás seguro de eliminar la orden #${order.id}?`)) {
-      alert(`Orden #${order.id} eliminada`);
+  const handleDelete = async (order) => {
+    if (confirm(`¿Estás seguro de eliminar la orden #${order.order_id}?`)) {
+      try {
+        await orderAPI.deleteOrder(order.order_id);
+        setOrders(prev => prev.filter(o => o.order_id !== order.order_id));
+        alert(`Orden #${order.order_id} eliminada exitosamente`);
+      } catch (err) {
+        console.error("Error eliminando orden:", err);
+        alert("Error al eliminar la orden. Inténtalo de nuevo.");
+      }
     }
   };
 
   // Obtener proveedores únicos
-  const suppliers = ['all', ...new Set(orders.map(order => order.proveedor).filter(Boolean))];
+  const suppliers = ['all', ...new Set(orders.map(order => order.supplier).filter(Boolean))];
 
   // Filtrar órdenes
   const filteredOrders = orders.filter(order => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = 
-      order.id.toString().includes(searchLower) ||
-      order.proveedor.toLowerCase().includes(searchLower);
-    const matchesStatus = selectedStatus === 'all' || order.estado_entrega === selectedStatus;
-    const matchesSupplier = selectedSupplier === 'all' || order.proveedor === selectedSupplier;
+      order.order_id.toString().includes(searchLower) ||
+      (order.supplier && order.supplier.toLowerCase().includes(searchLower));
+    const matchesStatus = selectedStatus === 'all' || order.delivery_status === selectedStatus;
+    const matchesSupplier = selectedSupplier === 'all' || order.supplier === selectedSupplier;
     return matchesSearch && matchesStatus && matchesSupplier;
   });
 
@@ -188,10 +164,10 @@ const TableOrders = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los Estados</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
-                <SelectItem value="En Tránsito">En Tránsito</SelectItem>
-                <SelectItem value="Entregado">Entregado</SelectItem>
-                <SelectItem value="Cancelado">Cancelado</SelectItem>
+                <SelectItem value="Pending">Pendiente</SelectItem>
+                <SelectItem value="In Transit">En Tránsito</SelectItem>
+                <SelectItem value="Delivered">Entregado</SelectItem>
+                <SelectItem value="Cancelled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
@@ -225,31 +201,46 @@ const TableOrders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders && filteredOrders.length > 0 ? (
+              {loading ? (
+                <TableRow className="border-border">
+                  <TableCell colSpan={8} className="text-center py-8">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cargando órdenes...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : error ? (
+                <TableRow className="border-border">
+                  <TableCell colSpan={8} className="text-center py-8 text-destructive">
+                    {error}
+                  </TableCell>
+                </TableRow>
+              ) : filteredOrders && filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="border-border hover:bg-muted/50">
+                  <TableRow key={order.order_id} className="border-border hover:bg-muted/50">
                     <TableCell className="font-medium text-foreground">
-                      #{order.id}
+                      #{order.order_id}
                     </TableCell>
                     <TableCell className="text-foreground">
                       <div className="flex flex-col">
-                        <span className="font-medium">{order.proveedor}</span>
+                        <span className="font-medium">{order.supplier || "N/A"}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-foreground">
-                      {formatDate(order.fecha_emision)}
+                      {formatDate(order.issue_date)}
                     </TableCell>
                     <TableCell className="text-foreground">
-                      {formatDate(order.fecha_entrega)}
+                      {formatDate(order.delivery_date)}
                     </TableCell>
                     <TableCell className="text-foreground text-center">
-                      <span className="font-semibold">{order.cantidad_articulos}</span>
+                      <span className="font-semibold">{order.item_quantity || 0}</span>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(order.estado_entrega)}
+                      {getStatusBadge(order.delivery_status)}
                     </TableCell>
                     <TableCell className="text-foreground text-right font-mono">
-                      {formatCurrency(order.total)}
+                      {formatCurrency(order.total || 0)}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">

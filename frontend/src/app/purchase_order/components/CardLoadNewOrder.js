@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import FormField from "./FormField";
+import { orderAPI } from "@/lib/api";
 
 const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
   const handleChange = (field, value) => {
@@ -100,26 +101,25 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
 const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
   const [formData, setFormData] = useState({
     // Datos de la empresa que compra
-    nombre_empresa: "Simetra S.A.",
-    cuit: "",
-    domicilio_empresa: "",
-    responsable: "",
+    company_name: "Simetra S.A.",
+    company_address: "",
+    responsible_person: "",
     
     // Datos del proveedor
-    nombre_proveedor: "",
-    direccion_proveedor: "",
+    supplier: "",
+    contact: "",
     
     // Fechas y tiempos
-    fecha_emision: new Date().toISOString().split("T")[0],
-    fecha_entrega: "",
-    tiempo_entrega_estimado: "",
+    issue_date: new Date().toISOString().split("T")[0],
+    delivery_date: "",
     
     // Estado y montos
-    estado: "Pendiente",
-    subtotal: 0,
-    bono: 0,
+    status: false,
+    delivery_status: "Pending",
+    amount: 0,
     total: 0,
-    observaciones: "",
+    item_quantity: 0,
+    notes: "",
   });
 
   const [productos, setProductos] = useState([
@@ -156,12 +156,12 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
 
 
   const validateForm = () => {
-    if (!formData.nombre_empresa || !formData.cuit || !formData.nombre_proveedor) {
+    if (!formData.company_name || !formData.supplier) {
       setError("Por favor, completa los campos obligatorios de la empresa y proveedor");
       return false;
     }
 
-    if (!formData.fecha_emision || !formData.fecha_entrega) {
+    if (!formData.issue_date || !formData.delivery_date) {
       setError("Por favor, completa las fechas de emisión y entrega");
       return false;
     }
@@ -189,26 +189,36 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
     setError(null);
 
     try {
-      // Aquí iría la llamada al API
+      // Calcular totales
+      const validProductos = productos.filter((p) => p.articulo && p.cantidad > 0 && p.precio_unitario > 0);
+      const subtotal = validProductos.reduce((sum, p) => sum + (p.importe || 0), 0);
+      const totalQuantity = validProductos.reduce((sum, p) => sum + (parseInt(p.cantidad) || 0), 0);
+
       const orderData = {
         ...formData,
-        productos: productos.filter((p) => p.articulo && p.cantidad > 0),
+        amount: subtotal,
+        total: subtotal,
+        item_quantity: totalQuantity,
+        status: formData.delivery_status === "Delivered",
       };
 
       console.log("Datos de la orden a enviar:", orderData);
 
-      // Simulación de guardado exitoso
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await orderAPI.createOrder(orderData);
+      
+      if (response.data.success) {
+        setSuccess("✅ Orden de compra creada exitosamente");
 
-      setSuccess("✅ Orden de compra creada exitosamente");
+        if (onOrderCreated) {
+          onOrderCreated();
+        }
 
-      if (onOrderCreated) {
-        onOrderCreated();
+        setTimeout(() => {
+          if (onClose) onClose();
+        }, 2000);
+      } else {
+        setError("❌ Error al crear la orden: " + (response.data.message || "Error desconocido"));
       }
-
-      setTimeout(() => {
-        if (onClose) onClose();
-      }, 2000);
     } catch (error) {
       console.error("Error al guardar la orden:", error);
       setError("❌ Error al guardar la orden. Inténtalo de nuevo.");
@@ -242,10 +252,9 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
             <div>
               <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Datos de la Empresa</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Nombre de la Empresa" id="nombre_empresa" required value={formData.nombre_empresa} onChange={(e) => handleInputChange("nombre_empresa", e.target.value)} />
-                <FormField label="CUIT" id="cuit" required value={formData.cuit} onChange={(e) => handleInputChange("cuit", e.target.value)} placeholder="XX-XXXXXXXX-X" />
-                <FormField label="Domicilio" id="domicilio_empresa" required className="md:col-span-2" value={formData.domicilio_empresa} onChange={(e) => handleInputChange("domicilio_empresa", e.target.value)} placeholder="Dirección completa" />
-                <FormField label="Responsable" id="responsable" required className="md:col-span-2" value={formData.responsable} onChange={(e) => handleInputChange("responsable", e.target.value)} placeholder="Nombre del responsable" />
+                <FormField label="Nombre de la Empresa" id="company_name" required value={formData.company_name} onChange={(e) => handleInputChange("company_name", e.target.value)} />
+                <FormField label="Domicilio" id="company_address" required className="md:col-span-2" value={formData.company_address} onChange={(e) => handleInputChange("company_address", e.target.value)} placeholder="Dirección completa" />
+                <FormField label="Responsable" id="responsible_person" required className="md:col-span-2" value={formData.responsible_person} onChange={(e) => handleInputChange("responsible_person", e.target.value)} placeholder="Nombre del responsable" />
               </div>
             </div>
 
@@ -255,8 +264,8 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
             <div>
               <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Datos del Proveedor</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField label="Nombre del Proveedor" id="nombre_proveedor" required value={formData.nombre_proveedor} onChange={(e) => handleInputChange("nombre_proveedor", e.target.value)} placeholder="Nombre del proveedor" />
-                <FormField label="Dirección del Proveedor" id="direccion_proveedor" required value={formData.direccion_proveedor} onChange={(e) => handleInputChange("direccion_proveedor", e.target.value)} placeholder="Dirección completa" />
+                <FormField label="Nombre del Proveedor" id="supplier" required value={formData.supplier} onChange={(e) => handleInputChange("supplier", e.target.value)} placeholder="Nombre del proveedor" />
+                <FormField label="Contacto" id="contact" value={formData.contact} onChange={(e) => handleInputChange("contact", e.target.value)} placeholder="Teléfono o email" />
               </div>
             </div>
 
@@ -265,18 +274,17 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
             {/* Fechas y Estado */}
             <div>
               <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Información de la Orden</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField label="Fecha de Emisión" id="fecha_emision" required type="date" value={formData.fecha_emision} onChange={(e) => handleInputChange("fecha_emision", e.target.value)} />
-                <FormField label="Fecha de Entrega" id="fecha_entrega" required type="date" value={formData.fecha_entrega} onChange={(e) => handleInputChange("fecha_entrega", e.target.value)} />
-                <FormField label="Tiempo Estimado" id="tiempo_entrega_estimado" value={formData.tiempo_entrega_estimado} onChange={(e) => handleInputChange("tiempo_entrega_estimado", e.target.value)} placeholder="Ej: 5-7 días" />
-                <FormField label="Estado" id="estado" required>
-                  <Select value={formData.estado} onValueChange={(value) => handleInputChange("estado", value)}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Fecha de Emisión" id="issue_date" required type="date" value={formData.issue_date} onChange={(e) => handleInputChange("issue_date", e.target.value)} />
+                <FormField label="Fecha de Entrega" id="delivery_date" required type="date" value={formData.delivery_date} onChange={(e) => handleInputChange("delivery_date", e.target.value)} />
+                <FormField label="Estado de Entrega" id="delivery_status" required>
+                  <Select value={formData.delivery_status} onValueChange={(value) => handleInputChange("delivery_status", value)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Pendiente">Pendiente</SelectItem>
-                      <SelectItem value="En Tránsito">En Tránsito</SelectItem>
-                      <SelectItem value="Entregado">Entregado</SelectItem>
-                      <SelectItem value="Cancelado">Cancelado</SelectItem>
+                      <SelectItem value="Pending">Pendiente</SelectItem>
+                      <SelectItem value="In Transit">En Tránsito</SelectItem>
+                      <SelectItem value="Delivered">Entregado</SelectItem>
+                      <SelectItem value="Cancelled">Cancelado</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>
@@ -318,25 +326,15 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
                 <DollarSign className="h-4 w-4" />
                 Resumen de Totales
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField 
-                  label="Subtotal" 
-                  id="subtotal"
+                  label="Monto" 
+                  id="amount"
                   type="number" 
                   min="0" 
                   step="0.01" 
-                  value={formData.subtotal} 
-                  onChange={(e) => handleInputChange("subtotal", parseFloat(e.target.value) || 0)} 
-                  placeholder="0.00" 
-                />
-                <FormField 
-                  label="Bono / Descuento" 
-                  id="bono" 
-                  type="number" 
-                  min="0" 
-                  step="0.01" 
-                  value={formData.bono} 
-                  onChange={(e) => handleInputChange("bono", parseFloat(e.target.value) || 0)} 
+                  value={formData.amount} 
+                  onChange={(e) => handleInputChange("amount", parseFloat(e.target.value) || 0)} 
                   placeholder="0.00" 
                 />
                 <FormField 
@@ -355,11 +353,11 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
             <Separator />
 
             {/* Observaciones */}
-            <FormField label="Observaciones" id="observaciones">
+            <FormField label="Observaciones" id="notes">
               <Textarea
-                id="observaciones"
-                value={formData.observaciones}
-                onChange={(e) => handleInputChange("observaciones", e.target.value)}
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => handleInputChange("notes", e.target.value)}
                 placeholder="Notas adicionales sobre la orden..."
                 rows={3}
               />

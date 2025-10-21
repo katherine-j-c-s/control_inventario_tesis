@@ -6,6 +6,7 @@ import User from './models/User.js';
 import Product from './models/Product.js';
 import Role from './models/Role.js';
 import UserRole from './models/UserRole.js';
+import Order from './models/Order.js';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -14,9 +15,9 @@ const AppDataSource = new DataSource({
   username: config.database.username,
   password: config.database.password,
   database: config.database.database,
-  synchronize: true, // Solo para desarrollo
+  synchronize: true,
   logging: false,
-  entities: [User, Product, Role, UserRole],
+  entities: [User, Product, Role, UserRole,Order],
   migrations: [],
   subscribers: [],
 });

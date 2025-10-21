@@ -7,12 +7,13 @@ import { fileURLToPath } from "url";
 import config from "./config.js";
 import AppDataSource from "./database.js";
 
-// Importar rutas
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import roleRoutes from "./routes/roles.js";
 import receiptRoutes from "./routes/receiptRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import orderReportRoutes from "./routes/orderReportRoutes.js";
 
 // Para usar __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -21,11 +22,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(express.json());
-// app.use('/api', receiptRoutes); // Temporalmente comentado hasta convertir a CommonJS
-
-// Comentamos esta línea duplicada
-
-// CORS simple - permitir todo
 app.use(
   cors({
     origin: true,
@@ -43,18 +39,12 @@ app.use(
   })
 );
 
-// Middlewares de logging y parsing
 app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos (fotos de usuarios)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Servir página de prueba CORS
-app.get("/test-cors", (req, res) => {
-  res.sendFile(path.join(__dirname, "test-cors.html"));
-});
 
 // Rutas de la API
 app.use("/api/auth", authRoutes);
@@ -62,6 +52,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api", receiptRoutes);
 app.use("/api", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/order-report", orderReportRoutes);
 
 // Ruta de prueba
 app.get("/api/health", (req, res) => {

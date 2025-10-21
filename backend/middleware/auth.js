@@ -44,8 +44,12 @@ const requirePermission = (permission) => {
     }
   };
 };
+// Exportar como verifyToken para compatibilidad
+const verifyToken = authenticateToken;
+
 export {
   authenticateToken,
+  verifyToken,
   requireAdmin,
   requirePermission
 };

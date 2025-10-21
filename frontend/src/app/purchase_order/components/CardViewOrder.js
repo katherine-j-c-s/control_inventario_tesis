@@ -47,12 +47,22 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      Pendiente: "bg-yellow-500 text-white",
-      "En Tránsito": "bg-blue-500 text-white",
-      Entregado: "bg-green-500 text-white",
-      Cancelado: "bg-red-500 text-white",
+      Pending: "bg-yellow-500 text-white",
+      "In Transit": "bg-blue-500 text-white",
+      Delivered: "bg-green-500 text-white",
+      Cancelled: "bg-red-500 text-white",
     };
     return statusConfig[status] || "bg-gray-500 text-white";
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      Pending: "Pendiente",
+      "In Transit": "En Tránsito", 
+      Delivered: "Entregado",
+      Cancelled: "Cancelado",
+    };
+    return statusMap[status] || status;
   };
 
   // Datos de ejemplo de productos (esto vendría del backend)
@@ -84,7 +94,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
           <DialogTitle className="flex items-center gap-2 text-xl">
             <ShoppingCart className="h-6 w-6" /> Detalles de la Orden de Compra
           </DialogTitle>
-          <DialogDescription>Orden #{orderData.id}</DialogDescription>
+          <DialogDescription>Orden #{orderData.order_id}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
@@ -97,10 +107,10 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="font-semibold text-lg">Simetra S.A.</p>
+              <p className="font-semibold text-lg">{orderData.company_name || "Simetra S.A."}</p>
               <p className="text-muted-foreground flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
-                Dirección: Av. Simetra 1234, CABA
+                Dirección: {orderData.company_address || "Av. Simetra 1234, CABA"}
               </p>
             </CardContent>
           </Card>
@@ -118,7 +128,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">ID:</span>
-                  <span className="font-medium">#{orderData.id}</span>
+                  <span className="font-medium">#{orderData.order_id}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -127,7 +137,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                     Fecha de Emisión:
                   </span>
                   <span className="font-medium">
-                    {formatDate(orderData.fecha_emision)}
+                    {formatDate(orderData.issue_date)}
                   </span>
                 </div>
 
@@ -137,7 +147,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                     Fecha de Entrega:
                   </span>
                   <span className="font-medium">
-                    {formatDate(orderData.fecha_entrega)}
+                    {formatDate(orderData.delivery_date)}
                   </span>
                 </div>
 
@@ -146,7 +156,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                   <span className="text-sm text-muted-foreground">
                     Cantidad de Artículos:
                   </span>
-                  <span className="font-medium">{orderData.cantidad_articulos}</span>
+                  <span className="font-medium">{orderData.item_quantity || 0}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -154,15 +164,15 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                   <span className="text-sm text-muted-foreground">
                     Estado de Entrega:
                   </span>
-                  <Badge className={getStatusBadge(orderData.estado_entrega)}>
-                    {orderData.estado_entrega}
+                  <Badge className={getStatusBadge(orderData.delivery_status)}>
+                    {getStatusText(orderData.delivery_status)}
                   </Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Proveedor:</span>
-                  <span className="font-medium">{orderData.proveedor}</span>
+                  <span className="font-medium">{orderData.supplier || "N/A"}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -170,20 +180,20 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
                   <span className="text-sm text-muted-foreground">
                     Encargado de la orden:
                   </span>
-                  <span className="font-medium">{orderData.encargado || "N/A"}</span>
+                  <span className="font-medium">{orderData.responsible_person || "N/A"}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Contacto:</span>
-                  <span className="font-medium">{orderData.contacto || "N/A"}</span>
+                  <span className="font-medium">{orderData.contact || "N/A"}</span>
                 </div>
 
                 <div className="flex items-center gap-2 md:col-span-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Total:</span>
                   <span className="font-bold text-lg text-primary">
-                    {formatCurrency(orderData.total)}
+                    {formatCurrency(orderData.total || 0)}
                   </span>
                 </div>
               </div>
@@ -241,9 +251,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Esta orden de compra debe ser entregada en el horario de 9:00 a 18:00 hs.
-                Los productos deben venir embalados y etiquetados correctamente. Cualquier
-                inconveniente comunicarse con el encargado de la orden.
+                {orderData.notes || "Esta orden de compra debe ser entregada en el horario de 9:00 a 18:00 hs. Los productos deben venir embalados y etiquetados correctamente. Cualquier inconveniente comunicarse con el encargado de la orden."}
               </p>
             </CardContent>
           </Card>
