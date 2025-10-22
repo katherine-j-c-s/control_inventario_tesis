@@ -1,28 +1,49 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import Layout from '@/components/layouts/Layout';
-import { useRouter } from 'next/navigation';
-import { DataTable } from './inventaryTable';
-import { FloatingQrScannerButton } from '@/components/QrScanner';
-import api from '@/lib/api';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import Layout from "@/components/layouts/Layout";
+import { useRouter } from "next/navigation";
+import { DataTable } from "./inventaryTable";
+import { FloatingQrScannerButton } from "@/components/QrScanner";
+import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import AddProduct from "./AddProduct";
 
 function InventoryContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  
+
   const [products, setProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,21 +51,20 @@ function InventoryContent() {
   const handleQrScanResult = (data) => {
     try {
       const productData = JSON.parse(data);
-      const foundProduct = products.find(p => 
-        p.codigo === productData.codigo || 
-        p.id === productData.id
+      const foundProduct = products.find(
+        (p) => p.codigo === productData.codigo || p.id === productData.id
       );
-      
+
       if (foundProduct) {
         alert(`Producto encontrado: ${foundProduct.nombre}`);
       } else {
-        alert('Producto no encontrado en el inventario');
+        alert("Producto no encontrado en el inventario");
       }
     } catch (error) {
-      const foundProduct = products.find(p => 
+      const foundProduct = products.find((p) =>
         p.codigo.toLowerCase().includes(data.toLowerCase())
       );
-      
+
       if (foundProduct) {
         alert(`Producto encontrado: ${foundProduct.nombre}`);
       } else {
@@ -57,11 +77,11 @@ function InventoryContent() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await api.get('/productos');
+      const response = await api.get("/productos");
       setProducts(response.data);
     } catch (error) {
-      console.error('Error cargando productos:', error);
-      setError('Error al cargar los productos. Intenta nuevamente.');
+      console.error("Error cargando productos:", error);
+      setError("Error al cargar los productos. Intenta nuevamente.");
     } finally {
       setIsLoading(false);
     }
@@ -70,19 +90,24 @@ function InventoryContent() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
     loadProducts();
   }, [user, router, loading]);
 
-  const categories = ['all', ...new Set(products.map(product => product.categoria).filter(Boolean))];
+  const categories = [
+    "all",
+    ...new Set(products.map((product) => product.categoria).filter(Boolean)),
+  ];
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = products.filter((product) => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = product.nombre.toLowerCase().includes(searchLower) ||
-                         product.codigo.toLowerCase().includes(searchLower);
-    const matchesCategory = selectedCategory === 'all' || product.categoria === selectedCategory;
+    const matchesSearch =
+      product.nombre.toLowerCase().includes(searchLower) ||
+      product.codigo.toLowerCase().includes(searchLower);
+    const matchesCategory =
+      selectedCategory === "all" || product.categoria === selectedCategory;
     return matchesSearch && matchesCategory && product.activo;
   });
 
@@ -123,7 +148,10 @@ function InventoryContent() {
   return (
     <Layout>
       <div className="space-y-6">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold">Inventario de Productos</h1>
@@ -132,8 +160,14 @@ function InventoryContent() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={loadProducts} disabled={isLoading}>
-                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <Button
+                variant="outline"
+                onClick={loadProducts}
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
                 Actualizar
               </Button>
               <Button onClick={() => setShowAddModal(true)}>
@@ -143,7 +177,11 @@ function InventoryContent() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row gap-4">
@@ -153,14 +191,17 @@ function InventoryContent() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="max-w-sm"
                 />
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                >
                   <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map(cat => (
+                    {categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
-                        {cat === 'all' ? 'Todas las Categorías' : cat}
+                        {cat === "all" ? "Todas las Categorías" : cat}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -170,33 +211,19 @@ function InventoryContent() {
           </Card>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <DataTable products={filteredProducts} />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <DataTable products={filteredProducts} />
         </motion.div>
       </div>
-      
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Agregar Nuevo Producto</DialogTitle>
-            <DialogDescription>Completa los campos para añadir un item al inventario.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="nombre" className="text-right">Nombre</Label>
-              <Input id="nombre" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="codigo" className="text-right">Código</Label>
-              <Input id="codigo" className="col-span-3" />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-            <Button>Guardar Producto</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Agregar un producto  */}
+      <AddProduct
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
 
       <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
