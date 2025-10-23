@@ -14,8 +14,10 @@ import {
   MapPin,
   User,
   Calendar,
-  Filter
+  Filter,
+  Map
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -35,6 +37,7 @@ import {
  * - Información detallada de cada movimiento
  */
 const HistoryMovements = ({ movements = [] }) => {
+  const router = useRouter();
   const [localHistory, setLocalHistory] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -48,13 +51,13 @@ const HistoryMovements = ({ movements = [] }) => {
     const now = Date.now();
     const stored = JSON.parse(localStorage.getItem('movementsHistory')) || [];
     
-    // Crear un mapa para evitar duplicados basado en el ID
-    const historyMap = new Map();
+    // Crear un objeto para evitar duplicados basado en el ID
+    const historyMap = {};
     
     // Agregar movimientos almacenados primero
     stored.forEach(item => {
       if (now - item.timestamp < THIRTY_DAYS) {
-        historyMap.set(item.id, item);
+        historyMap[item.id] = item;
       }
     });
     
@@ -65,12 +68,12 @@ const HistoryMovements = ({ movements = [] }) => {
         timestamp: item.timestamp || Date.now()
       };
       if (now - itemWithTimestamp.timestamp < THIRTY_DAYS) {
-        historyMap.set(item.id, itemWithTimestamp);
+        historyMap[item.id] = itemWithTimestamp;
       }
     });
     
     // Ordenar por fecha descendente y limitar a 200 registros
-    const combined = Array.from(historyMap.values())
+    const combined = Object.values(historyMap)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 200);
 
@@ -260,7 +263,7 @@ const HistoryMovements = ({ movements = [] }) => {
                     <span className="font-medium">{movement.destino || 'N/A'}</span>
                   </div>
 
-                  {/* Fila inferior: Usuario y fecha */}
+                  {/* Fila inferior: Usuario, fecha y botón de mapa */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2">
                       <User className="h-3 w-3" />
@@ -272,6 +275,19 @@ const HistoryMovements = ({ movements = [] }) => {
                         {getRelativeTime(movement.timestamp)}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Botón de visualizar en mapa */}
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/movimientos/visualizacion/${movement.id}`)}
+                      className="flex items-center gap-2 text-xs"
+                    >
+                      <Map className="h-3 w-3" />
+                      Visualizar en Maps
+                    </Button>
                   </div>
 
                   {/* Observaciones si existen */}

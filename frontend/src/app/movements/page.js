@@ -12,12 +12,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { PlusCircle, TrendingUp } from 'lucide-react';
+import { PlusCircle, TrendingUp, MapPin, Cloud } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import HistoryMovements from './components/historyMovements';
 import MoveProduct from './components/moveProduct';
 
 const MovementsContent = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Estado para los movimientos (esto vendrá de una API)
@@ -105,6 +107,14 @@ const MovementsContent = () => {
               <Button onClick={handleOpenModal}>
                 <PlusCircle className="mr-2 h-4 w-4" /> 
                 Nuevo Movimiento
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/movimientos/clima')}
+                className="flex items-center gap-2"
+              >
+                <Cloud className="h-4 w-4" />
+                Ver Clima
               </Button>
             </div>
           </div>
