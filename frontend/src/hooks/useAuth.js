@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
         try {
           const profileResponse = await authAPI.getProfile();
           const freshUser = profileResponse.data;
+          console.log('Usuario cargado desde API:', freshUser);
           setUser(freshUser);
           localStorage.setItem('user', JSON.stringify(freshUser));
 
@@ -76,16 +77,29 @@ export function AuthProvider({ children }) {
 
   const register = async (userData, file) => {
     try {
+      console.log('=== INICIO REGISTRO FRONTEND ===');
+      console.log('Datos del usuario:', userData);
+      console.log('Archivo:', file);
+      console.log('URL de la API:', 'http://localhost:5001/api/auth/register');
+      
       const response = await authAPI.register(userData, file);
+      console.log('Respuesta del servidor:', response.data);
+      
       const { user: newUser, token: userToken } = response.data;
       
       setUser(newUser);
       localStorage.setItem('token', userToken);
       localStorage.setItem('user', JSON.stringify(newUser));
       
+      console.log('Registro exitoso');
       return { success: true, user: newUser };
     } catch (error) {
-      console.error('Error en registro:', error);
+      console.error('=== ERROR EN REGISTRO FRONTEND ===');
+      console.error('Error completo:', error);
+      console.error('Error response:', error.response);
+      console.error('Error status:', error.response?.status);
+      console.error('Error data:', error.response?.data);
+      console.error('===============================');
       return { 
         success: false, 
         error: error.response?.data?.message || 'Error al registrar usuario' 
@@ -104,6 +118,20 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(newUserData));
   };
 
+  const refreshUser = async () => {
+    try {
+      const profileResponse = await authAPI.getProfile();
+      const freshUser = profileResponse.data;
+      console.log('Usuario refrescado desde API:', freshUser);
+      setUser(freshUser);
+      localStorage.setItem('user', JSON.stringify(freshUser));
+      return { success: true, user: freshUser };
+    } catch (error) {
+      console.error('Error refrescando usuario:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const isAdmin = () => {
     return user?.rol === 'admin';
   };
@@ -120,6 +148,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateUserData,
+    refreshUser,
     isAdmin,
     hasPermission,
   };
