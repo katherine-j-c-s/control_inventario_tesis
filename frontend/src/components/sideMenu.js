@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { allRoutes } from "@/lib/roles";
+import { allRoutes, rolesConfig } from "@/lib/roles";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -85,20 +85,39 @@ const DarkModeToggle = ({ isOpen }) => {
 };
 
 export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { theme } = useTheme();
 
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === "dark" ? logoDarkMode : logoLightMode;
   const fullLogo = theme === "dark" ? logoDarkMode : logoLightMode;
 
-  // Construimos las rutas permitidas directamente desde los permisos del usuario.
-  const allowedRoutes = user?.permisos
-    ? Object.entries(user.permisos)
-        .filter(([, hasAccess]) => hasAccess)
-        .map(([key]) => allRoutes[key])
-        .filter(Boolean)
-    : [];
+  // Construimos las rutas permitidas basadas ÚNICAMENTE en los permisos del rol
+  // Usamos rolPermisos si está disponible, sino usamos permisos como fallback
+  const rolePermissions = user?.rolPermisos || user?.permisos || {};
+  
+  const allowedRoutes = Object.entries(rolePermissions)
+    .filter(([key, hasAccess]) => hasAccess && allRoutes[key])
+    .map(([key]) => allRoutes[key])
+    .filter(Boolean);
+
+  // Eliminar duplicados (aunque no debería haber duplicados con la nueva lógica)
+  const uniqueRoutes = allowedRoutes.filter((route, index, self) => 
+    index === self.findIndex(r => r.href === route.href)
+  );
+
+  // Debug: Mostrar información del usuario
+  console.log('=== DEBUG SIDEBAR ===');
+  console.log('Usuario completo:', user);
+  console.log('Rol del usuario:', user?.rol);
+  console.log('Permisos del rol (rolPermisos):', user?.rolPermisos);
+  console.log('Permisos del usuario (permisos):', user?.permisos);
+  console.log('Permisos del rol usados:', rolePermissions);
+  console.log('Entradas de permisos:', Object.entries(rolePermissions));
+  console.log('Rutas permitidas:', allowedRoutes.map(r => r.text));
+  console.log('Rutas únicas:', uniqueRoutes.map(r => r.text));
+  console.log('Cantidad de rutas:', uniqueRoutes.length);
+  console.log('===================');
 
   return (
     <motion.aside
@@ -163,7 +182,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
 
 {/* // Navegación principal con links  */}
       <nav className="flex-grow space-y-2">
-        {allowedRoutes.map((link) => (
+        {uniqueRoutes.map((link) => (
           <NavLink
             key={link.href}
             href={link.href}
