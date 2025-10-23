@@ -24,7 +24,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
+import { PlusCircle, Loader2, RefreshCw, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import AddProduct from "./AddProduct";
+import ReporteInventario from "@/components/ReporteInventario";
 
 function InventoryContent() {
   const { user, loading } = useAuth();
@@ -45,6 +46,7 @@ function InventoryContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -170,6 +172,12 @@ function InventoryContent() {
                 />
                 Actualizar
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowReportModal(true)}
+              >
+                <FileText className="mr-2 h-4 w-4" /> Generar Reporte
+              </Button>
               <Button onClick={() => setShowAddModal(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Agregar Producto
               </Button>
@@ -224,6 +232,24 @@ function InventoryContent() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
       />
+
+      {/* Modal de Reporte */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generar Reporte de Inventario</DialogTitle>
+            <DialogDescription>
+              Genera un reporte PDF del inventario con filtros personalizables
+            </DialogDescription>
+          </DialogHeader>
+          <ReporteInventario productos={filteredProducts} />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cerrar</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
