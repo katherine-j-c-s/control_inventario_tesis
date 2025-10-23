@@ -325,3 +325,27 @@ SELECT * FROM get_all_receipts();
 
 -- Verificar el remito id = 42 y ver la fila actualizada
 SELECT * FROM verify_receipt(42);
+
+
+
+-- Tabla principal de pedidos de obra
+CREATE TABLE work_orders (
+    id SERIAL PRIMARY KEY,
+    project_id INT NOT NULL REFERENCES projects(project_id),
+    descripcion TEXT,
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_id INT NOT NULL REFERENCES users(id),
+    estado VARCHAR(20) DEFAULT 'pendiente' 
+           CHECK (estado IN ('pendiente','aprobado','rechazado'))
+);
+
+-- Tabla de productos del pedido
+CREATE TABLE work_order_items (
+    id SERIAL PRIMARY KEY,
+    work_order_id INT NOT NULL REFERENCES work_orders(id),
+    nombre_producto VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    cantidad INT NOT NULL,
+    estado_item VARCHAR(20) DEFAULT 'pendiente' 
+                CHECK (estado_item IN ('pendiente','entregado'))
+);

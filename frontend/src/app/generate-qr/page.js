@@ -1,7 +1,7 @@
 "use client";
 
 import Layout from "@/components/layouts/Layout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -20,13 +20,28 @@ import {
   Tag
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+
 
 export default function GenerateQR() {
   const [remitoId, setRemitoId] = useState("");
   const [productos, setProductos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isloading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+  }, [user, router, loading]);
 
   const crearObjetoQRSimplificado = (producto) => ({
     i: producto.id,
@@ -202,10 +217,10 @@ export default function GenerateQR() {
                 
                 <Button 
                   onClick={buscarRemito}
-                  disabled={loading || !remitoId.trim()}
+                  disabled={isloading || !remitoId.trim()}
                   className="w-full"
                 >
-                  {loading ? (
+                  {isloading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Buscando Remito...
@@ -323,7 +338,7 @@ export default function GenerateQR() {
             </Card>
           )}
 
-          {!loading && productos.length === 0 && remitoId && (
+          {!isloading && productos.length === 0 && remitoId && (
             <Card className="bg-card border-border">
               <CardContent className="text-center py-12">
                 <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
