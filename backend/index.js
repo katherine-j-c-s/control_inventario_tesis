@@ -98,77 +98,99 @@ const startServer = async () => {
     // Crear roles por defecto si no existen
     const roleRepository = AppDataSource.getRepository("Role");
 
-    const adminRole = await roleRepository.findOne({
-      where: { nombre: "admin" },
-    });
-    if (!adminRole) {
-      const adminRoleData = roleRepository.create({
-        nombre: "admin",
-        descripcion: "Administrador del sistema con todos los permisos",
-        permisos: {
-          entrega: true,
-          movimiento: true,
-          egreso: true,
-          admin_usuarios: true,
-          admin_roles: true,
-          admin_sistema: true,
-        },
-        es_sistema: true,
+    try {
+      const adminRole = await roleRepository.findOne({
+        where: { nombre: "admin" },
       });
-      await roleRepository.save(adminRoleData);
-      console.log("Rol de administrador creado");
-    }
+      if (!adminRole) {
+        const adminRoleData = roleRepository.create({
+          nombre: "admin",
+          descripcion: "Administrador del sistema con todos los permisos",
+          permisos: {
+            dashboard: true,
+            inventory: true,
+            generateReports: true,
+            purchaseOrders: true,
+            verifyRemito: true,
+            productEntry: true,
+            generateQR: true,
+            scanQR: true,
+            adminUsers: true
+          },
+          es_sistema: true,
+        });
+        await roleRepository.save(adminRoleData);
+        console.log("Rol de administrador creado");
+      } else {
+        console.log("Rol de administrador ya existe");
+      }
 
-    const userRole = await roleRepository.findOne({
-      where: { nombre: "usuario" },
-    });
-    if (!userRole) {
-      const userRoleData = roleRepository.create({
-        nombre: "usuario",
-        descripcion: "Usuario básico del sistema",
-        permisos: {
-          entrega: false,
-          movimiento: false,
-          egreso: false,
-        },
-        es_sistema: true,
+      const userRole = await roleRepository.findOne({
+        where: { nombre: "usuario" },
       });
-      await roleRepository.save(userRoleData);
-      console.log("Rol de usuario creado");
+      if (!userRole) {
+        const userRoleData = roleRepository.create({
+          nombre: "usuario",
+          descripcion: "Usuario básico del sistema",
+          permisos: {
+            inventory: true,
+            scanQR: true
+          },
+          es_sistema: true,
+        });
+        await roleRepository.save(userRoleData);
+        console.log("Rol de usuario creado");
+      } else {
+        console.log("Rol de usuario ya existe");
+      }
+    } catch (roleError) {
+      console.log("Error al crear roles:", roleError.message);
+      // Continuar con la inicialización aunque haya error en roles
     }
 
     // Crear usuario administrador por defecto si no existe
     const userRepository = AppDataSource.getRepository("User");
-    const adminExists = await userRepository.findOne({
-      where: { rol: "admin" },
-    });
-
-    if (!adminExists) {
-      const bcryptModule = await import("bcryptjs");
-      const bcrypt = bcryptModule.default;
-      const hashedPassword = await bcrypt.hash("admin123", 10);
-
-      const adminUser = userRepository.create({
-        nombre: "Administrador",
-        apellido: "Sistema",
-        dni: "00000000",
-        email: "admin@sistema.com",
-        puesto_laboral: "Administrador del Sistema",
-        edad: 30,
-        genero: "No especificado",
-        password: hashedPassword,
-        rol: "admin",
-        permisos: {
-          entrega: true,
-          movimiento: true,
-          egreso: true,
-        },
+    
+    try {
+      const adminExists = await userRepository.findOne({
+        where: [
+          { dni: "00000000" },
+          { email: "admin@sistema.com" }
+        ],
       });
 
-      await userRepository.save(adminUser);
-      console.log("Usuario administrador creado:");
-      console.log("DNI: 00000000");
-      console.log("Contraseña: admin123");
+      if (!adminExists) {
+        const bcryptModule = await import("bcryptjs");
+        const bcrypt = bcryptModule.default;
+        const hashedPassword = await bcrypt.hash("admin123", 10);
+
+        const adminUser = userRepository.create({
+          nombre: "Administrador",
+          apellido: "Sistema",
+          dni: "00000000",
+          email: "admin@sistema.com",
+          puesto_laboral: "Administrador del Sistema",
+          edad: 30,
+          genero: "No especificado",
+          password: hashedPassword,
+          rol: "admin",
+          permisos: {
+            entrega: true,
+            movimiento: true,
+            egreso: true,
+          },
+        });
+
+        await userRepository.save(adminUser);
+        console.log("Usuario administrador creado:");
+        console.log("DNI: 00000000");
+        console.log("Contraseña: admin123");
+      } else {
+        console.log("Usuario administrador ya existe");
+      }
+    } catch (userError) {
+      console.log("Error al crear usuario administrador:", userError.message);
+      // Continuar con la inicialización aunque haya error en usuario
     }
 
     // Iniciar servidor
