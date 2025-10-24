@@ -1,6 +1,6 @@
 import {
   Home, Users, Settings, FileText, QrCode, ScanLine, Package,
-  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered
+  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered, Cloud, MapPin
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
@@ -16,6 +16,8 @@ export const allRoutes = {
   pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
   generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
+  weather: { href: "/movimientos/clima", text: "Condiciones Climáticas", icon: Cloud },
+  maps: { href: "/movimientos/visualizacion/1", text: "Visualización en Mapas", icon: MapPin },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver
@@ -51,6 +53,8 @@ export const rolesConfig = {
       allRoutes.generateQR,
       allRoutes.scanQR,
       allRoutes.productExit,
+      allRoutes.weather,
+      allRoutes.maps,
     ],
   },
   'Lider de Proyecto': {
@@ -62,6 +66,8 @@ export const rolesConfig = {
       allRoutes.pendingPermissions,
       allRoutes.adminUsers,
       allRoutes.generateReports,
+      allRoutes.weather,
+      allRoutes.maps,
     ],
   }
 };

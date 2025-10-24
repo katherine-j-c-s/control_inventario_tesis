@@ -58,13 +58,20 @@ export const useExternalAPIs = () => {
   }, []);
 
   // Obtener datos del clima
-  const fetchWeatherData = async (city = 'Buenos Aires') => {
+  const fetchWeatherData = async (city = 'Neuquén Capital, Argentina') => {
     setLoading(true);
     setError(null);
 
     try {
+      // Verificar si tenemos API key
+      const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+      if (!apiKey || apiKey === 'undefined' || apiKey === 'YOUR_OPENWEATHER_API_KEY_HERE') {
+        console.log('API key no configurada, usando datos simulados');
+        throw new Error('API key no configurada');
+      }
+
       // Llamada real a OpenWeatherMap API
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric&lang=es`);
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -75,46 +82,55 @@ export const useExternalAPIs = () => {
       
       return data;
     } catch (err) {
-      console.error('Weather API Error:', err);
+      console.log('Weather API Error:', err.message);
       
-      // Fallback a datos simulados si falla la API
-      const mockData = {
-        name: city,
-        main: {
-          temp: 22,
-          feels_like: 24,
-          humidity: 65,
-          pressure: 1013
-        },
-        weather: [{
-          main: 'Clouds',
-          description: 'parcialmente nublado',
-          icon: '02d'
-        }],
-        wind: {
-          speed: 15,
-          deg: 270
-        },
-        visibility: 10000
-      };
-      
-      setWeatherData(mockData);
-      setError('Usando datos simulados - API no disponible');
-      
-      return mockData;
+      // Solo usar datos simulados si no hay API key configurada
+      if (err.message.includes('API key no configurada')) {
+        const mockData = {
+          name: city,
+          main: {
+            temp: 18,
+            feels_like: 20,
+            humidity: 45,
+            pressure: 1015
+          },
+          weather: [{
+            main: 'Clear',
+            description: 'soleado',
+            icon: '01d'
+          }],
+          wind: {
+            speed: 12,
+            deg: 180
+          },
+          visibility: 15000
+        };
+        
+        setWeatherData(mockData);
+        setError(null);
+        return mockData;
+      } else {
+        // Para otros errores, lanzar el error
+        setError(err.message);
+        throw err;
+      }
     } finally {
       setLoading(false);
     }
   };
 
   // Obtener pronóstico semanal
-  const fetchWeeklyForecast = async (city = 'Buenos Aires') => {
-    setLoading(true);
-    setError(null);
-
+  const fetchWeeklyForecast = async (city = 'Neuquén Capital, Argentina') => {
     try {
+      // Verificar si tenemos API key
+      const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+      if (!apiKey || apiKey === 'undefined' || apiKey === 'YOUR_OPENWEATHER_API_KEY_HERE') {
+        console.log('API key no configurada, usando datos simulados para pronóstico');
+        throw new Error('API key no configurada');
+      }
+
       // Llamada real a OpenWeatherMap API
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric&lang=es`);
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=es`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -123,36 +139,38 @@ export const useExternalAPIs = () => {
       const data = await response.json();
       return data;
     } catch (err) {
-      console.error('Weather Forecast API Error:', err);
+      console.log('Weather Forecast API Error:', err.message);
       
-      // Fallback a datos simulados si falla la API
-      const mockForecast = {
-        list: [
-          {
-            dt: Date.now() / 1000,
-            main: { temp: 22, temp_min: 18, temp_max: 25 },
-            weather: [{ description: 'soleado', icon: '01d' }],
-            dt_txt: new Date().toISOString()
-          },
-          {
-            dt: (Date.now() + 86400000) / 1000,
-            main: { temp: 20, temp_min: 16, temp_max: 23 },
-            weather: [{ description: 'parcialmente nublado', icon: '02d' }],
-            dt_txt: new Date(Date.now() + 86400000).toISOString()
-          },
-          {
-            dt: (Date.now() + 172800000) / 1000,
-            main: { temp: 18, temp_min: 14, temp_max: 20 },
-            weather: [{ description: 'lluvia ligera', icon: '10d' }],
-            dt_txt: new Date(Date.now() + 172800000).toISOString()
-          }
-        ]
-      };
-      
-      setError('Usando datos simulados - API no disponible');
-      return mockForecast;
-    } finally {
-      setLoading(false);
+      // Solo usar datos simulados si no hay API key configurada
+      if (err.message.includes('API key no configurada')) {
+        const mockForecast = {
+          list: [
+            {
+              dt: Date.now() / 1000,
+              main: { temp: 18, temp_min: 12, temp_max: 22 },
+              weather: [{ description: 'soleado', icon: '01d' }],
+              dt_txt: new Date().toISOString()
+            },
+            {
+              dt: (Date.now() + 86400000) / 1000,
+              main: { temp: 16, temp_min: 10, temp_max: 20 },
+              weather: [{ description: 'parcialmente nublado', icon: '02d' }],
+              dt_txt: new Date(Date.now() + 86400000).toISOString()
+            },
+            {
+              dt: (Date.now() + 172800000) / 1000,
+              main: { temp: 14, temp_min: 8, temp_max: 18 },
+              weather: [{ description: 'nublado', icon: '04d' }],
+              dt_txt: new Date(Date.now() + 172800000).toISOString()
+            }
+          ]
+        };
+        
+        return mockForecast;
+      } else {
+        // Para otros errores, lanzar el error
+        throw err;
+      }
     }
   };
 

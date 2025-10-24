@@ -10,7 +10,8 @@ export default async function VisualizacionMapsPage({ params }) {
     nombre: 'Producto de Ejemplo',
     codigo: 'PROD-001',
     categoria: 'Electrónicos',
-    descripcion: 'Producto de ejemplo para demostración'
+    descripcion: 'Producto de ejemplo para demostración',
+    ubicacion: 'Almacén Norte' // Ubicación actual del producto
   };
 
   return <VisualizacionMaps productId={productId} product={product} />;
