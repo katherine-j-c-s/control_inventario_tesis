@@ -17,32 +17,44 @@ const ProjectsTable = ({ projects, onView }) => {
   const { theme } = useTheme();
   
   const getStatusBadge = (project) => {
-    // Simple status logic based on creation date
-    const createdDate = new Date(project.created_at);
-    const now = new Date();
-    const daysDiff = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+    const estado = project.estado || 'activo';
     
-    if (daysDiff < 7) {
-      return (
-        <Badge variant="default" className="bg-primary">
-          <CheckCircle className="w-3 h-3 mr-1" />
-          Nuevo
-        </Badge>
-      );
-    } else if (daysDiff < 30) {
-      return (
-        <Badge variant="secondary" className="bg-yellow-500">
-          <Clock className="w-3 h-3 mr-1" />
-          Activo
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge variant="outline">
-          <XCircle className="w-3 h-3 mr-1" />
-          En Progreso
-        </Badge>
-      );
+    switch (estado) {
+      case 'finalizado':
+        return (
+          <Badge variant="default" className="bg-green-500">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Finalizado
+          </Badge>
+        );
+      case 'activo':
+        return (
+          <Badge variant="secondary" className="bg-blue-500">
+            <Clock className="w-3 h-3 mr-1" />
+            Activo
+          </Badge>
+        );
+      case 'pausado':
+        return (
+          <Badge variant="outline" className="bg-yellow-500">
+            <Clock className="w-3 h-3 mr-1" />
+            Pausado
+          </Badge>
+        );
+      case 'cancelado':
+        return (
+          <Badge variant="destructive">
+            <XCircle className="w-3 h-3 mr-1" />
+            Cancelado
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary">
+            <Clock className="w-3 h-3 mr-1" />
+            Activo
+          </Badge>
+        );
     }
   };
 

@@ -27,6 +27,12 @@ export default new EntitySchema({
       length: 255,
       nullable: true,
     },
+    estado: {
+      type: 'varchar',
+      length: 20,
+      default: 'activo',
+      nullable: false,
+    },
     created_at: {
       type: 'timestamp',
       createDate: true,

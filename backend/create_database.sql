@@ -34,7 +34,11 @@ CREATE TABLE projects (
   project_id SERIAL PRIMARY KEY,
   admin_id INTEGER,
   name VARCHAR(100),
-  description TEXT
+  description TEXT,
+  ubicacion VARCHAR(255),
+  estado VARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'finalizado', 'pausado', 'cancelado')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -349,3 +353,62 @@ CREATE TABLE work_order_items (
     estado_item VARCHAR(20) DEFAULT 'pendiente' 
                 CHECK (estado_item IN ('pendiente','entregado'))
 );
+
+
+
+
+-- // actualizas movements creamos la columna ubicacion_actual y estanteria_actual
+ALTER TABLE movements
+ADD COLUMN ubicacion_actual VARCHAR(255);
+
+
+ALTER TABLE movements
+ADD COLUMN estanteria_actual VARCHAR(255);
+
+-- insertamos datos en la columna ubicacion_actual y estanteria_actual
+UPDATE movements
+SET 
+  ubicacion_actual = CASE product_id
+    WHEN 1 THEN 'Depósito Central'
+    WHEN 2 THEN 'Obra 101'
+    WHEN 3 THEN 'Obra  102'
+    WHEN 4 THEN 'Depósito Norte'
+    WHEN 5 THEN 'Obra  103'
+  END,
+  estanteria_actual = CASE product_id
+    WHEN 1 THEN 'A1'
+    WHEN 2 THEN 'A5'
+    WHEN 3 THEN 'B2'
+    WHEN 4 THEN 'B3'
+    WHEN 5 THEN 'C1'
+  END
+WHERE product_id BETWEEN 1 AND 5;
+
+
+ALTER TABLE projects
+ADD COLUMN ubicacion VARCHAR(255);
+
+-- insertamos datos en la columna ubicacion
+
+UPDATE projects
+SET ubicacion = 'Parque Industrial Simetra S.R.L'
+WHERE project_id = 1;
+
+-- Insertar pedidos de obra de prueba
+INSERT INTO work_orders (project_id, descripcion, fecha_solicitud, usuario_id, estado)
+VALUES 
+(1, 'Solicitud de materiales para la obra 105 - mantenimiento de válvulas', NOW(), 2, 'Pendiente'),
+(2, 'Pedido de repuestos para bombas en la obra 204 - Comodoro Rivadavia', NOW(), 2, 'Aprobado'),
+(3, 'Requerimiento de EPP y herramientas para la obra 310 - Planta de tratamiento', NOW(), 3, 'En proceso'),
+(4, 'Compra de cañerías y válvulas de alta presión para obra 105', NOW(), 3, 'Pendiente'),
+(5, 'Solicitud de materiales eléctricos - obra 450', NOW(), 2, 'Completado');
+
+
+-- Insertar items de prueba
+INSERT INTO work_order_items (work_order_id, nombre_producto, descripcion, cantidad, estado_item)
+VALUES
+(1, 'Casco de seguridad', 'Casco de protección industrial para personal de planta', 20, 'Pendiente'),
+(2, 'Guantes resistentes al aceite', 'Guantes de seguridad para manipulación de maquinaria y productos químicos', 50, 'Pendiente'),
+(3, 'Bomba de combustible portátil', 'Bomba para trasiego de combustible y lubricantes', 5, 'Pendiente'),
+(4, 'Tubería de acero', 'Tubería para transporte de crudo y gas', 100, 'Pendiente'),
+(5, 'Válvula de seguridad', 'Válvula de control de presión para equipos de perforación', 30, 'Pendiente');

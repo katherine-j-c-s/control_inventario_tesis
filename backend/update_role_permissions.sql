@@ -15,7 +15,9 @@ SET permisos = '{
   "productEntry": true,
   "generateQR": true,
   "scanQR": true,
-  "adminUsers": true
+  "adminUsers": true,
+  "projects": true,
+  "workOrder": true
 }' 
 WHERE nombre = 'admin';
 

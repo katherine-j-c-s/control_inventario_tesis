@@ -9,15 +9,17 @@ SET permisos = '{
   "productExit": true,
   "generateQR": true,
   "scanQR": true,
-  "pendingPermissions": true,
+  "pendingPermissions": false,
   "adminUsers": true,
-  "generateReports": true,
+  "generateReports": false,
   "entrega": true,
   "movimiento": true,
   "egreso": true,
   "admin_usuarios": true,
   "admin_roles": true,
-  "admin_sistema": true
+  "admin_sistema": true,
+  "workOrder": true,
+  "projects": true
 }'::json
 WHERE rol = 'admin';
 

@@ -13,12 +13,14 @@ export default new EntitySchema({
     supplier: {
       type: 'varchar',
       length: 100,
+      nullable: true,
     },  
     status: {
       type: 'boolean',
     },
     project_id: {
       type: 'int',
+      nullable: true,
       references: 'projects',
     },
     issue_date: {
@@ -40,14 +42,17 @@ export default new EntitySchema({
     responsible_person: {
       type: 'varchar',
       length: 100,
+      nullable: true,
     },
     delivery_status: {
       type: 'varchar',
       length: 50,
+      nullable: true,
     },
     contact: {
       type: 'varchar',
       length: 100,
+      nullable: true,
     },
     item_quantity: {
       type: 'int',
@@ -55,10 +60,16 @@ export default new EntitySchema({
     company_name: {
       type: 'varchar',
       length: 150,
+      nullable: true,
     },
     company_address: {
       type: 'varchar',
       length: 200,
+      nullable: true,
+    },
+    notes: {
+      type: 'text',
+      nullable: true,
     },
   },
 });

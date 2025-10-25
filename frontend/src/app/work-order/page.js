@@ -52,7 +52,11 @@ const WorkOrder = () => {
   const handleFormSubmit = (formData) => {
     console.log('Nueva solicitud:', formData);
     setShowForm(false);
-    handleRefresh();
+    
+    // Si la creación fue exitosa, refrescar la lista
+    if (formData && formData.success) {
+      handleRefresh();
+    }
   };
 
   if (loading) {

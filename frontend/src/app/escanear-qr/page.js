@@ -3,7 +3,7 @@
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import QrScannerContent from './QrScannerContent';
 import { useRouter } from "next/navigation";
-
+import { useEffect } from 'react';
 
 export default function QrScannerPage() {
   const { user, loading } = useAuth();

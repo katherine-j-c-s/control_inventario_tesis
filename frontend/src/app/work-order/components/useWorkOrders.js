@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { workOrderAPI } from "@/lib/api";
 
 export const useWorkOrders = () => {
   const [workOrders, setWorkOrders] = useState([]);
@@ -89,8 +90,9 @@ export const useWorkOrders = () => {
     setLoadingData(true);
     setError(null);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setWorkOrders(mockData);
+      const response = await workOrderAPI.getAllWorkOrders();
+      const workOrdersData = response.data || [];
+      setWorkOrders(workOrdersData);
       setCurrentView('all');
       showSuccess('Solicitudes cargadas correctamente');
     } catch (error) {
@@ -104,13 +106,31 @@ export const useWorkOrders = () => {
     setLoadingData(true);
     setError(null);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const pending = mockData.filter(order => order.estado === 'Pendiente');
+      // Intentar primero con 'pendiente' (base de datos)
+      let response = await workOrderAPI.getWorkOrdersByStatus('pendiente');
+      let workOrdersData = response.data || [];
+      
+      // Si no hay datos, intentar con mock data usando filtro local
+      if (workOrdersData.length === 0) {
+        response = await workOrderAPI.getAllWorkOrders();
+        const allData = response.data || [];
+        workOrdersData = allData.filter(order => 
+          order.estado === 'pendiente' || order.estado === 'Pendiente'
+        );
+      }
+      
+      setWorkOrders(workOrdersData);
+      setCurrentView('pending');
+      showSuccess(`${workOrdersData.length} solicitudes pendientes cargadas`);
+    } catch (error) {
+      console.error('Error cargando pendientes:', error);
+      // Fallback: usar datos mock si hay error con la API
+      const pending = mockData.filter(order => 
+        order.estado === 'pendiente' || order.estado === 'Pendiente'
+      );
       setWorkOrders(pending);
       setCurrentView('pending');
-      showSuccess('Solicitudes pendientes cargadas');
-    } catch (error) {
-      handleError(error);
+      showSuccess(`${pending.length} solicitudes pendientes (datos de ejemplo)`);
     } finally {
       setLoadingData(false);
     }
@@ -120,13 +140,31 @@ export const useWorkOrders = () => {
     setLoadingData(true);
     setError(null);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const approved = mockData.filter(order => order.estado === 'Aprobada');
+      // Intentar primero con 'aprobado' (base de datos)
+      let response = await workOrderAPI.getWorkOrdersByStatus('aprobado');
+      let workOrdersData = response.data || [];
+      
+      // Si no hay datos, intentar con mock data usando filtro local
+      if (workOrdersData.length === 0) {
+        response = await workOrderAPI.getAllWorkOrders();
+        const allData = response.data || [];
+        workOrdersData = allData.filter(order => 
+          order.estado === 'aprobado' || order.estado === 'Aprobada'
+        );
+      }
+      
+      setWorkOrders(workOrdersData);
+      setCurrentView('approved');
+      showSuccess(`${workOrdersData.length} solicitudes aprobadas cargadas`);
+    } catch (error) {
+      console.error('Error cargando aprobadas:', error);
+      // Fallback: usar datos mock si hay error con la API
+      const approved = mockData.filter(order => 
+        order.estado === 'aprobado' || order.estado === 'Aprobada'
+      );
       setWorkOrders(approved);
       setCurrentView('approved');
-      showSuccess('Solicitudes aprobadas cargadas');
-    } catch (error) {
-      handleError(error);
+      showSuccess(`${approved.length} solicitudes aprobadas (datos de ejemplo)`);
     } finally {
       setLoadingData(false);
     }
@@ -136,13 +174,31 @@ export const useWorkOrders = () => {
     setLoadingData(true);
     setError(null);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const rejected = mockData.filter(order => order.estado === 'Rechazada');
+      // Intentar primero con 'rechazado' (base de datos)
+      let response = await workOrderAPI.getWorkOrdersByStatus('rechazado');
+      let workOrdersData = response.data || [];
+      
+      // Si no hay datos, intentar con mock data usando filtro local
+      if (workOrdersData.length === 0) {
+        response = await workOrderAPI.getAllWorkOrders();
+        const allData = response.data || [];
+        workOrdersData = allData.filter(order => 
+          order.estado === 'rechazado' || order.estado === 'Rechazada'
+        );
+      }
+      
+      setWorkOrders(workOrdersData);
+      setCurrentView('rejected');
+      showSuccess(`${workOrdersData.length} solicitudes rechazadas cargadas`);
+    } catch (error) {
+      console.error('Error cargando rechazadas:', error);
+      // Fallback: usar datos mock si hay error con la API
+      const rejected = mockData.filter(order => 
+        order.estado === 'rechazado' || order.estado === 'Rechazada'
+      );
       setWorkOrders(rejected);
       setCurrentView('rejected');
-      showSuccess('Solicitudes rechazadas cargadas');
-    } catch (error) {
-      handleError(error);
+      showSuccess(`${rejected.length} solicitudes rechazadas (datos de ejemplo)`);
     } finally {
       setLoadingData(false);
     }
@@ -174,9 +230,9 @@ export const useWorkOrders = () => {
   const handleApprove = async (orderId) => {
     setLoadingData(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await workOrderAPI.updateWorkOrder(orderId, { estado: 'aprobado' });
       setWorkOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, estado: 'Aprobada' } : order
+        order.id === orderId ? { ...order, estado: 'aprobado' } : order
       ));
       showSuccess('Solicitud aprobada exitosamente');
     } catch (error) {
@@ -189,9 +245,9 @@ export const useWorkOrders = () => {
   const handleReject = async (orderId) => {
     setLoadingData(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await workOrderAPI.updateWorkOrder(orderId, { estado: 'rechazado' });
       setWorkOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, estado: 'Rechazada' } : order
+        order.id === orderId ? { ...order, estado: 'rechazado' } : order
       ));
       showSuccess('Solicitud rechazada');
     } catch (error) {
@@ -206,10 +262,31 @@ export const useWorkOrders = () => {
     handleGetAll();
   }, []);
 
-  const totalCount = mockData.length;
-  const pendingCount = mockData.filter(order => order.estado === 'Pendiente').length;
-  const approvedCount = mockData.filter(order => order.estado === 'Aprobada').length;
-  const rejectedCount = mockData.filter(order => order.estado === 'Rechazada').length;
+  const [allWorkOrders, setAllWorkOrders] = useState([]);
+
+  // Mantener una copia de todos los work orders para los conteos
+  useEffect(() => {
+    const loadAllWorkOrders = async () => {
+      try {
+        const response = await workOrderAPI.getAllWorkOrders();
+        setAllWorkOrders(response.data || []);
+      } catch (error) {
+        console.error('Error loading work orders for counts:', error);
+      }
+    };
+    loadAllWorkOrders();
+  }, [workOrders]);
+
+  const totalCount = allWorkOrders.length;
+  const pendingCount = allWorkOrders.filter(order => 
+    order.estado === 'pendiente' || order.estado === 'Pendiente'
+  ).length;
+  const approvedCount = allWorkOrders.filter(order => 
+    order.estado === 'aprobado' || order.estado === 'Aprobada'
+  ).length;
+  const rejectedCount = allWorkOrders.filter(order => 
+    order.estado === 'rechazado' || order.estado === 'Rechazada'
+  ).length;
 
   return {
     workOrders,

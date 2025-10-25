@@ -12,7 +12,7 @@ import {
 
 const ProjectActions = ({ 
   onGetAll, 
-  onGetNew, 
+  onGetFinished, 
   onGetActive, 
   loading = false 
 }) => {
@@ -44,17 +44,17 @@ const ProjectActions = ({
         </CardContent>
       </Card>
 
-      {/* Botón para obtener proyectos nuevos */}
+      {/* Botón para obtener proyectos finalizados */}
       <Card className="bg-card border-border">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
             <CheckCircle className="w-4 h-4 mr-2" />
-            Proyectos Nuevos
+            Proyectos Finalizados
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Button 
-            onClick={onGetNew} 
+            onClick={onGetFinished} 
             disabled={loading}
             className="w-full"
             variant="outline"
@@ -64,7 +64,7 @@ const ProjectActions = ({
             ) : (
               <CheckCircle className="w-4 h-4 mr-2" />
             )}
-            Ver Nuevos
+            Ver Finalizados
           </Button>
         </CardContent>
       </Card>

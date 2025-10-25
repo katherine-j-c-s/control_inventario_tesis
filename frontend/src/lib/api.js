@@ -251,4 +251,56 @@ export const orderAPI = {
   },
 };
 
+export const projectAPI = {
+  getAllProjects: () => {
+    return api.get('/projects');
+  },
+
+  getProjectById: (id) => {
+    return api.get(`/projects/${id}`);
+  },
+
+  getProjectsByStatus: (status) => {
+    return api.get(`/projects/status/${status}`);
+  },
+
+  createProject: (projectData) => {
+    return api.post('/projects', projectData);
+  },
+
+  updateProject: (id, projectData) => {
+    return api.put(`/projects/${id}`, projectData);
+  },
+
+  deleteProject: (id) => {
+    return api.delete(`/projects/${id}`);
+  },
+};
+
+export const workOrderAPI = {
+  getAllWorkOrders: () => {
+    return api.get('/work-orders');
+  },
+
+  getWorkOrderById: (id) => {
+    return api.get(`/work-orders/${id}`);
+  },
+
+  getWorkOrdersByStatus: (status) => {
+    return api.get(`/work-orders/status/${status}`);
+  },
+
+  createWorkOrder: (workOrderData) => {
+    return api.post('/work-orders', workOrderData);
+  },
+
+  updateWorkOrder: (id, workOrderData) => {
+    return api.put(`/work-orders/${id}`, workOrderData);
+  },
+
+  deleteWorkOrder: (id) => {
+    return api.delete(`/work-orders/${id}`);
+  },
+};
+
 export default api;

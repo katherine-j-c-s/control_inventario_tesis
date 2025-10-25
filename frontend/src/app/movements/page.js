@@ -94,7 +94,6 @@ const MovementsContent = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
-                <TrendingUp className="h-8 w-8" />
                 Movimientos de Productos
               </h1>
               <p className="mt-1 text-muted-foreground">
