@@ -96,10 +96,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
           <Button variant="outline" onClick={onClose}>
             Cerrar
           </Button>
-          <Button>
-            <FileText className="h-4 w-4 mr-2" />
-            Imprimir Orden
-          </Button>
+          
         </div>
       </DialogContent>
     </Dialog>
