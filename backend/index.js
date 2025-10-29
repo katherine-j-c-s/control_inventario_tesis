@@ -14,6 +14,8 @@ import receiptRoutes from "./routes/receiptRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import orderReportRoutes from "./routes/orderReportRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import workOrderRoutes from "./routes/workOrderRoutes.js";
 
 // Para usar __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -54,6 +56,8 @@ app.use("/api", receiptRoutes);
 app.use("/api", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-report", orderReportRoutes);
+app.use("/api", projectRoutes);
+app.use("/api", workOrderRoutes);
 
 // Ruta de prueba
 app.get("/api/health", (req, res) => {

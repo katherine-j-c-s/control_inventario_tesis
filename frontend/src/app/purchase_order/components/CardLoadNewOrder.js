@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import FormField from "./FormField";
 import { orderAPI } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
   const handleChange = (field, value) => {
@@ -99,6 +100,7 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
 };
 
 const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     // Datos de la empresa que compra
     company_name: "Simetra S.A.",
@@ -145,29 +147,73 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
   };
 
   const updateProducto = (index, updatedProduct) => {
-    setProductos((prev) => prev.map((product, i) => (i === index ? updatedProduct : product)));
+    setProductos((prev) => {
+      const newProducts = prev.map((product, i) => (i === index ? updatedProduct : product));
+      
+      // Calcular totales automáticamente
+      const validProducts = newProducts.filter(p => p.articulo && p.cantidad > 0 && p.precio_unitario > 0);
+      const subtotal = validProducts.reduce((sum, p) => sum + (p.importe || 0), 0);
+      const totalQuantity = validProducts.reduce((sum, p) => sum + (parseInt(p.cantidad) || 0), 0);
+      
+      // Actualizar formData con los nuevos totales
+      setFormData(prev => ({
+        ...prev,
+        amount: subtotal,
+        total: subtotal,
+        item_quantity: totalQuantity
+      }));
+      
+      return newProducts;
+    });
   };
 
   const removeProducto = (index) => {
     if (productos.length > 1) {
-      setProductos((prev) => prev.filter((_, i) => i !== index));
+      setProductos((prev) => {
+        const newProducts = prev.filter((_, i) => i !== index);
+        
+        // Recalcular totales después de eliminar
+        const validProducts = newProducts.filter(p => p.articulo && p.cantidad > 0 && p.precio_unitario > 0);
+        const subtotal = validProducts.reduce((sum, p) => sum + (p.importe || 0), 0);
+        const totalQuantity = validProducts.reduce((sum, p) => sum + (parseInt(p.cantidad) || 0), 0);
+        
+        setFormData(prev => ({
+          ...prev,
+          amount: subtotal,
+          total: subtotal,
+          item_quantity: totalQuantity
+        }));
+        
+        return newProducts;
+      });
     }
   };
 
 
   const validateForm = () => {
-    if (!formData.company_name || !formData.supplier) {
-      setError("Por favor, completa los campos obligatorios de la empresa y proveedor");
+    if (!formData.supplier?.trim()) {
+      setError("El proveedor es obligatorio");
       return false;
     }
 
-    if (!formData.issue_date || !formData.delivery_date) {
-      setError("Por favor, completa las fechas de emisión y entrega");
+    if (!formData.issue_date) {
+      setError("La fecha de emisión es obligatoria");
+      return false;
+    }
+
+    if (!formData.delivery_date) {
+      setError("La fecha de entrega es obligatoria");
+      return false;
+    }
+
+    // Validar que la fecha de entrega sea posterior a la de emisión
+    if (new Date(formData.delivery_date) <= new Date(formData.issue_date)) {
+      setError("La fecha de entrega debe ser posterior a la fecha de emisión");
       return false;
     }
 
     const validProductos = productos.filter(
-      (p) => p.articulo && p.cantidad > 0 && p.precio_unitario > 0
+      (p) => p.articulo?.trim() && p.cantidad > 0 && p.precio_unitario > 0
     );
 
     if (validProductos.length === 0) {
@@ -185,43 +231,100 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
       return;
     }
 
+    // Verificar autenticación
+    if (!user || !user.id) {
+      setError("Debe estar autenticado para crear una orden");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // Calcular totales
-      const validProductos = productos.filter((p) => p.articulo && p.cantidad > 0 && p.precio_unitario > 0);
-      const subtotal = validProductos.reduce((sum, p) => sum + (p.importe || 0), 0);
-      const totalQuantity = validProductos.reduce((sum, p) => sum + (parseInt(p.cantidad) || 0), 0);
-
+      // Preparar datos según el modelo Order del backend
       const orderData = {
-        ...formData,
-        amount: subtotal,
-        total: subtotal,
-        item_quantity: totalQuantity,
+        supplier: formData.supplier.trim(),
         status: formData.delivery_status === "Delivered",
+        issue_date: formData.issue_date,
+        delivery_date: formData.delivery_date,
+        amount: parseFloat(formData.amount) || 0,
+        total: parseFloat(formData.total) || 0,
+        responsible_person: formData.responsible_person?.trim() || null,
+        delivery_status: formData.delivery_status || "Pending",
+        contact: formData.contact?.trim() || null,
+        item_quantity: parseInt(formData.item_quantity) || 0,
+        company_name: formData.company_name?.trim() || null,
+        company_address: formData.company_address?.trim() || null,
+        notes: formData.notes?.trim() || null,
       };
+
+      // Solo filtrar campos que son explícitamente undefined o string vacío
+      Object.keys(orderData).forEach(key => {
+        if (orderData[key] === '' || orderData[key] === undefined) {
+          orderData[key] = null;
+        }
+      });
 
       console.log("Datos de la orden a enviar:", orderData);
 
       const response = await orderAPI.createOrder(orderData);
       
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         setSuccess("✅ Orden de compra creada exitosamente");
 
+        // Resetear formulario
+        setFormData({
+          company_name: "Simetra S.A.",
+          company_address: "",
+          responsible_person: "",
+          supplier: "",
+          contact: "",
+          issue_date: new Date().toISOString().split("T")[0],
+          delivery_date: "",
+          status: false,
+          delivery_status: "Pending",
+          amount: 0,
+          total: 0,
+          item_quantity: 0,
+          notes: "",
+        });
+
+        // Resetear productos
+        setProductos([
+          { articulo: "", descripcion: "", cantidad: 1, precio_unitario: 0, importe: 0 },
+        ]);
+
         if (onOrderCreated) {
-          onOrderCreated();
+          onOrderCreated(response.data.data);
         }
 
         setTimeout(() => {
           if (onClose) onClose();
         }, 2000);
       } else {
-        setError("❌ Error al crear la orden: " + (response.data.message || "Error desconocido"));
+        setError("❌ Error al crear la orden: " + (response.data?.message || "Error desconocido"));
       }
     } catch (error) {
-      console.error("Error al guardar la orden:", error);
-      setError("❌ Error al guardar la orden. Inténtalo de nuevo.");
+      console.error("Error completo:", error);
+      console.error("Error response:", error.response);
+      console.error("Error data:", error.response?.data);
+      
+      if (error.response) {
+        const status = error.response.status;
+        const serverMessage = error.response.data?.message || 'Error del servidor';
+        
+        if (status === 500) {
+          setError(`❌ Error interno del servidor: ${serverMessage}. Verifique que todos los campos estén correctos.`);
+        } else if (status === 400) {
+          setError(`❌ Datos inválidos: ${serverMessage}`);
+        } else {
+          setError(`❌ Error ${status}: ${serverMessage}`);
+        }
+      } else if (error.request) {
+        setError('❌ Error de conexión. Verifique su conexión a internet.');
+      } else {
+        setError('❌ Error inesperado al crear la orden');
+      }
     } finally {
       setLoading(false);
     }
@@ -229,6 +332,15 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
 
   return (
     <div className="space-y-6">
+      {/* Información del usuario */}
+      {user && (
+        <div className="bg-muted/50 p-3 rounded-md">
+          <p className="text-sm text-muted-foreground">
+            <strong>Creando orden como:</strong> {user.nombre} {user.apellido}
+          </p>
+        </div>
+      )}
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -238,6 +350,20 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
       {success && (
         <Alert className="border-green-500 bg-green-50">
           <AlertDescription className="text-green-700">{success}</AlertDescription>
+        </Alert>
+      )}
+
+      {!user && (
+        <Alert variant="destructive">
+          <AlertDescription>Debe estar autenticado para crear una orden de compra</AlertDescription>
+        </Alert>
+      )}
+
+      {user && (
+        <Alert className="border-blue-500 bg-blue-50">
+          <AlertDescription className="text-blue-700">
+            ℹ️ Los totales se calculan automáticamente basándose en los productos agregados
+          </AlertDescription>
         </Alert>
       )}
 
@@ -326,27 +452,28 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
                 <DollarSign className="h-4 w-4" />
                 Resumen de Totales
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField 
-                  label="Monto" 
-                  id="amount"
-                  type="number" 
-                  min="0" 
-                  step="0.01" 
-                  value={formData.amount} 
-                  onChange={(e) => handleInputChange("amount", parseFloat(e.target.value) || 0)} 
-                  placeholder="0.00" 
-                />
-                <FormField 
-                  label="Total" 
-                  id="total"
-                  type="number" 
-                  min="0" 
-                  step="0.01" 
-                  value={formData.total} 
-                  onChange={(e) => handleInputChange("total", parseFloat(e.target.value) || 0)} 
-                  placeholder="0.00" 
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField label="Cantidad de Items">
+                  <div className="flex items-center h-9 px-3 bg-muted rounded-md">
+                    <span className="text-sm font-semibold">
+                      {formData.item_quantity} items
+                    </span>
+                  </div>
+                </FormField>
+                <FormField label="Monto">
+                  <div className="flex items-center h-9 px-3 bg-muted rounded-md">
+                    <span className="text-sm font-semibold">
+                      ${(formData.amount || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </FormField>
+                <FormField label="Total">
+                  <div className="flex items-center h-9 px-3 bg-muted rounded-md">
+                    <span className="text-sm font-semibold">
+                      ${(formData.total || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </FormField>
               </div>
             </div>
 

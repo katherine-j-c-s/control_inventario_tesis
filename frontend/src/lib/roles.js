@@ -1,6 +1,7 @@
+import ProjectsPage from "@/app/projects/page";
 import {
   Home, Users, Settings, FileText, QrCode, ScanLine, Package,
-  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered
+  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered, Building2
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
@@ -13,9 +14,9 @@ export const allRoutes = {
   productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
   generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
-  pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
+  projects: { href: "/projects", text: "Obras ", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
-  generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
+  workOrder: { href: "/work-order", text: "Petición de Obra", icon: Building2 },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver
@@ -51,6 +52,7 @@ export const rolesConfig = {
       allRoutes.generateQR,
       allRoutes.scanQR,
       allRoutes.productExit,
+      allRoutes.workOrder,
     ],
   },
   'Lider de Proyecto': {

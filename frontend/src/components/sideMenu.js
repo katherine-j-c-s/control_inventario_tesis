@@ -124,7 +124,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
       animate={
         isMobile
           ? { x: isOpen ? 0 : "-100%" } // Animación para móvil (deslizamiento)
-          : { width: isOpen ? "16rem" : "5rem" } // Animación para escritorio (ancho)
+          : { width: isOpen ? "18rem" : "5rem" } // Animación para escritorio (ancho)
       }
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={`bg-card text-card-foreground p-4 flex flex-col h-screen shadow-2xl z-50 ${
@@ -152,13 +152,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {/* <Image
-                  src={fullLogo}
-                  alt="Control de Inventario"
-                  width={60}
-                  height={40}
-                  priority
-                /> */}
+               
               </motion.div>
             ) : (
               <motion.div
@@ -194,23 +188,36 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
       </nav>
 
 
-      <div className="mt-auto ">
+      <div className="mt-auto">
         <DarkModeToggle isOpen={isOpen} />
-        <div className="flex items-center justify-center p-2 mt-2 rounded-lg hover:bg-muted group">
-          <ProfileImage user={user} size="lg" />
-          <AnimatePresence>
-            {isOpen && (
-              <Link href="/profile" className="ml-3 flex-grow  ">
-                <p className="text-sm font-semibold text-foreground whitespace-nowrap">
-                  {user?.nombre}
-                </p>
-                <p className="text-xs text-muted-foreground whitespace-nowrap">
-                  {user?.rol}
-                </p>
-              </Link>
-            )}
-          </AnimatePresence>
-        </div>
+        <Link href="/profile" className="block mt-2">
+          <div className="flex items-center p-2 rounded-lg hover:bg-muted transition-colors group cursor-pointer">
+            <div className="flex-shrink-0">
+              <ProfileImage 
+                user={user} 
+                size={isOpen ? "lg" : "md"} 
+                className="ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all"
+              />
+            </div>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="ml-3 flex-grow min-w-0"
+                >
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {user?.nombre} {user?.apellido}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate capitalize">
+                    {user?.rol || 'Usuario'}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Link>
       </div>
     </motion.aside>
   );

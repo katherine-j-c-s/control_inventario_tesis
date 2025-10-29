@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, Pencil, Trash2, FileText, Search, Loader2 } from "lucide-react";
 import CardViewOrder from "./CardViewOrder";
+import CardEditOrder from "./CardEditOrder";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { orderAPI } from "@/lib/api";
 
 const TableOrders = () => {
@@ -24,8 +26,9 @@ const TableOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedSupplier, setSelectedSupplier] = useState("all");
   
-  // Estados para el modal de visualización
+  // Estados para los modales
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   // Estados para datos y carga
@@ -109,19 +112,50 @@ const TableOrders = () => {
   };
 
   const handleEdit = (order) => {
-    console.log('Editar orden:', order);
-    alert(`Editar orden #${order.id}`);
+    setSelectedOrder(order);
+    setIsEditModalOpen(true);
+  };
+
+  const handleOrderUpdated = (updatedOrder) => {
+    setOrders(prev => prev.map(order => 
+      order.order_id === updatedOrder.order_id ? updatedOrder : order
+    ));
+    loadOrders(); // Recargar para asegurar datos actualizados
   };
 
   const handleDelete = async (order) => {
-    if (confirm(`¿Estás seguro de eliminar la orden #${order.order_id}?`)) {
+    const confirmMessage = `¿Estás seguro de eliminar la orden #${order.order_id}?\n\nProveedor: ${order.supplier}\nTotal: $${order.total}\n\nEsta acción no se puede deshacer.`;
+    
+    if (confirm(confirmMessage)) {
       try {
-        await orderAPI.deleteOrder(order.order_id);
-        setOrders(prev => prev.filter(o => o.order_id !== order.order_id));
-        alert(`Orden #${order.order_id} eliminada exitosamente`);
+        setLoading(true);
+        const response = await orderAPI.deleteOrder(order.order_id);
+        
+        if (response.data && response.data.success) {
+          setOrders(prev => prev.filter(o => o.order_id !== order.order_id));
+          alert(`✅ Orden #${order.order_id} eliminada exitosamente`);
+        } else {
+          throw new Error(response.data?.message || "Error al eliminar la orden");
+        }
       } catch (err) {
         console.error("Error eliminando orden:", err);
-        alert("Error al eliminar la orden. Inténtalo de nuevo.");
+        
+        if (err.response) {
+          const status = err.response.status;
+          const message = err.response.data?.message || 'Error del servidor';
+          
+          if (status === 404) {
+            alert("❌ La orden no fue encontrada. Puede que ya haya sido eliminada.");
+          } else if (status === 403) {
+            alert("❌ No tienes permisos para eliminar esta orden.");
+          } else {
+            alert(`❌ Error ${status}: ${message}`);
+          }
+        } else {
+          alert("❌ Error de conexión. Verifica tu conexión a internet.");
+        }
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -295,6 +329,22 @@ const TableOrders = () => {
         onClose={() => setIsViewModalOpen(false)}
         orderData={selectedOrder}
       />
+
+      {/* Modal para editar orden */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              Editar Orden de Compra #{selectedOrder?.order_id}
+            </DialogTitle>
+          </DialogHeader>
+          <CardEditOrder
+            orderData={selectedOrder}
+            onClose={() => setIsEditModalOpen(false)}
+            onOrderUpdated={handleOrderUpdated}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
