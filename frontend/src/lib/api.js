@@ -303,4 +303,41 @@ export const workOrderAPI = {
   },
 };
 
+export const productAPI = {
+  getAllProducts: () => {
+    return api.get('/productos');
+  },
+
+  getProductById: (id) => {
+    return api.get(`/productos/${id}`);
+  },
+
+  getProductByCode: async (code) => {
+    const products = await api.get('/productos');
+    return products.data.find(p => p.codigo === code);
+  },
+};
+
+export const movementAPI = {
+  getAllMovements: () => {
+    return api.get('/movements');
+  },
+
+  getMovementById: (id) => {
+    return api.get(`/movements/${id}`);
+  },
+
+  createMovement: (movementData) => {
+    return api.post('/movements', movementData);
+  },
+
+  updateMovement: (id, movementData) => {
+    return api.put(`/movements/${id}`, movementData);
+  },
+
+  deleteMovement: (id) => {
+    return api.delete(`/movements/${id}`);
+  },
+};
+
 export default api;

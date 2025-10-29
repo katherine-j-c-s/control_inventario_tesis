@@ -14,7 +14,8 @@ import {
   MapPin,
   User,
   Calendar,
-  Filter
+  Filter,
+  Map as MapIcon
 } from 'lucide-react';
 import {
   Select,
@@ -23,6 +24,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import MapComponent from '@/components/GoogleMap/MapComponent';
+import { productAPI, receiptAPI } from '@/lib/api';
+import { geocodeAddress } from '@/lib/geocoding';
+import { getGoogleMapsApiKey } from '@/lib/env';
 
 /**
  * Componente moderno de historial de movimientos de productos
@@ -39,6 +51,11 @@ const HistoryMovements = ({ movements = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filteredMovements, setFilteredMovements] = useState([]);
+  const [selectedMovement, setSelectedMovement] = useState(null);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [productLocation, setProductLocation] = useState(null);
+  const [warehouses, setWarehouses] = useState([]);
+  const [loadingMap, setLoadingMap] = useState(false);
 
   // 30 días de retención del historial
   const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
@@ -145,6 +162,157 @@ const HistoryMovements = ({ movements = [] }) => {
       localStorage.removeItem('movementsHistory');
       setLocalHistory([]);
     }
+  };
+
+  // Abrir modal del mapa para un movimiento específico
+  const handleViewMap = async (movement) => {
+    setSelectedMovement(movement);
+    setIsMapModalOpen(true);
+    setLoadingMap(true);
+    setProductLocation(null);
+
+    try {
+      // Cargar almacenes
+      const warehousesResponse = await receiptAPI.getWarehouses();
+      const warehousesData = warehousesResponse.data || [];
+      setWarehouses(warehousesData);
+
+      // Intentar obtener información del producto basado en el movimiento
+      // Buscar producto por código o nombre
+      if (movement.codigoProducto || movement.producto) {
+        try {
+          const productsResponse = await productAPI.getAllProducts();
+          const allProducts = productsResponse.data || [];
+          
+          // Buscar producto por código primero, luego por nombre
+          let product = null;
+          if (movement.codigoProducto) {
+            product = allProducts.find(p => p.codigo === movement.codigoProducto);
+          }
+          if (!product && movement.producto) {
+            product = allProducts.find(p => 
+              p.nombre?.toLowerCase().includes(movement.producto?.toLowerCase()) ||
+              p.codigo?.toLowerCase().includes(movement.producto?.toLowerCase())
+            );
+          }
+
+          if (product) {
+            // Usar directamente el atributo ubicacion del producto (prioridad)
+            const productUbicacion = product.ubicacion;
+            console.log('HistoryMovements: Producto encontrado', {
+              product,
+              productUbicacion,
+              movement,
+            });
+            
+            if (productUbicacion) {
+              console.log('HistoryMovements: Producto tiene ubicación:', productUbicacion);
+              // Primero intentar encontrar un almacén que coincida exactamente o parcialmente
+              const matchingWarehouse = warehousesData.find(w => {
+                const ubicacionLower = productUbicacion.toLowerCase().trim();
+                return (
+                  w.name?.toLowerCase().trim() === ubicacionLower ||
+                  w.location?.toLowerCase().trim() === ubicacionLower ||
+                  w.address_sector?.toLowerCase().trim() === ubicacionLower ||
+                  w.name?.toLowerCase().includes(ubicacionLower) ||
+                  w.location?.toLowerCase().includes(ubicacionLower) ||
+                  w.address_sector?.toLowerCase().includes(ubicacionLower)
+                );
+              });
+
+              if (matchingWarehouse && matchingWarehouse.latitude && matchingWarehouse.longitude) {
+                // Si encontramos un almacén con coordenadas, usarlas
+                const locationData = {
+                  lat: matchingWarehouse.latitude,
+                  lng: matchingWarehouse.longitude,
+                  nombre: product.nombre || movement.producto,
+                  direccion: matchingWarehouse.location || matchingWarehouse.address || matchingWarehouse.address_sector || productUbicacion,
+                };
+                console.log('HistoryMovements: Almacén coincidente encontrado, estableciendo ubicación del producto', locationData);
+                setProductLocation(locationData);
+              } else {
+                // Si no encontramos almacén, intentar geocodificar la ubicación del producto
+                const apiKey = getGoogleMapsApiKey();
+                if (apiKey && apiKey !== '' && apiKey !== 'undefined') {
+                  const coords = await geocodeAddress(productUbicacion, apiKey);
+                  if (coords) {
+                    const locationData = {
+                      ...coords,
+                      nombre: product.nombre || movement.producto,
+                      direccion: productUbicacion,
+                    };
+                    console.log('HistoryMovements: Geocodificación exitosa, estableciendo ubicación del producto', locationData);
+                    setProductLocation(locationData);
+                  } else {
+                    console.warn('HistoryMovements: No se pudo geocodificar la ubicación del producto:', productUbicacion);
+                  }
+                } else {
+                  console.warn('API Key de Google Maps no disponible para geocodificar');
+                }
+              }
+            } else {
+              // Fallback: si el producto no tiene ubicacion, usar origen o destino del movimiento
+              const fallbackUbicacion = movement.origen || movement.destino;
+              if (fallbackUbicacion) {
+                const matchingWarehouse = warehousesData.find(w => 
+                  w.name?.toLowerCase().includes(fallbackUbicacion.toLowerCase()) ||
+                  w.location?.toLowerCase().includes(fallbackUbicacion.toLowerCase())
+                );
+
+                if (matchingWarehouse && matchingWarehouse.latitude && matchingWarehouse.longitude) {
+                  setProductLocation({
+                    lat: matchingWarehouse.latitude,
+                    lng: matchingWarehouse.longitude,
+                    nombre: product.nombre || movement.producto,
+                    direccion: matchingWarehouse.location || fallbackUbicacion,
+                  });
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('HistoryMovements: Error obteniendo información del producto:', error);
+        }
+      } else {
+        console.log('HistoryMovements: No se encontró producto para el movimiento', {
+          codigoProducto: movement.codigoProducto,
+          producto: movement.producto,
+        });
+      }
+
+      // Si no se encontró ubicación específica del producto, usar origen o destino
+      if (!productLocation && (movement.origen || movement.destino)) {
+        const ubicacion = movement.origen || movement.destino;
+        const matchingWarehouse = warehousesData.find(w => 
+          w.name?.toLowerCase().includes(ubicacion.toLowerCase()) ||
+          w.location?.toLowerCase().includes(ubicacion.toLowerCase())
+        );
+
+        if (matchingWarehouse && matchingWarehouse.latitude && matchingWarehouse.longitude) {
+          setProductLocation({
+            lat: matchingWarehouse.latitude,
+            lng: matchingWarehouse.longitude,
+            nombre: movement.producto || 'Ubicación del movimiento',
+            direccion: matchingWarehouse.location || ubicacion,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando datos del mapa:', error);
+    } finally {
+      setLoadingMap(false);
+      console.log('HistoryMovements: Finalizando carga del mapa', {
+        productLocation,
+        warehousesCount: warehouses.length,
+      });
+    }
+  };
+
+  // Cerrar modal del mapa
+  const handleCloseMapModal = () => {
+    setIsMapModalOpen(false);
+    setSelectedMovement(null);
+    setProductLocation(null);
   };
 
   if (localHistory.length === 0) {
@@ -260,17 +428,28 @@ const HistoryMovements = ({ movements = [] }) => {
                     <span className="font-medium">{movement.destino || 'N/A'}</span>
                   </div>
 
-                  {/* Fila inferior: Usuario y fecha */}
+                  {/* Fila inferior: Usuario, fecha y botón mapa */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2">
                       <User className="h-3 w-3" />
                       <span>{movement.usuario || 'Usuario desconocido'}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      <span title={formatTimestamp(movement.timestamp)}>
-                        {getRelativeTime(movement.timestamp)}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        <span title={formatTimestamp(movement.timestamp)}>
+                          {getRelativeTime(movement.timestamp)}
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => handleViewMap(movement)}
+                      >
+                        <MapIcon className="h-3 w-3 mr-1" />
+                        Ver en Mapa
+                      </Button>
                     </div>
                   </div>
 
@@ -286,6 +465,31 @@ const HistoryMovements = ({ movements = [] }) => {
           )}
         </div>
       </CardContent>
+
+      {/* Modal del Mapa */}
+      <Dialog open={isMapModalOpen} onOpenChange={setIsMapModalOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Mapa de Ubicación - {selectedMovement?.producto || 'Producto'}
+            </DialogTitle>
+            <DialogDescription>
+              Visualización de la ubicación actual del producto y almacenes disponibles
+            </DialogDescription>
+          </DialogHeader>
+          {loadingMap ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <MapComponent
+              productLocation={productLocation}
+              warehouses={warehouses}
+              apiKey={getGoogleMapsApiKey()}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
