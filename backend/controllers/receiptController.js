@@ -147,7 +147,7 @@ const createReceipt = async (req, res) => {
                             UPDATE products 
                             SET stock_actual = stock_actual + $1,
                                 updated_at = CURRENT_TIMESTAMP
-                            WHERE id = $3;
+                            WHERE id = $2;
                         `,
               [quantity, productId]
             );

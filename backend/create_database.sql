@@ -412,3 +412,113 @@ VALUES
 (3, 'Bomba de combustible portátil', 'Bomba para trasiego de combustible y lubricantes', 5, 'Pendiente'),
 (4, 'Tubería de acero', 'Tubería para transporte de crudo y gas', 100, 'Pendiente'),
 (5, 'Válvula de seguridad', 'Válvula de control de presión para equipos de perforación', 30, 'Pendiente');
+
+
+
+
+
+
+-- Script para corregir la estructura de la tabla products
+-- Este script actualiza la tabla products para que coincida con la estructura esperada
+
+-- Primero verificamos si las columnas existen y las agregamos si es necesario
+DO $$ 
+BEGIN
+    -- Agregar columna 'nombre' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'nombre') THEN
+        ALTER TABLE products ADD COLUMN nombre VARCHAR(100);
+        -- Copiar datos de 'name' a 'nombre' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'name') THEN
+            UPDATE products SET nombre = name WHERE nombre IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'codigo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'codigo') THEN
+        ALTER TABLE products ADD COLUMN codigo VARCHAR(50);
+        UPDATE products SET codigo = 'PROD-' || id WHERE codigo IS NULL;
+    END IF;
+
+    -- Agregar columna 'categoria' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'categoria') THEN
+        ALTER TABLE products ADD COLUMN categoria VARCHAR(100) DEFAULT 'General';
+    END IF;
+
+    -- Agregar columna 'descripcion' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'descripcion') THEN
+        ALTER TABLE products ADD COLUMN descripcion TEXT;
+        -- Copiar datos de 'description' a 'descripcion' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'description') THEN
+            UPDATE products SET descripcion = description WHERE descripcion IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'unidad_medida' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'unidad_medida') THEN
+        ALTER TABLE products ADD COLUMN unidad_medida VARCHAR(50) DEFAULT 'unidad';
+    END IF;
+
+    -- Agregar columna 'precio_unitario' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'precio_unitario') THEN
+        ALTER TABLE products ADD COLUMN precio_unitario DECIMAL(10,2) DEFAULT 0;
+    END IF;
+
+    -- Agregar columna 'stock_minimo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock_minimo') THEN
+        ALTER TABLE products ADD COLUMN stock_minimo INTEGER DEFAULT 0;
+    END IF;
+
+    -- Agregar columna 'stock_actual' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock_actual') THEN
+        ALTER TABLE products ADD COLUMN stock_actual INTEGER DEFAULT 0;
+        -- Copiar datos de 'stock' a 'stock_actual' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock') THEN
+            UPDATE products SET stock_actual = stock WHERE stock_actual = 0;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'ubicacion' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'ubicacion') THEN
+        ALTER TABLE products ADD COLUMN ubicacion VARCHAR(255);
+        -- Copiar datos de 'location' a 'ubicacion' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'location') THEN
+            UPDATE products SET ubicacion = location WHERE ubicacion IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'activo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'activo') THEN
+        ALTER TABLE products ADD COLUMN activo BOOLEAN DEFAULT true;
+    END IF;
+
+    -- Agregar columna 'created_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'created_at') THEN
+        ALTER TABLE products ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Agregar columna 'updated_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'updated_at') THEN
+        ALTER TABLE products ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Agregar columna 'qr_code' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'qr_code') THEN
+        ALTER TABLE products ADD COLUMN qr_code TEXT;
+        -- Copiar datos de 'qr' a 'qr_code' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'qr') THEN
+            UPDATE products SET qr_code = qr WHERE qr_code IS NULL;
+        END IF;
+    END IF;
+
+END $$;
+
+-- Verificar la estructura actualizada
+SELECT column_name, data_type, is_nullable, column_default 
+FROM information_schema.columns 
+WHERE table_name = 'products' 
+ORDER BY ordinal_position;
+
+-- Mostrar algunos registros de ejemplo
+SELECT id, nombre, codigo, categoria, descripcion, stock_actual, ubicacion, activo 
+FROM products 
+LIMIT 5;

@@ -62,7 +62,7 @@ async function getUnverifiedReceipts() {
     FROM receipts r
     LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.verification_status = false 
-    AND r.status != 'deleted'
+    AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
   `;
   const result = await pool.query(query);
@@ -88,7 +88,7 @@ async function getAllReceipts() {
       r.status
     FROM receipts r
     LEFT JOIN warehouses w ON r.warehouse_id = w.id
-    WHERE r.status != 'deleted'
+    WHERE (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
   `;
   const result = await pool.query(query);
@@ -144,7 +144,7 @@ async function getVerifiedReceipts() {
     FROM receipts r
     LEFT JOIN warehouses w ON r.warehouse_id = w.id
     WHERE r.verification_status = true 
-    AND r.status != 'deleted'
+    AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
   `;
   const result = await pool.query(query);
