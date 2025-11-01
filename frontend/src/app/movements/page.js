@@ -20,52 +20,54 @@ const MovementsContent = () => {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+
   // Estado para los movimientos (esto vendrá de una API)
-  const [movements, setMovements] = useState([
-    {
-      id: 1,
-      producto: 'Laptop Dell Inspiron 15',
-      tipo: 'entrada',
-      cantidad: 5,
-      origen: 'Proveedor Tech Solutions',
-      destino: 'Almacén Central',
-      usuario: user?.nombre || 'Juan Pérez',
-      timestamp: Date.now() - 1000 * 60 * 15, // hace 15 minutos
-      observaciones: 'Ingreso de nuevo stock'
-    },
-    {
-      id: 2,
-      producto: 'Monitor Samsung 24"',
-      tipo: 'salida',
-      cantidad: 2,
-      origen: 'Almacén Central',
-      destino: 'Oficina Piso 2',
-      usuario: user?.nombre || 'María García',
-      timestamp: Date.now() - 1000 * 60 * 60 * 2, // hace 2 horas
-      observaciones: 'Asignación a nuevos empleados'
-    },
-    {
-      id: 3,
-      producto: 'Teclado Mecánico Logitech',
-      tipo: 'transferencia',
-      cantidad: 10,
-      origen: 'Almacén Central',
-      destino: 'Almacén Secundario',
-      usuario: user?.nombre || 'Carlos López',
-      timestamp: Date.now() - 1000 * 60 * 60 * 5, // hace 5 horas
-    },
-    {
-      id: 4,
-      producto: 'Mouse Inalámbrico',
-      tipo: 'ajuste',
-      cantidad: 3,
-      origen: 'Almacén Central',
-      destino: 'Almacén Central',
-      usuario: user?.nombre || 'Ana Martínez',
-      timestamp: Date.now() - 1000 * 60 * 60 * 24, // hace 1 día
-      observaciones: 'Ajuste por inventario físico'
-    }
-  ]);
+  
+  // const [movements, setMovements] = useState([
+  //   {
+  //     id: 1,
+  //     producto: 'Laptop Dell Inspiron 15',
+  //     tipo: 'entrada',
+  //     cantidad: 5,
+  //     origen: 'Proveedor Tech Solutions',
+  //     destino: 'Almacén Central',
+  //     usuario: user?.nombre || 'Juan Pérez',
+  //     timestamp: Date.now() - 1000 * 60 * 15, // hace 15 minutos
+  //     observaciones: 'Ingreso de nuevo stock'
+  //   },
+  //   {
+  //     id: 2,
+  //     producto: 'Monitor Samsung 24"',
+  //     tipo: 'salida',
+  //     cantidad: 2,
+  //     origen: 'Almacén Central',
+  //     destino: 'Oficina Piso 2',
+  //     usuario: user?.nombre || 'María García',
+  //     timestamp: Date.now() - 1000 * 60 * 60 * 2, // hace 2 horas
+  //     observaciones: 'Asignación a nuevos empleados'
+  //   },
+  //   {
+  //     id: 3,
+  //     producto: 'Teclado Mecánico Logitech',
+  //     tipo: 'transferencia',
+  //     cantidad: 10,
+  //     origen: 'Almacén Central',
+  //     destino: 'Almacén Secundario',
+  //     usuario: user?.nombre || 'Carlos López',
+  //     timestamp: Date.now() - 1000 * 60 * 60 * 5, // hace 5 horas
+  //   },
+  //   {
+  //     id: 4,
+  //     producto: 'Mouse Inalámbrico',
+  //     tipo: 'ajuste',
+  //     cantidad: 3,
+  //     origen: 'Almacén Central',
+  //     destino: 'Almacén Central',
+  //     usuario: user?.nombre || 'Ana Martínez',
+  //     timestamp: Date.now() - 1000 * 60 * 60 * 24, // hace 1 día
+  //     observaciones: 'Ajuste por inventario físico'
+  //   }
+  // ]);
 
   // Función para abrir el modal
   const handleOpenModal = () => {
@@ -115,7 +117,7 @@ const MovementsContent = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <HistoryMovements movements={movements} />
+          {/* <HistoryMovements movements={movements} /> */}
         </motion.div>
       </div>
 

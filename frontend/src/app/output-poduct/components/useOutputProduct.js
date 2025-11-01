@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { movementAPI } from "@/lib/api";
+import { movementAPI, productAPI } from "@/lib/api";
 import { toast } from "sonner";
 
 const useOutputProduct = () => {
@@ -111,10 +111,15 @@ const useOutputProduct = () => {
         observaciones: formData.observaciones,
       };
 
+      // Primero crear el movimiento
       await movementAPI.createMovement(movementData);
 
-      setState(prev => ({ ...prev, success: "Egreso de producto registrado exitosamente" }));
-      toast.success("Egreso registrado correctamente");
+      // Luego eliminar el producto de la base de datos
+      const productResponse = await productAPI.processProductOutput(state.productInfo.id);
+      
+      const successMessage = productResponse.data?.message || "Egreso de producto registrado exitosamente";
+      setState(prev => ({ ...prev, success: successMessage }));
+      toast.success("Egreso registrado correctamente y producto eliminado del inventario");
 
       setTimeout(() => {
         resetForm();
@@ -123,7 +128,18 @@ const useOutputProduct = () => {
 
     } catch (err) {
       console.error("Error registrando egreso:", err);
-      const errorMessage = err.response?.data?.message || "Error al registrar el egreso";
+      
+      // Manejar diferentes tipos de errores
+      let errorMessage = "Error al registrar el egreso";
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

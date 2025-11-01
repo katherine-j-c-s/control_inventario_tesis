@@ -1,43 +1,67 @@
 import { EntitySchema } from 'typeorm';
 
-
 export default new EntitySchema({
   name: 'Movements',
   tableName: 'movements',
   columns: {
     movement_id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      movement_type: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-      },
-      date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      product_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      ubicacionactual: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    
-},
+      type: 'int',
+      primary: true,
+      generated: true,
+    },
+    movement_type: {
+      type: 'varchar',
+      length: 50,
+      nullable: false,
+    },
+    date: {
+      type: 'timestamp',
+      nullable: false,
+    },
+    quantity: {
+      type: 'int',
+      nullable: false,
+    },
+    product_id: {
+      type: 'int',
+      nullable: false,
+    },
+    status: {
+      type: 'varchar',
+      length: 50,
+      nullable: false,
+    },
+    user_id: {
+      type: 'int',
+      nullable: false,
+    },
+    ubicacionactual: {
+      type: 'varchar',
+      length: 255,
+      nullable: true,
+    },
+    motivo: {
+      type: 'varchar',
+      length: 255,
+      nullable: true,
+    },
+    destinatario: {
+      type: 'varchar',
+      length: 255,
+      nullable: true,
+    },
+    observaciones: {
+      type: 'text',
+      nullable: true,
+    },
+    created_at: {
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP',
+    },
+    updated_at: {
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP',
+      onUpdate: 'CURRENT_TIMESTAMP',
+    },
+  },
 });

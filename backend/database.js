@@ -12,6 +12,9 @@ import Order from "./models/Order.js";
 import Project from "./models/Project.js";
 import WorkOrder from "./models/WorkOrder.js";
 import WorkOrderItem from "./models/WorkOderItem.js";
+import Movements from "./models/Movements.js";
+import Receipt from "./models/Receipt.js";
+import Warehouse from "./models/Warehouse.js";
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -46,6 +49,9 @@ const AppDataSource = new DataSource({
     Project,
     WorkOrder,
     WorkOrderItem,
+    Movements,
+    Receipt,
+    Warehouse,
   ],
   migrations: [],
   subscribers: [],

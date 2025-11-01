@@ -316,6 +316,11 @@ export const productAPI = {
     const products = await api.get('/productos');
     return products.data.find(p => p.codigo === code);
   },
+
+  // Nuevo método para procesar egreso de producto (elimina el producto)
+  processProductOutput: (productId) => {
+    return api.post(`/productos/${productId}/egreso`);
+  },
 };
 
 export const movementAPI = {

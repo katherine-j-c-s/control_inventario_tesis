@@ -6,7 +6,8 @@ const getAllMovements = async (req, res) => {
         const movements = await movementRepository.find({
             select: [
                 'movement_id', 'movement_type', 'date', 'quantity',
-                'product_id', 'status', 'user_id', 'ubicacionactual'
+                'product_id', 'status', 'user_id', 'ubicacionactual',
+                'motivo', 'destinatario', 'observaciones', 'created_at', 'updated_at'
             ]
         });
         res.json(movements);
@@ -24,7 +25,8 @@ const getMovementById = async (req, res) => {
             where: { movement_id: parseInt(id) },
             select: [
                 'movement_id', 'movement_type', 'date', 'quantity',
-                'product_id', 'status', 'user_id', 'ubicacionactual'
+                'product_id', 'status', 'user_id', 'ubicacionactual',
+                'motivo', 'destinatario', 'observaciones', 'created_at', 'updated_at'
             ]
         });
 
@@ -41,18 +43,43 @@ const getMovementById = async (req, res) => {
 
 const createMovement = async (req, res) => {
     try {
-        const { movement_type, date, quantity, product_id, status, user_id, ubicacionactual } = req.body;
+        const { 
+            movement_type, 
+            date, 
+            quantity, 
+            product_id, 
+            status, 
+            user_id, 
+            ubicacionactual,
+            motivo,
+            destinatario,
+            observaciones
+        } = req.body;
+
         const movementRepository = AppDataSource.getRepository('Movements');
 
         const movement = movementRepository.create({
-            movement_type, date, quantity, product_id, status, user_id, ubicacionactual
+            movement_type, 
+            date, 
+            quantity, 
+            product_id, 
+            status, 
+            user_id, 
+            ubicacionactual,
+            motivo,
+            destinatario,
+            observaciones
         });
 
         await movementRepository.save(movement);
         res.status(201).json({ message: 'Movimiento creado exitosamente', movement });
     } catch (error) {
         console.error('Error creando movimiento:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        console.error('Request body:', req.body);
+        res.status(500).json({ 
+            message: 'Error interno del servidor',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 }
 

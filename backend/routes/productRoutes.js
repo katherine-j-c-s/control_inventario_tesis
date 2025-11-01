@@ -182,4 +182,64 @@ router.delete('/productos/:id', async (req, res) => {
   }
 });
 
+// Endpoint específico para egreso de producto (elimina el producto de la base de datos)
+router.post('/productos/:id/egreso', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Verificar que el producto existe y está activo
+    const checkQuery = `
+      SELECT id, nombre, codigo, stock_actual
+      FROM products 
+      WHERE id = $1 AND activo = true;
+    `;
+
+    const { rows: productRows } = await pool.query(checkQuery, [productId]);
+
+    if (productRows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Producto no encontrado',
+        message: 'El producto no existe o ya ha sido eliminado'
+      });
+    }
+
+    const product = productRows[0];
+
+    // Eliminar el producto (soft delete)
+    const deleteQuery = `
+      UPDATE products SET
+        activo = false,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING id, nombre, codigo;
+    `;
+
+    const { rows: deletedRows } = await pool.query(deleteQuery, [productId]);
+
+    if (deletedRows.length === 0) {
+      return res.status(500).json({ 
+        error: 'Error al procesar el egreso',
+        message: 'No se pudo eliminar el producto'
+      });
+    }
+
+    res.json({ 
+      message: 'Producto eliminado correctamente',
+      success: true,
+      product: {
+        id: deletedRows[0].id,
+        nombre: deletedRows[0].nombre,
+        codigo: deletedRows[0].codigo
+      }
+    });
+
+  } catch (error) {
+    console.error('Error procesando egreso de producto:', error);
+    res.status(500).json({ 
+      error: 'Error interno del servidor',
+      message: 'Error al procesar el egreso del producto'
+    });
+  }
+});
+
 export default router;

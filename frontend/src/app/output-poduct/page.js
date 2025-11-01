@@ -27,9 +27,26 @@ import EgresoForm from "./components/EgresoForm.js";
 import AlertMessages from "./components/AlertMessages.js";
 import SectionHeader from "./components/SectionHeader.js";
 import useOutputProduct from "./components/useOutputProduct.js";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const OutputProductPage = () => {
+  const { user, loading } = useAuth();
   const router = useRouter();
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Cargando...
+      </div>
+    );
+  }
   const {
     formData,
     state,
@@ -47,7 +64,6 @@ const OutputProductPage = () => {
       <div className="w-full">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-        
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               Egreso de Producto
@@ -57,12 +73,13 @@ const OutputProductPage = () => {
             </p>
           </div>
         </div>
- 
+
         <Card>
           <CardHeader>
             <CardTitle>Formulario de Egreso</CardTitle>
             <CardDescription>
-              Complete los campos para registrar la salida de un producto del inventario
+              Complete los campos para registrar la salida de un producto del
+              inventario
             </CardDescription>
           </CardHeader>
 
@@ -73,8 +90,11 @@ const OutputProductPage = () => {
 
               {/* Sección: Información del Producto */}
               <div className="space-y-4">
-                <SectionHeader icon={Package} title="Información del Producto" />
-                
+                <SectionHeader
+                  icon={Package}
+                  title="Información del Producto"
+                />
+
                 <ProductSearch
                   onProductFound={setProductInfo}
                   onError={setError}
@@ -84,7 +104,9 @@ const OutputProductPage = () => {
                 <ProductInfo
                   product={productInfo}
                   cantidad={formData.cantidad}
-                  onCantidadChange={(value) => updateFormData({ cantidad: value })}
+                  onCantidadChange={(value) =>
+                    updateFormData({ cantidad: value })
+                  }
                   disabled={isLoading}
                 />
               </div>
@@ -92,10 +114,16 @@ const OutputProductPage = () => {
               {/* Sección: Detalles del Egreso */}
               {productInfo && (
                 <div className="space-y-4">
-                  <SectionHeader icon={ArrowUpRight} title="Detalles del Egreso" />
-                  <SectionHeader icon={Calendar} title="Fecha y Hora del Egreso" />
+                  <SectionHeader
+                    icon={ArrowUpRight}
+                    title="Detalles del Egreso"
+                  />
+                  <SectionHeader
+                    icon={Calendar}
+                    title="Fecha y Hora del Egreso"
+                  />
                   <SectionHeader icon={User} title="Responsable" />
-                  
+
                   <EgresoForm
                     formData={formData}
                     onChange={updateFormData}
@@ -136,4 +164,10 @@ const OutputProductPage = () => {
   );
 };
 
-export default OutputProductPage;
+export default function OutputPage() {
+  return (
+    <AuthProvider>
+      <OutputProductPage />
+    </AuthProvider>
+  );
+}

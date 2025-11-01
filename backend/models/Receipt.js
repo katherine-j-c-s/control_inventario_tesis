@@ -22,7 +22,7 @@ export default new EntitySchema({
         default: () => 'CURRENT_TIMESTAMP',
       },
       verification_status :{
-        type: Boolean,
+        type: 'boolean',
         default: false,
       },
       order_id:{

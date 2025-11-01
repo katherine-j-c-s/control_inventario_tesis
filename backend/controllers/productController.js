@@ -67,11 +67,18 @@ const deleteProduct = async (req, res) => {
         const product = await productRepository.findOne({
             where: { id: parseInt(id), activo: true },
         });
+        
+        if (!product) {
+            return res.status(404).json({ message: 'Producto no encontrado' });
+        }
+
+        // Soft delete - marcar como inactivo
+        await productRepository.update(id, { activo: false });
+        res.json({ message: 'Producto eliminado correctamente' });
     } catch (error) {
         console.error('Error eliminando producto:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
-
 }
 
 const createProduct = async (req, res) => {
