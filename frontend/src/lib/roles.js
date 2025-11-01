@@ -11,7 +11,7 @@ export const allRoutes = {
   purchaseOrders: { href: "/purchase_order", text: "Órdenes de Compra", icon: ListOrdered },
   verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
   productEntry: { href: "/movements", text: "Movimientos", icon: ArrowRightLeft },
-  productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
+  productExit: { href: "/output-poduct", text: "Egreso de Productos", icon: ArrowRightLeft },
   generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
   projects: { href: "/projects", text: "Obras ", icon: CheckSquare },

@@ -1,4 +1,4 @@
-//controlador de movimineotos import AppDataSource from '../database.js';
+import AppDataSource from '../database.js';
 
 const getAllMovements = async (req, res) => {
     try {
