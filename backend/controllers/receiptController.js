@@ -522,10 +522,10 @@ const getWarehouses = async (req, res) => {
 
     const query = `
             SELECT 
-                id,
+                warehouse_id as id,
                 name,
-                location,
-                NULL as capacity
+                address_sector as location,
+                capacity
             FROM warehouses
             ORDER BY name;
         `;
