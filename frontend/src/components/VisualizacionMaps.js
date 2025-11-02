@@ -4,18 +4,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, MapPin, History, Warehouse, Route } from 'lucide-react';
+import { ArrowLeft, MapPin, Warehouse } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useExternalAPIs } from '@/hooks/useExternalAPIs';
 import Layout from '@/components/layouts/Layout';
+import api from '@/lib/api';
 
 const VisualizacionMaps = ({ productId, product }) => {
   const router = useRouter();
   const { googleMapsLoaded } = useExternalAPIs();
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
-  const [activeView, setActiveView] = useState('historial'); // 'actual', 'historial', 'almacenes'
-  const [productMovements, setProductMovements] = useState([]);
+  const [activeView, setActiveView] = useState('actual'); // 'actual', 'almacenes'
   const [warehouses, setWarehouses] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,76 +29,92 @@ const VisualizacionMaps = ({ productId, product }) => {
     ]
   };
 
-  // Obtener ubicación actual del producto (simulando que viene de la base de datos)
-  const getCurrentProductLocation = () => {
-    // En una implementación real, esto vendría del campo 'ubicacion' del producto
-    const productLocation = product?.ubicacion || 'Almacén Norte'; // Ubicación por defecto
-    
-    // Mapear ubicación a coordenadas
-    const locationMap = {
-      'Almacén Central': { lat: -38.9516, lng: -68.0591, nombre: 'Almacén Central - Av. Argentina 1400' },
-      'Almacén Norte': { lat: -38.9450, lng: -68.0500, nombre: 'Almacén Norte - Ruta 7 Km 8' },
-      'Almacén Sur': { lat: -38.9600, lng: -68.0700, nombre: 'Almacén Sur - Av. Olascoaga 1200' },
-      'Cliente Final': { lat: -38.9550, lng: -68.0650, nombre: 'Cliente Final - Av. del Trabajador 800' }
-    };
-    
-    return locationMap[productLocation] || locationMap['Almacén Norte'];
+  // Mapeo de direcciones de Neuquén a coordenadas
+  const locationMap = {
+    'Av. Argentina 1400, Neuquén, Neuquén, Argentina': { lat: -38.9516, lng: -68.0591, nombre: 'Almacén Principal - Av. Argentina 1400' },
+    'Ruta 7 Km 8, Neuquén, Neuquén, Argentina': { lat: -38.9450, lng: -68.0500, nombre: 'Almacén Secundario - Ruta 7 Km 8' },
+    'Av. Olascoaga 1200, Neuquén, Neuquén, Argentina': { lat: -38.9600, lng: -68.0700, nombre: 'Depósito Sur - Av. Olascoaga 1200' },
+    'Av. del Trabajador 800, Neuquén, Neuquén, Argentina': { lat: -38.9550, lng: -68.0650, nombre: 'Cliente Final - Av. del Trabajador 800' },
+    'Av. San Martín 2000, Neuquén, Neuquén, Argentina': { lat: -38.9580, lng: -68.0600, nombre: 'Ubicación - Av. San Martín 2000' },
+    // Fallback para ubicaciones antiguas
+    'Almacén Central': { lat: -38.9516, lng: -68.0591, nombre: 'Almacén Principal - Av. Argentina 1400' },
+    'Almacén Norte': { lat: -38.9450, lng: -68.0500, nombre: 'Almacén Secundario - Ruta 7 Km 8' },
+    'Almacén Sur': { lat: -38.9600, lng: -68.0700, nombre: 'Depósito Sur - Av. Olascoaga 1200' },
+    'Cliente Final': { lat: -38.9550, lng: -68.0650, nombre: 'Cliente Final - Av. del Trabajador 800' }
   };
 
-  // Generar movimientos por defecto desde Almacén Central hasta ubicación actual
-  const generateDefaultMovements = () => {
-    const currentLocation = getCurrentProductLocation();
-    const currentLocationName = product?.ubicacion || 'Almacén Norte';
-    
-    // Si ya está en Almacén Central, no hay movimientos
-    if (currentLocationName === 'Almacén Central') {
-      return [];
-    }
-    
-    // Crear movimiento desde Almacén Central hasta ubicación actual
-    return [
-      {
-        id: 1,
-        fecha: '2024-01-15',
-        desde: 'Almacén Central',
-        hasta: currentLocationName,
-        ubicacion_desde: { lat: -38.9516, lng: -68.0591 }, // Almacén Central
-        ubicacion_hasta: { lat: currentLocation.lat, lng: currentLocation.lng }, // Ubicación actual
-        tipo: 'transferencia'
-      }
-    ];
+  // Obtener ubicación actual del producto desde la base de datos
+  const getCurrentProductLocation = () => {
+    const productLocation = product?.ubicacion || 'Ruta 7 Km 8, Neuquén, Neuquén, Argentina';
+    return locationMap[productLocation] || locationMap['Ruta 7 Km 8, Neuquén, Neuquén, Argentina'];
   };
 
   useEffect(() => {
-    // Simular carga de datos
-    setProductMovements(generateDefaultMovements());
-    setWarehouses(mockData.warehouses);
-    setCurrentLocation(getCurrentProductLocation());
-    setLoading(false);
+    // Cargar datos de almacenes desde la API
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Cargar almacenes desde la API
+        const warehousesResponse = await api.get('/warehouses');
+        const warehousesFromAPI = warehousesResponse.data;
+        
+        // Convertir almacenes de la API al formato que necesita el mapa
+        const warehousesWithCoords = warehousesFromAPI.map(warehouse => {
+          const address = warehouse.location; // address_sector de la DB
+          const coords = locationMap[address] || locationMap[warehouse.name];
+          
+          return {
+            id: warehouse.id,
+            nombre: warehouse.name,
+            lat: coords?.lat || -38.9516,
+            lng: coords?.lng || -68.0591,
+            capacidad: warehouse.capacity || 0
+          };
+        });
+        
+        setWarehouses(warehousesWithCoords);
+        setCurrentLocation(getCurrentProductLocation());
+      } catch (error) {
+        console.error('Error cargando datos:', error);
+        // Usar datos mock si falla la API
+        setWarehouses(mockData.warehouses);
+        setCurrentLocation(getCurrentProductLocation());
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
   }, [productId, product]);
 
   useEffect(() => {
-    if (!loading && mapRef.current && googleMapsLoaded) {
+    if (!loading && mapRef.current && googleMapsLoaded && !map) {
       initializeMap();
     }
-  }, [loading, activeView, googleMapsLoaded]);
+  }, [loading, googleMapsLoaded]);
+
+  useEffect(() => {
+    if (map && currentLocation && warehouses.length) {
+      renderMapContent();
+    }
+  }, [map, activeView, currentLocation, warehouses]);
 
   const initializeMap = () => {
     if (window.google && window.google.maps && mapRef.current) {
       const mapInstance = new window.google.maps.Map(mapRef.current, {
         zoom: 12,
-        center: { lat: -34.6037, lng: -58.3816 },
+        center: { lat: -38.9516, lng: -68.0591 }, // Centro en Neuquén Capital
         mapTypeId: 'roadmap'
       });
       setMap(mapInstance);
-      renderMapContent();
     } else {
       console.log('Google Maps API no está disponible aún');
     }
   };
 
   const renderMapContent = () => {
-    if (!map) return;
+    if (!map || !currentLocation) return;
 
     // Limpiar marcadores anteriores
     const markers = document.querySelectorAll('.map-marker');
@@ -107,9 +123,6 @@ const VisualizacionMaps = ({ productId, product }) => {
     switch (activeView) {
       case 'actual':
         renderCurrentLocation();
-        break;
-      case 'historial':
-        renderMovementHistory();
         break;
       case 'almacenes':
         renderWarehouses();
@@ -125,7 +138,14 @@ const VisualizacionMaps = ({ productId, product }) => {
       map: map,
       title: `Ubicación actual: ${currentLocation.nombre}`,
       icon: {
-        url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+        url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+        scaledSize: new window.google.maps.Size(32, 32),
+        anchor: new window.google.maps.Point(16, 32)
+      },
+      label: {
+        text: '📍',
+        fontSize: '20px',
+        fontWeight: 'bold'
       }
     });
 
@@ -148,74 +168,6 @@ const VisualizacionMaps = ({ productId, product }) => {
     map.setZoom(15);
   };
 
-  const renderMovementHistory = () => {
-    if (!productMovements.length) return;
-
-    const path = [];
-    const markers = [];
-
-    productMovements.forEach((movement, index) => {
-      // Marcador de origen
-      const originMarker = new window.google.maps.Marker({
-        position: { lat: movement.ubicacion_desde.lat, lng: movement.ubicacion_desde.lng },
-        map: map,
-        title: `Desde: ${movement.desde}`,
-        icon: {
-          url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
-        }
-      });
-
-      // Marcador de destino
-      const destMarker = new window.google.maps.Marker({
-        position: { lat: movement.ubicacion_hasta.lat, lng: movement.ubicacion_hasta.lng },
-        map: map,
-        title: `Hasta: ${movement.hasta}`,
-        icon: {
-          url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
-      });
-
-      markers.push(originMarker, destMarker);
-      path.push({ lat: movement.ubicacion_desde.lat, lng: movement.ubicacion_desde.lng });
-      path.push({ lat: movement.ubicacion_hasta.lat, lng: movement.ubicacion_hasta.lng });
-
-      // Línea de ruta
-      const polyline = new window.google.maps.Polyline({
-        path: [
-          { lat: movement.ubicacion_desde.lat, lng: movement.ubicacion_desde.lng },
-          { lat: movement.ubicacion_hasta.lat, lng: movement.ubicacion_hasta.lng }
-        ],
-        geodesic: true,
-        strokeColor: '#4285F4',
-        strokeOpacity: 1.0,
-        strokeWeight: 3,
-        map: map
-      });
-
-      // Info window para el movimiento
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div>
-            <h3>🔄 Movimiento ${index + 1}</h3>
-            <p><strong>Fecha:</strong> ${movement.fecha}</p>
-            <p><strong>Desde:</strong> ${movement.desde}</p>
-            <p><strong>Hasta:</strong> ${movement.hasta}</p>
-            <p><strong>Tipo:</strong> ${movement.tipo}</p>
-          </div>
-        `
-      });
-
-      originMarker.addListener('click', () => {
-        infoWindow.open(map, originMarker);
-      });
-    });
-
-    // Ajustar vista para mostrar toda la ruta
-    const bounds = new window.google.maps.LatLngBounds();
-    path.forEach(point => bounds.extend(point));
-    map.fitBounds(bounds);
-  };
-
   const renderWarehouses = () => {
     if (!warehouses.length) return;
 
@@ -225,7 +177,14 @@ const VisualizacionMaps = ({ productId, product }) => {
         map: map,
         title: warehouse.nombre,
         icon: {
-          url: 'https://maps.google.com/mapfiles/ms/icons/warehouse.png'
+          url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          scaledSize: new window.google.maps.Size(32, 32),
+          anchor: new window.google.maps.Point(16, 32)
+        },
+        label: {
+          text: '🏢',
+          fontSize: '18px',
+          fontWeight: 'bold'
         }
       });
 
@@ -252,34 +211,6 @@ const VisualizacionMaps = ({ productId, product }) => {
     map.fitBounds(bounds);
   };
 
-  const calculateTotalDistance = () => {
-    if (!productMovements.length) return 0;
-    
-    let totalDistance = 0;
-    productMovements.forEach(movement => {
-      const distance = calculateDistance(
-        movement.ubicacion_desde.lat,
-        movement.ubicacion_desde.lng,
-        movement.ubicacion_hasta.lat,
-        movement.ubicacion_hasta.lng
-      );
-      totalDistance += distance;
-    });
-    
-    return totalDistance.toFixed(2);
-  };
-
-  const calculateDistance = (lat1, lng1, lat2, lng2) => {
-    const R = 6371; // Radio de la Tierra en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
   const getViewDescription = () => {
     switch (activeView) {
       case 'actual':
@@ -288,13 +219,6 @@ const VisualizacionMaps = ({ productId, product }) => {
           description: 'Producto ubicado en Neuquén, Argentina',
           points: currentLocation ? 1 : 0,
           distance: 'Neuquén, Argentina'
-        };
-      case 'historial':
-        return {
-          title: '🔄 Historial de Movimientos',
-          description: 'Ruta del producto por Neuquén, Argentina',
-          points: productMovements.length * 2,
-          distance: `${calculateTotalDistance()} km en Neuquén`
         };
       case 'almacenes':
         return {
@@ -366,14 +290,6 @@ const VisualizacionMaps = ({ productId, product }) => {
                   Ubicación Actual
                 </Button>
                 <Button
-                  variant={activeView === 'historial' ? 'default' : 'outline'}
-                  onClick={() => setActiveView('historial')}
-                  className="flex items-center gap-2"
-                >
-                  <History className="h-4 w-4" />
-                  Historial
-                </Button>
-                <Button
                   variant={activeView === 'almacenes' ? 'default' : 'outline'}
                   onClick={() => setActiveView('almacenes')}
                   className="flex items-center gap-2"
@@ -423,12 +339,10 @@ const VisualizacionMaps = ({ productId, product }) => {
                       <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-sm">
                         <h4 className="font-semibold mb-2">
                           {activeView === 'actual' && '📍 Ubicación Actual'}
-                          {activeView === 'historial' && '🔄 Historial de Movimientos'}
                           {activeView === 'almacenes' && '🏢 Ubicaciones de Almacenes'}
                         </h4>
                         <p className="text-sm text-muted-foreground mb-3">
                           {activeView === 'actual' && 'Producto ubicado en Neuquén, Argentina'}
-                          {activeView === 'historial' && 'Ruta del producto por Neuquén'}
                           {activeView === 'almacenes' && 'Almacenes en Neuquén, Argentina'}
                         </p>
                         
@@ -546,28 +460,6 @@ const VisualizacionMaps = ({ productId, product }) => {
                 </div>
               </div>
               
-              {activeView === 'historial' && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="font-medium mb-2">Leyenda del mapa - Neuquén:</h4>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span>Punto de origen</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <span>Punto de destino</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-1 bg-blue-500"></div>
-                      <span>Ruta del movimiento</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 p-2 bg-muted/50 rounded text-xs text-muted-foreground">
-                    <strong>📍 Ubicaciones reales:</strong> Av. Argentina, Ruta 7, Av. Olascoaga - Neuquén, Argentina
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </motion.div>

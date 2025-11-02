@@ -42,10 +42,20 @@ export const useExternalAPIs = () => {
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry&loading=async`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
       script.async = true;
       script.defer = true;
-      script.onload = () => setGoogleMapsLoaded(true);
+      script.onload = () => {
+        // Verificar que la API está completamente cargada antes de marcar como lista
+        const checkMapsReady = () => {
+          if (window.google && window.google.maps && window.google.maps.Map) {
+            setGoogleMapsLoaded(true);
+          } else {
+            setTimeout(checkMapsReady, 50);
+          }
+        };
+        checkMapsReady();
+      };
       script.onerror = () => {
         setError('Error cargando Google Maps API');
         setGoogleMapsLoaded(false);
