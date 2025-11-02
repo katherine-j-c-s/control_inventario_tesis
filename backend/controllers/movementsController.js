@@ -56,26 +56,70 @@ const createMovement = async (req, res) => {
             observaciones
         } = req.body;
 
-        const movementRepository = AppDataSource.getRepository('Movements');
+        console.log('Datos recibidos:', req.body);
 
-        const movement = movementRepository.create({
-            movement_type, 
-            date, 
-            quantity, 
-            product_id, 
-            status, 
-            user_id, 
-            ubicacionactual,
-            motivo,
-            destinatario,
-            observaciones
-        });
+        try {
+            // Intentar con TypeORM primero
+            const movementRepository = AppDataSource.getRepository('Movements');
 
-        await movementRepository.save(movement);
-        res.status(201).json({ message: 'Movimiento creado exitosamente', movement });
+            // Crear objeto base con campos requeridos
+            const movementData = {
+                movement_type, 
+                date, 
+                quantity, 
+                product_id, 
+                status, 
+                user_id, 
+                ubicacionactual: ubicacionactual || null
+            };
+
+            // Agregar campos opcionales solo si existen
+            if (motivo !== undefined) {
+                movementData.motivo = motivo;
+            }
+            if (destinatario !== undefined) {
+                movementData.destinatario = destinatario;
+            }
+            if (observaciones !== undefined) {
+                movementData.observaciones = observaciones;
+            }
+
+            console.log('Datos a guardar:', movementData);
+
+            const movement = movementRepository.create(movementData);
+            await movementRepository.save(movement);
+            
+            res.status(201).json({ message: 'Movimiento creado exitosamente', movement });
+        } catch (typeormError) {
+            console.log('Error con TypeORM, intentando con SQL directo:', typeormError.message);
+            
+            // Respaldo con SQL directo si TypeORM falla
+            const { pool } = await import('../db.js');
+            
+            const query = `
+                INSERT INTO movements (
+                    movement_type, date, quantity, product_id, status, user_id, ubicacionactual
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING *;
+            `;
+            
+            const values = [
+                movement_type,
+                date,
+                quantity,
+                product_id,
+                status,
+                user_id,
+                ubicacionactual || null
+            ];
+            
+            const { rows } = await pool.query(query, values);
+            res.status(201).json({ message: 'Movimiento creado exitosamente', movement: rows[0] });
+        }
     } catch (error) {
         console.error('Error creando movimiento:', error);
         console.error('Request body:', req.body);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({ 
             message: 'Error interno del servidor',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined

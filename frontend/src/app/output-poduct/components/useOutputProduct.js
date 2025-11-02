@@ -11,12 +11,9 @@ const useOutputProduct = () => {
   const [formData, setFormData] = useState({
     cantidad: "",
     motivo: "",
-    destinatario: "",
-    ubicacionDestino: "",
     fecha: new Date().toISOString().split("T")[0],
     hora: new Date().toTimeString().split(" ")[0].substring(0, 5),
     responsable: "",
-    observaciones: "",
   });
 
   const [state, setState] = useState({
@@ -73,8 +70,6 @@ const useOutputProduct = () => {
 
     const requiredFields = [
       { field: 'motivo', message: 'El motivo del egreso es requerido' },
-      { field: 'destinatario', message: 'El destinatario es requerido' },
-      { field: 'ubicacionDestino', message: 'La ubicación de destino es requerida' },
       { field: 'fecha', message: 'La fecha es requerida' },
       { field: 'hora', message: 'La hora es requerida' },
       { field: 'responsable', message: 'El responsable es requerido' },
@@ -105,21 +100,45 @@ const useOutputProduct = () => {
         product_id: state.productInfo.id,
         status: "completed",
         user_id: state.currentUser?.id || 1,
-        ubicacionactual: formData.ubicacionDestino,
+        ubicacionactual: state.productInfo.ubicacion || "No especificada",
         motivo: formData.motivo,
-        destinatario: formData.destinatario,
-        observaciones: formData.observaciones,
       };
 
       // Primero crear el movimiento
+      console.log('📝 Creando movimiento...', movementData);
       await movementAPI.createMovement(movementData);
+      console.log('✅ Movimiento creado exitosamente');
 
-      // Luego eliminar el producto de la base de datos
-      const productResponse = await productAPI.processProductOutput(state.productInfo.id);
+      // Luego procesar el egreso del producto (restar cantidad del stock)
+      console.log('📦 Procesando egreso del producto...', {
+        productId: state.productInfo.id,
+        cantidad: parseInt(formData.cantidad)
+      });
+      const productResponse = await productAPI.processProductOutput(
+        state.productInfo.id, 
+        parseInt(formData.cantidad)
+      );
+      console.log('✅ Respuesta del egreso:', productResponse.data);
       
-      const successMessage = productResponse.data?.message || "Egreso de producto registrado exitosamente";
+      const productData = productResponse.data;
+      let successMessage = "Egreso registrado exitosamente";
+      let toastMessage = "Egreso registrado correctamente";
+
+      if (productData?.success && productData.product) {
+        const { product } = productData;
+        successMessage = productData.message;
+        
+        if (product.eliminado) {
+          // Producto eliminado por stock agotado
+          toastMessage = `Egreso registrado - Producto "${product.nombre}" eliminado (stock agotado)`;
+        } else {
+          // Stock actualizado
+          toastMessage = `Egreso registrado - "${product.nombre}": ${product.stock_anterior} → ${product.stock_actual} unidades`;
+        }
+      }
+      
       setState(prev => ({ ...prev, success: successMessage }));
-      toast.success("Egreso registrado correctamente y producto eliminado del inventario");
+      toast.success(toastMessage);
 
       setTimeout(() => {
         resetForm();
@@ -127,21 +146,45 @@ const useOutputProduct = () => {
       }, 2000);
 
     } catch (err) {
-      console.error("Error registrando egreso:", err);
+      console.error("❌ Error en el proceso de egreso:", err);
       
-      // Manejar diferentes tipos de errores
+      // Determinar en qué parte del proceso ocurrió el error
       let errorMessage = "Error al registrar el egreso";
+      let errorDetails = "";
       
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+        
+        // Agregar detalles si están disponibles
+        if (errorData.details) {
+          errorDetails = ` (${errorData.details})`;
+        }
       } else if (err.message) {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
-      toast.error(errorMessage);
+      // Determinar si el error fue en el movimiento o en la eliminación del producto
+      if (err.config?.url?.includes('/movements')) {
+        errorMessage = `Error al crear el movimiento: ${errorMessage}`;
+      } else if (err.config?.url?.includes('/egreso')) {
+        errorMessage = `Error al eliminar el producto: ${errorMessage}`;
+      }
+
+      const fullErrorMessage = errorMessage + errorDetails;
+      setError(fullErrorMessage);
+      toast.error(fullErrorMessage);
+      
+      console.error("📊 Detalles del error:", {
+        url: err.config?.url,
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
@@ -151,12 +194,9 @@ const useOutputProduct = () => {
     setFormData({
       cantidad: "",
       motivo: "",
-      destinatario: "",
-      ubicacionDestino: "",
       fecha: new Date().toISOString().split("T")[0],
       hora: new Date().toTimeString().split(" ")[0].substring(0, 5),
       responsable: state.currentUser?.nombre || state.currentUser?.name || "",
-      observaciones: "",
     });
     setState(prev => ({
       ...prev,

@@ -114,20 +114,13 @@ const OutputProductPage = () => {
               {/* Sección: Detalles del Egreso */}
               {productInfo && (
                 <div className="space-y-4">
-                  <SectionHeader
-                    icon={ArrowUpRight}
-                    title="Detalles del Egreso"
-                  />
-                  <SectionHeader
-                    icon={Calendar}
-                    title="Fecha y Hora del Egreso"
-                  />
-                  <SectionHeader icon={User} title="Responsable" />
+                 
 
                   <EgresoForm
                     formData={formData}
                     onChange={updateFormData}
                     disabled={isLoading}
+                    productInfo={productInfo}
                   />
                 </div>
               )}

@@ -2,7 +2,6 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,24 +14,12 @@ import { Clock } from "lucide-react";
 const MOTIVOS_EGRESO = [
   "Devolución",
   "Uso interno", 
-  "Mantenimiento",
   "Pérdida",
   "Robo",
   "Vencimiento",
 ];
 
-const UBICACIONES_DESTINO = [
-  "Cliente Externo",
-  "Sucursal Norte",
-  "Sucursal Sur", 
-  "Almacén Temporal",
-  "Área de Mantenimiento",
-  "Oficina Central",
-  "En Tránsito",
-  "Fuera del Sistema",
-];
-
-const EgresoForm = ({ formData, onChange, disabled }) => {
+const EgresoForm = ({ formData, onChange, disabled, productInfo }) => {
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value });
   };
@@ -63,40 +50,18 @@ const EgresoForm = ({ formData, onChange, disabled }) => {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="destinatario">
-            Destinatario <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="destinatario"
-            placeholder="Nombre del destinatario"
-            value={formData.destinatario}
-            onChange={(e) => handleChange("destinatario", e.target.value)}
-            disabled={disabled}
-          />
-        </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="ubicacionDestino">
-          Ubicación de Destino <span className="text-red-500">*</span>
+        <Label htmlFor="ubicacionActual">
+          Ubicación Actual del Producto
         </Label>
-        <Select
-          value={formData.ubicacionDestino}
-          onValueChange={(value) => handleChange("ubicacionDestino", value)}
-          disabled={disabled}
-        >
-          <SelectTrigger id="ubicacionDestino">
-            <SelectValue placeholder="Seleccione la ubicación de destino" />
-          </SelectTrigger>
-          <SelectContent>
-            {UBICACIONES_DESTINO.map((ubicacion) => (
-              <SelectItem key={ubicacion} value={ubicacion}>
-                {ubicacion}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="bg-muted/50 border border-input rounded-md px-3 py-2 text-sm">
+          {productInfo?.ubicacion || "No especificada"}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Esta es la ubicación actual del producto en el inventario
+        </p>
       </div>
 
       {/* Fecha y Hora */}
@@ -146,18 +111,6 @@ const EgresoForm = ({ formData, onChange, disabled }) => {
         />
       </div>
 
-      {/* Observaciones */}
-      <div className="space-y-2">
-        <Label htmlFor="observaciones">Observaciones (Opcional)</Label>
-        <Textarea
-          id="observaciones"
-          placeholder="Ingrese cualquier observación adicional sobre el egreso..."
-          value={formData.observaciones}
-          onChange={(e) => handleChange("observaciones", e.target.value)}
-          disabled={disabled}
-          rows={3}
-        />
-      </div>
     </div>
   );
 };
