@@ -16,6 +16,9 @@ import orderRoutes from "./routes/orderRoutes.js";
 import orderReportRoutes from "./routes/orderReportRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import InventarioSOAPService from "./services/soapService.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import workOrderRoutes from "./routes/workOrderRoutes.js";
+import movementRoutes from "./routes/movementRoutes.js";
 
 // Para usar __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +60,9 @@ app.use("/api", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-report", orderReportRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api", projectRoutes);
+app.use("/api", workOrderRoutes);
+app.use("/api/movements", movementRoutes);
 
 // Ruta de prueba
 app.get("/api/health", (req, res) => {

@@ -251,4 +251,98 @@ export const orderAPI = {
   },
 };
 
+export const projectAPI = {
+  getAllProjects: () => {
+    return api.get('/projects');
+  },
+
+  getProjectById: (id) => {
+    return api.get(`/projects/${id}`);
+  },
+
+  getProjectsByStatus: (status) => {
+    return api.get(`/projects/status/${status}`);
+  },
+
+  createProject: (projectData) => {
+    return api.post('/projects', projectData);
+  },
+
+  updateProject: (id, projectData) => {
+    return api.put(`/projects/${id}`, projectData);
+  },
+
+  deleteProject: (id) => {
+    return api.delete(`/projects/${id}`);
+  },
+};
+
+export const workOrderAPI = {
+  getAllWorkOrders: () => {
+    return api.get('/work-orders');
+  },
+
+  getWorkOrderById: (id) => {
+    return api.get(`/work-orders/${id}`);
+  },
+
+  getWorkOrdersByStatus: (status) => {
+    return api.get(`/work-orders/status/${status}`);
+  },
+
+  createWorkOrder: (workOrderData) => {
+    return api.post('/work-orders', workOrderData);
+  },
+
+  updateWorkOrder: (id, workOrderData) => {
+    return api.put(`/work-orders/${id}`, workOrderData);
+  },
+
+  deleteWorkOrder: (id) => {
+    return api.delete(`/work-orders/${id}`);
+  },
+};
+
+export const productAPI = {
+  getAllProducts: () => {
+    return api.get('/productos');
+  },
+
+  getProductById: (id) => {
+    return api.get(`/productos/${id}`);
+  },
+
+  getProductByCode: async (code) => {
+    const products = await api.get('/productos');
+    return products.data.find(p => p.codigo === code);
+  },
+
+  // Nuevo método para procesar egreso de producto (resta cantidad del stock)
+  processProductOutput: (productId, cantidad) => {
+    return api.post(`/productos/${productId}/egreso`, { cantidad });
+  },
+};
+
+export const movementAPI = {
+  getAllMovements: () => {
+    return api.get('/movements');
+  },
+
+  getMovementById: (id) => {
+    return api.get(`/movements/${id}`);
+  },
+
+  createMovement: (movementData) => {
+    return api.post('/movements', movementData);
+  },
+
+  updateMovement: (id, movementData) => {
+    return api.put(`/movements/${id}`, movementData);
+  },
+
+  deleteMovement: (id) => {
+    return api.delete(`/movements/${id}`);
+  },
+};
+
 export default api;

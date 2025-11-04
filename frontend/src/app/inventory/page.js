@@ -231,6 +231,12 @@ function InventoryContent() {
       <AddProduct
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
+        onProductAdded={(newProduct) => {
+          // Agregar el nuevo producto a la lista
+          setProducts(prev => [...prev, newProduct]);
+        //  recargar la tabla de productos
+          loadProducts();
+        }}
       />
 
       {/* Modal de Reporte */}

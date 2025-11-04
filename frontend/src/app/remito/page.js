@@ -20,7 +20,7 @@ const Remito = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [currentView, setCurrentView] = useState('all'); // 'all', 'unverified', 'verified'
+  const [currentView, setCurrentView] = useState('all'); // 'all', 'pending', 'verified'
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
@@ -99,6 +99,7 @@ const Remito = () => {
     }
   };
 
+  
   const handleView = (receipt) => {
     console.log('Ver detalles del remito:', receipt);
     setSelectedReceipt(receipt);

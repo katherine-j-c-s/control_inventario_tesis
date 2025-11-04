@@ -34,7 +34,11 @@ CREATE TABLE projects (
   project_id SERIAL PRIMARY KEY,
   admin_id INTEGER,
   name VARCHAR(100),
-  description TEXT
+  description TEXT,
+  ubicacion VARCHAR(255),
+  estado VARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'finalizado', 'pausado', 'cancelado')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -325,3 +329,288 @@ SELECT * FROM get_all_receipts();
 
 -- Verificar el remito id = 42 y ver la fila actualizada
 SELECT * FROM verify_receipt(42);
+
+
+
+-- Tabla principal de pedidos de obra
+CREATE TABLE work_orders (
+    id SERIAL PRIMARY KEY,
+    project_id INT NOT NULL REFERENCES projects(project_id),
+    descripcion TEXT,
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_id INT NOT NULL REFERENCES users(id),
+    estado VARCHAR(20) DEFAULT 'pendiente' 
+           CHECK (estado IN ('pendiente','aprobado','rechazado'))
+);
+
+-- Tabla de productos del pedido
+CREATE TABLE work_order_items (
+    id SERIAL PRIMARY KEY,
+    work_order_id INT NOT NULL REFERENCES work_orders(id),
+    nombre_producto VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    cantidad INT NOT NULL,
+    estado_item VARCHAR(20) DEFAULT 'pendiente' 
+                CHECK (estado_item IN ('pendiente','entregado'))
+);
+
+
+
+
+-- // actualizas movements creamos la columna ubicacion_actual y estanteria_actual
+ALTER TABLE movements
+ADD COLUMN ubicacion_actual VARCHAR(255);
+
+
+ALTER TABLE movements
+ADD COLUMN estanteria_actual VARCHAR(255);
+
+-- insertamos datos en la columna ubicacion_actual y estanteria_actual
+UPDATE movements
+SET 
+  ubicacion_actual = CASE product_id
+    WHEN 1 THEN 'Depósito Central'
+    WHEN 2 THEN 'Obra 101'
+    WHEN 3 THEN 'Obra  102'
+    WHEN 4 THEN 'Depósito Norte'
+    WHEN 5 THEN 'Obra  103'
+  END,
+  estanteria_actual = CASE product_id
+    WHEN 1 THEN 'A1'
+    WHEN 2 THEN 'A5'
+    WHEN 3 THEN 'B2'
+    WHEN 4 THEN 'B3'
+    WHEN 5 THEN 'C1'
+  END
+WHERE product_id BETWEEN 1 AND 5;
+
+
+ALTER TABLE projects
+ADD COLUMN ubicacion VARCHAR(255);
+
+-- insertamos datos en la columna ubicacion
+
+UPDATE projects
+SET ubicacion = 'Parque Industrial Simetra S.R.L'
+WHERE project_id = 1;
+
+-- Insertar pedidos de obra de prueba
+INSERT INTO work_orders (project_id, descripcion, fecha_solicitud, usuario_id, estado)
+VALUES 
+(1, 'Solicitud de materiales para la obra 105 - mantenimiento de válvulas', NOW(), 2, 'Pendiente'),
+(2, 'Pedido de repuestos para bombas en la obra 204 - Comodoro Rivadavia', NOW(), 2, 'Aprobado'),
+(3, 'Requerimiento de EPP y herramientas para la obra 310 - Planta de tratamiento', NOW(), 3, 'En proceso'),
+(4, 'Compra de cañerías y válvulas de alta presión para obra 105', NOW(), 3, 'Pendiente'),
+(5, 'Solicitud de materiales eléctricos - obra 450', NOW(), 2, 'Completado');
+
+
+-- Insertar items de prueba
+INSERT INTO work_order_items (work_order_id, nombre_producto, descripcion, cantidad, estado_item)
+VALUES
+(1, 'Casco de seguridad', 'Casco de protección industrial para personal de planta', 20, 'Pendiente'),
+(2, 'Guantes resistentes al aceite', 'Guantes de seguridad para manipulación de maquinaria y productos químicos', 50, 'Pendiente'),
+(3, 'Bomba de combustible portátil', 'Bomba para trasiego de combustible y lubricantes', 5, 'Pendiente'),
+(4, 'Tubería de acero', 'Tubería para transporte de crudo y gas', 100, 'Pendiente'),
+(5, 'Válvula de seguridad', 'Válvula de control de presión para equipos de perforación', 30, 'Pendiente');
+
+
+
+-- 02/11/2025 
+
+
+-- Primero verificamos si las columnas existen y las agregamos si es necesario
+DO $$ 
+BEGIN
+    -- Agregar columna 'nombre' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'nombre') THEN
+        ALTER TABLE products ADD COLUMN nombre VARCHAR(100);
+        -- Copiar datos de 'name' a 'nombre' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'name') THEN
+            UPDATE products SET nombre = name WHERE nombre IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'codigo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'codigo') THEN
+        ALTER TABLE products ADD COLUMN codigo VARCHAR(50);
+        UPDATE products SET codigo = 'PROD-' || id WHERE codigo IS NULL;
+    END IF;
+
+    -- Agregar columna 'categoria' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'categoria') THEN
+        ALTER TABLE products ADD COLUMN categoria VARCHAR(100) DEFAULT 'General';
+    END IF;
+
+    -- Agregar columna 'descripcion' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'descripcion') THEN
+        ALTER TABLE products ADD COLUMN descripcion TEXT;
+        -- Copiar datos de 'description' a 'descripcion' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'description') THEN
+            UPDATE products SET descripcion = description WHERE descripcion IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'unidad_medida' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'unidad_medida') THEN
+        ALTER TABLE products ADD COLUMN unidad_medida VARCHAR(50) DEFAULT 'unidad';
+    END IF;
+
+    -- Agregar columna 'precio_unitario' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'precio_unitario') THEN
+        ALTER TABLE products ADD COLUMN precio_unitario DECIMAL(10,2) DEFAULT 0;
+    END IF;
+
+    -- Agregar columna 'stock_minimo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock_minimo') THEN
+        ALTER TABLE products ADD COLUMN stock_minimo INTEGER DEFAULT 0;
+    END IF;
+
+    -- Agregar columna 'stock_actual' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock_actual') THEN
+        ALTER TABLE products ADD COLUMN stock_actual INTEGER DEFAULT 0;
+        -- Copiar datos de 'stock' a 'stock_actual' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'stock') THEN
+            UPDATE products SET stock_actual = stock WHERE stock_actual = 0;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'ubicacion' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'ubicacion') THEN
+        ALTER TABLE products ADD COLUMN ubicacion VARCHAR(255);
+        -- Copiar datos de 'location' a 'ubicacion' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'location') THEN
+            UPDATE products SET ubicacion = location WHERE ubicacion IS NULL;
+        END IF;
+    END IF;
+
+    -- Agregar columna 'activo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'activo') THEN
+        ALTER TABLE products ADD COLUMN activo BOOLEAN DEFAULT true;
+    END IF;
+
+    -- Agregar columna 'created_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'created_at') THEN
+        ALTER TABLE products ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Agregar columna 'updated_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'updated_at') THEN
+        ALTER TABLE products ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Agregar columna 'qr_code' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'qr_code') THEN
+        ALTER TABLE products ADD COLUMN qr_code TEXT;
+        -- Copiar datos de 'qr' a 'qr_code' si existe
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'qr') THEN
+            UPDATE products SET qr_code = qr WHERE qr_code IS NULL;
+        END IF;
+    END IF;
+
+END $$;
+
+-- Verificar la estructura actualizada
+SELECT column_name, data_type, is_nullable, column_default 
+FROM information_schema.columns 
+WHERE table_name = 'products' 
+ORDER BY ordinal_position;
+
+-- Mostrar algunos registros de ejemplo
+SELECT id, nombre, codigo, categoria, descripcion, stock_actual, ubicacion, activo 
+FROM products 
+LIMIT 5;
+
+
+-- Script para actualizar la tabla movements con los campos adicionales
+-- Este script agrega las columnas necesarias para el egreso de productos
+
+-- Conectar a la base de datos
+\c controlInventario;
+
+-- Agregar las nuevas columnas a la tabla movements
+DO $$ 
+BEGIN
+    -- Agregar columna 'motivo' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'motivo') THEN
+        ALTER TABLE movements ADD COLUMN motivo VARCHAR(255);
+    END IF;
+
+    -- Agregar columna 'destinatario' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'destinatario') THEN
+        ALTER TABLE movements ADD COLUMN destinatario VARCHAR(255);
+    END IF;
+
+    -- Agregar columna 'observaciones' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'observaciones') THEN
+        ALTER TABLE movements ADD COLUMN observaciones TEXT;
+    END IF;
+
+    -- Agregar columna 'created_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'created_at') THEN
+        ALTER TABLE movements ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Agregar columna 'updated_at' si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'updated_at') THEN
+        ALTER TABLE movements ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+
+    -- Cambiar el tipo de la columna 'date' de DATE a TIMESTAMP si es necesario
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'movements' AND column_name = 'date' AND data_type = 'date') THEN
+        ALTER TABLE movements ALTER COLUMN date TYPE TIMESTAMP USING date::timestamp;
+    END IF;
+
+END $$;
+
+-- Verificar la estructura actualizada
+SELECT column_name, data_type, is_nullable, column_default 
+FROM information_schema.columns 
+WHERE table_name = 'movements' 
+ORDER BY ordinal_position;
+
+-- Mostrar mensaje de confirmación
+SELECT 'Tabla movements actualizada correctamente' AS resultado;
+
+
+
+
+-- Script para agregar campos de coordenadas a la tabla warehouses
+-- Este script agrega latitud y longitud para poder visualizar los almacenes en Google Maps
+
+ALTER TABLE warehouses
+ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8),
+ADD COLUMN IF NOT EXISTS longitude DECIMAL(11, 8),
+ADD COLUMN IF NOT EXISTS address TEXT;
+
+-- Actualizar almacenes existentes con coordenadas de ejemplo (Argentina)
+-- Nota: Estos son valores de ejemplo y deben ser actualizados con las coordenadas reales
+
+UPDATE warehouses
+SET 
+  latitude = CASE warehouse_id
+    WHEN 1 THEN -34.603722  -- Buenos Aires (ejemplo)
+    WHEN 2 THEN -34.584722  -- Norte (ejemplo)
+    WHEN 3 THEN -34.622722  -- Sur (ejemplo)
+    ELSE -34.603722
+  END,
+  longitude = CASE warehouse_id
+    WHEN 1 THEN -58.381592  -- Buenos Aires (ejemplo)
+    WHEN 2 THEN -58.404592  -- Norte (ejemplo)
+    WHEN 3 THEN -58.458592  -- Sur (ejemplo)
+    ELSE -58.381592
+  END,
+  address = CASE warehouse_id
+    WHEN 1 THEN COALESCE(address_sector, 'Sede Central')
+    WHEN 2 THEN COALESCE(address_sector, 'Sede Norte')
+    WHEN 3 THEN COALESCE(address_sector, 'Sede Sur')
+    ELSE COALESCE(address_sector, 'Ubicación desconocida')
+  END
+WHERE latitude IS NULL OR longitude IS NULL;
+
+
+-- hoy 03/11/2025 
+INSERT INTO order_details (order_id, product_id, id, quantity, unit_price, total)
+VALUES
+(4, 1, 20, 10, 50.00, 500.00),
+(4, 2, 21, 5, 25.00, 125.00),
+(4, 3, 22, 8, 15.00, 120.00);

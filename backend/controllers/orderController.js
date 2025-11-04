@@ -60,12 +60,20 @@ const getOrderById = async (req, res) => {
 const createOrder = async (req, res) => {
   try {
     const orderData = req.body;
+    console.log("Datos recibidos en el backend:", orderData);
 
     // Validaciones básicas
-    if (!orderData.supplier || !orderData.issue_date) {
+    if (!orderData.supplier) {
       return res.status(400).json({
         success: false,
-        message: "Faltan campos requeridos: supplier, issue_date",
+        message: "El campo 'supplier' es requerido",
+      });
+    }
+
+    if (!orderData.issue_date) {
+      return res.status(400).json({
+        success: false,
+        message: "El campo 'issue_date' es requerido",
       });
     }
 

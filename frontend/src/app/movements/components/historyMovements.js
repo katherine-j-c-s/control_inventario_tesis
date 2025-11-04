@@ -269,11 +269,13 @@ const HistoryMovements = ({ movements = [] }) => {
                       <User className="h-3 w-3" />
                       <span>{movement.usuario || 'Usuario desconocido'}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      <span title={formatTimestamp(movement.timestamp)}>
-                        {getRelativeTime(movement.timestamp)}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        <span title={formatTimestamp(movement.timestamp)}>
+                          {getRelativeTime(movement.timestamp)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

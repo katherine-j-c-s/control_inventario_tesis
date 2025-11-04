@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,36 +23,55 @@ import {
   FileText,
   Truck,
   Car,
+  Loader2,
 } from "lucide-react";
 import CardProductsSection from "@/components/CardProductsSection";
 import DatesOrderCard from "./DatesOrderCard";
 import CompanyData from "@/components/CardCompanyData";
+import { orderAPI } from "@/lib/api";
 
 export default function CardViewOrder({ isOpen, onClose, orderData }) {
+  const [productos, setProductos] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productsError, setProductsError] = useState(null);
+
+  // Fetch products when dialog opens and orderData changes
+  useEffect(() => {
+    if (isOpen && orderData?.order_id) {
+      fetchOrderProducts();
+    }
+  }, [isOpen, orderData?.order_id]);
+
+  const fetchOrderProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      setProductsError(null);
+      const response = await orderAPI.getOrderProducts(orderData.order_id);
+      
+      if (response.data.success) {
+        // Transform the data to match the expected format for CardProductsSection
+        const transformedProducts = response.data.data.map(product => ({
+          nombre: product.name || product.nombre,
+          cantidad: product.quantity || 1,
+          precio: parseFloat(product.unit_price || 0),
+          total: parseFloat(product.total || 0)
+        }));
+        setProductos(transformedProducts);
+      } else {
+        setProductsError("No se pudieron cargar los productos");
+        setProductos([]);
+      }
+    } catch (error) {
+      console.error("Error fetching order products:", error);
+      setProductsError("Error al cargar los productos de la orden");
+      setProductos([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
   if (!orderData) return null;
 
-
-  // Datos de ejemplo de productos (esto vendría del backend)
-  const productos = [
-    {
-      nombre: "Producto 1",
-      cantidad: 5,
-      precio: 3000.1,
-      total: 15000.5,
-    },
-    {
-      nombre: "Producto 2",
-      cantidad: 3,
-      precio: 2500.0,
-      total: 7500.0,
-    },
-    {
-      nombre: "Producto 3",
-      cantidad: 7,
-      precio: 1500.0,
-      total: 10500.0,
-    },
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -70,8 +90,60 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
           {/* Datos de la orden  */}
           <DatesOrderCard orderData={orderData}/>
           {/* Productos */}
-
-          <CardProductsSection productos={productos} />
+          {loadingProducts ? (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Package className="h-5 w-5" />
+                  Productos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Cargando productos...</span>
+                </div>
+              </CardContent>
+            </Card>
+          ) : productsError ? (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Package className="h-5 w-5" />
+                  Productos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">{productsError}</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={fetchOrderProducts}
+                    className="mt-4"
+                  >
+                    Reintentar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : productos.length > 0 ? (
+            <CardProductsSection productos={productos} />
+          ) : (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Package className="h-5 w-5" />
+                  Productos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No hay productos asociados a esta orden</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Observaciones */}
           <Card>
@@ -96,10 +168,7 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
           <Button variant="outline" onClick={onClose}>
             Cerrar
           </Button>
-          <Button>
-            <FileText className="h-4 w-4 mr-2" />
-            Imprimir Orden
-          </Button>
+          
         </div>
       </DialogContent>
     </Dialog>

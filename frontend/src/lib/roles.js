@@ -1,6 +1,8 @@
+import ProjectsPage from "@/app/projects/page";
 import {
-  Home, Users, Settings, FileText, QrCode, ScanLine, Package,
+  Home, Users, FileText, QrCode, ScanLine, Package,
   FileCheck, ArrowRightLeft, CheckSquare, ListOrdered, Cloud, MapPin
+  ,ArrowRightLeft, CheckSquare, ListOrdered, Building2
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
@@ -10,14 +12,15 @@ export const allRoutes = {
   purchaseOrders: { href: "/purchase_order", text: "Órdenes de Compra", icon: ListOrdered },
   verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
   productEntry: { href: "/movements", text: "Movimientos", icon: ArrowRightLeft },
-  productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
+  productExit: { href: "/output-poduct", text: "Egreso de Productos", icon: ArrowRightLeft },
   generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
-  pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
+  projects: { href: "/projects", text: "Obras ", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
   generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
   weather: { href: "/movimientos/clima", text: "Condiciones Climáticas", icon: Cloud },
   maps: { href: "/movimientos/visualizacion/1", text: "Visualización en Mapas", icon: MapPin },
+  workOrder: { href: "/work-order", text: "Petición de Obra", icon: Building2 },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver
@@ -55,6 +58,7 @@ export const rolesConfig = {
       allRoutes.productExit,
       allRoutes.weather,
       allRoutes.maps,
+      allRoutes.workOrder,
     ],
   },
   'Lider de Proyecto': {
