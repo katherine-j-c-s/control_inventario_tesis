@@ -608,3 +608,9 @@ SET
 WHERE latitude IS NULL OR longitude IS NULL;
 
 
+-- hoy 03/11/2025 
+INSERT INTO order_details (order_id, product_id, id, quantity, unit_price, total)
+VALUES
+(4, 1, 20, 10, 50.00, 500.00),
+(4, 2, 21, 5, 25.00, 125.00),
+(4, 3, 22, 8, 15.00, 120.00);
