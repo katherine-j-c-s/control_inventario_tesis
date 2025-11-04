@@ -236,18 +236,31 @@ export const orderAPI = {
   generateOrderReport: async (id) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
-    const response = await fetch(`${API_URL}/order-report/${id}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-    });
+    try {
+      const response = await fetch(`${API_URL}/order-report/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Error al generar el informe: ${response.statusText}`);
+      if (!response.ok) {
+        // Intentar obtener el mensaje de error del servidor
+        let errorMessage = `Error al generar el informe: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // Si no se puede parsear como JSON, usar el statusText
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('Error en generateOrderReport:', error);
+      throw error;
     }
-
-    return response.blob();
   },
 };
 

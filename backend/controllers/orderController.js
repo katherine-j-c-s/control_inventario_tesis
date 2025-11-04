@@ -263,33 +263,117 @@ const getOrderProducts = async (req, res) => {
 const generateOrderReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const orderRepository = AppDataSource.getRepository("Order");
-
-    const order = await orderRepository.findOne({
-      where: { order_id: parseInt(id) },
-    });
-
-    if (!order) {
+    
+    // Usar SQL directo para evitar problemas con columnas que pueden no existir
+    const { pool } = await import("../db.js");
+    
+    // Verificar si la columna notes existe
+    const checkColumnQuery = `
+      SELECT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'orders' 
+        AND column_name = 'notes'
+      ) as notes_exists;
+    `;
+    
+    const { rows: checkRows } = await pool.query(checkColumnQuery);
+    const hasNotesColumn = checkRows[0]?.notes_exists || false;
+    
+    // Obtener la orden usando SQL directo
+    const orderQuery = hasNotesColumn
+      ? `
+        SELECT 
+          order_id,
+          supplier,
+          status,
+          project_id,
+          issue_date,
+          delivery_date,
+          amount,
+          total,
+          responsible_person,
+          delivery_status,
+          contact,
+          item_quantity,
+          company_name,
+          company_address,
+          notes
+        FROM orders
+        WHERE order_id = $1
+      `
+      : `
+        SELECT 
+          order_id,
+          supplier,
+          status,
+          project_id,
+          issue_date,
+          delivery_date,
+          amount,
+          total,
+          responsible_person,
+          delivery_status,
+          contact,
+          item_quantity,
+          company_name,
+          company_address,
+          NULL::TEXT as notes
+        FROM orders
+        WHERE order_id = $1
+      `;
+    
+    const { rows: orderRows } = await pool.query(orderQuery, [parseInt(id)]);
+    
+    if (!orderRows || orderRows.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Orden no encontrada",
       });
     }
+    
+    const order = orderRows[0];
 
     // Obtener productos de la orden
-    const query = `
+    // Nota: order_details puede no existir, así que obtenemos productos directamente si no hay detalles
+    const productsQuery = `
       SELECT 
-        p.nombre as name,
-        p.descripcion as description,
+        COALESCE(p.nombre, 'Producto sin nombre') as name,
+        COALESCE(p.descripcion, 'Sin descripción') as description,
         COALESCE(od.quantity, 1) as quantity,
-        p.precio_unitario as unit_price,
-        (COALESCE(od.quantity, 1) * p.precio_unitario) as total
-      FROM products p
-      LEFT JOIN order_details od ON p.id = od.product_id AND od.order_id = $1
+        COALESCE(p.precio_unitario, 0) as unit_price,
+        (COALESCE(od.quantity, 1) * COALESCE(p.precio_unitario, 0)) as total
+      FROM order_details od
+      LEFT JOIN products p ON p.id = od.product_id
       WHERE od.order_id = $1
+      UNION ALL
+      SELECT 
+        'Sin productos asociados' as name,
+        'Esta orden no tiene productos en order_details' as description,
+        0 as quantity,
+        0 as unit_price,
+        0 as total
+      WHERE NOT EXISTS (
+        SELECT 1 FROM order_details WHERE order_id = $1
+      )
+      LIMIT 1;
     `;
 
-    const products = await AppDataSource.query(query, [parseInt(id)]);
+    let products;
+    try {
+      const productsResult = await pool.query(productsQuery, [parseInt(id)]);
+      products = productsResult.rows;
+      
+      // Si no hay productos en order_details, crear un array vacío
+      if (products.length === 1 && products[0].name === 'Sin productos asociados') {
+        products = [];
+      }
+    } catch (productsError) {
+      console.error('Error obteniendo productos de la orden:', productsError);
+      // Si falla la consulta (por ejemplo, si order_details no existe), usar array vacío
+      products = [];
+    }
 
     const formatDate = (date) => {
       if (!date) return "N/A";
@@ -492,24 +576,63 @@ const generateOrderReport = async (req, res) => {
       border: "10mm",
     };
 
+    // Crear directorio temporal si no existe
+    const tempDir = path.join(__dirname, '../temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const tempFilePath = path.join(tempDir, `temp-orden-${id}.pdf`);
+
     const document = {
       html: html,
       data: {},
-      path: `./temp-orden-${id}.pdf`,
+      path: tempFilePath,
       type: "",
     };
 
-    const pdfBuffer = await pdf.create(document, options);
-    const pdfFile = fs.readFileSync(`./temp-orden-${id}.pdf`);
+    try {
+      const pdfBuffer = await pdf.create(document, options);
+      
+      // Esperar un poco para asegurar que el archivo se haya escrito completamente
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (!fs.existsSync(tempFilePath)) {
+        throw new Error(`El archivo PDF no se creó en: ${tempFilePath}`);
+      }
+      
+      const pdfFile = fs.readFileSync(tempFilePath);
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="orden-${id}.pdf"`
-    );
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="orden-${id}.pdf"`
+      );
 
-    res.send(pdfFile);
-    fs.unlinkSync(`./temp-orden-${id}.pdf`);
+      res.send(pdfFile);
+      
+      // Eliminar archivo temporal después de enviarlo
+      setTimeout(() => {
+        if (fs.existsSync(tempFilePath)) {
+          try {
+            fs.unlinkSync(tempFilePath);
+          } catch (unlinkError) {
+            console.error("Error eliminando archivo temporal:", unlinkError);
+          }
+        }
+      }, 1000);
+    } catch (pdfError) {
+      console.error("Error generando PDF:", pdfError);
+      // Intentar eliminar el archivo si existe
+      if (fs.existsSync(tempFilePath)) {
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (unlinkError) {
+          console.error("Error eliminando archivo temporal:", unlinkError);
+        }
+      }
+      throw pdfError;
+    }
   } catch (error) {
     console.error("Error generando informe:", error);
     res.status(500).json({

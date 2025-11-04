@@ -14,6 +14,7 @@ const GenerateReportButton = ({ orderId, disabled }) => {
    */
   const handleGenerateReport = async () => {
     if (!orderId) {
+      setError('ID de orden no válido');
       return;
     }
 
@@ -22,8 +23,6 @@ const GenerateReportButton = ({ orderId, disabled }) => {
 
     try {
       const blob = await orderAPI.generateOrderReport(orderId);
-
-      console.log(' PDF generado exitosamente, tamaño:', blob.size, 'bytes');
 
       // Crear un enlace temporal para descargar el archivo
       const url = window.URL.createObjectURL(blob);
@@ -54,11 +53,13 @@ const GenerateReportButton = ({ orderId, disabled }) => {
     }
   };
 
+  const isDisabled = disabled || isGenerating || !orderId;
+
   return (
     <div className="space-y-2">
       <Button
         onClick={handleGenerateReport}
-        disabled={disabled || isGenerating || !orderId}
+        disabled={isDisabled}
         className="w-full sm:w-auto"
         size="lg"
       >

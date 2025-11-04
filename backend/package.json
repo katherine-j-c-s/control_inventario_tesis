@@ -35,7 +35,6 @@
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.1.13",
     "sharp": "^0.34.4",
-    "soap": "^1.5.0",
     "tesseract.js": "^6.0.1",
     "typeorm": "^0.3.17"
   },

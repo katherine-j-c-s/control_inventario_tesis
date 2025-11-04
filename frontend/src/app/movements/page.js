@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layouts/Layout';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -12,64 +13,72 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { PlusCircle, TrendingUp, MapPin, Cloud } from 'lucide-react';
+import { PlusCircle, TrendingUp, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import HistoryMovements from './components/historyMovements';
 import MoveProduct from './components/moveProduct';
 
 const MovementsContent = () => {
   const { user } = useAuth();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
 
-  // Estado para los movimientos (esto vendrá de una API)
+  // Estado para los movimientos
+  const [movements, setMovements] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // const [movements, setMovements] = useState([
-  //   {
-  //     id: 1,
-  //     producto: 'Laptop Dell Inspiron 15',
-  //     tipo: 'entrada',
-  //     cantidad: 5,
-  //     origen: 'Proveedor Tech Solutions',
-  //     destino: 'Almacén Central',
-  //     usuario: user?.nombre || 'Juan Pérez',
-  //     timestamp: Date.now() - 1000 * 60 * 15, // hace 15 minutos
-  //     observaciones: 'Ingreso de nuevo stock'
-  //   },
-  //   {
-  //     id: 2,
-  //     producto: 'Monitor Samsung 24"',
-  //     tipo: 'salida',
-  //     cantidad: 2,
-  //     origen: 'Almacén Central',
-  //     destino: 'Oficina Piso 2',
-  //     usuario: user?.nombre || 'María García',
-  //     timestamp: Date.now() - 1000 * 60 * 60 * 2, // hace 2 horas
-  //     observaciones: 'Asignación a nuevos empleados'
-  //   },
-  //   {
-  //     id: 3,
-  //     producto: 'Teclado Mecánico Logitech',
-  //     tipo: 'transferencia',
-  //     cantidad: 10,
-  //     origen: 'Almacén Central',
-  //     destino: 'Almacén Secundario',
-  //     usuario: user?.nombre || 'Carlos López',
-  //     timestamp: Date.now() - 1000 * 60 * 60 * 5, // hace 5 horas
-  //   },
-  //   {
-  //     id: 4,
-  //     producto: 'Mouse Inalámbrico',
-  //     tipo: 'ajuste',
-  //     cantidad: 3,
-  //     origen: 'Almacén Central',
-  //     destino: 'Almacén Central',
-  //     usuario: user?.nombre || 'Ana Martínez',
-  //     timestamp: Date.now() - 1000 * 60 * 60 * 24, // hace 1 día
-  //     observaciones: 'Ajuste por inventario físico'
-  //   }
-  // ]);
+  // Cargar movimientos desde la API
+  useEffect(() => {
+    const loadMovements = async () => {
+      try {
+        setLoading(true);
+        const { movementAPI } = await import('@/lib/api');
+        const response = await movementAPI.getAllMovements();
+        
+        console.log('Movimientos recibidos de la API:', response.data);
+        
+        // Transformar los datos de la API al formato esperado por el componente
+        const transformedMovements = response.data.map(mov => {
+          // Convertir fecha correctamente
+          let timestamp;
+          try {
+            if (mov.date) {
+              timestamp = new Date(mov.date).getTime();
+              if (isNaN(timestamp)) {
+                timestamp = Date.now();
+              }
+            } else {
+              timestamp = Date.now();
+            }
+          } catch (e) {
+            timestamp = Date.now();
+          }
+          
+          return {
+            id: mov.movement_id || mov.id,
+            producto: mov.product_name || `Producto #${mov.product_id}`,
+            tipo: mov.movement_type?.toLowerCase() || 'entrada',
+            cantidad: mov.quantity || 0,
+            origen: mov.ubicacionactual || mov.ubicacion_actual || 'N/A',
+            destino: mov.destinatario || 'N/A',
+            usuario: mov.user_name || 'Usuario desconocido',
+            timestamp: timestamp,
+            observaciones: mov.observaciones || mov.motivo || null
+          };
+        });
+        
+        console.log('Movimientos transformados:', transformedMovements);
+        setMovements(transformedMovements);
+      } catch (error) {
+        console.error('Error cargando movimientos:', error);
+        setMovements([]); // Asegurar que se establece un array vacío en caso de error
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadMovements();
+  }, []);
 
   // Función para abrir el modal
   const handleOpenModal = () => {
@@ -82,9 +91,44 @@ const MovementsContent = () => {
   };
 
   // Función para manejar cuando se crea un nuevo movimiento
-  const handleMovementCreated = (newMovement) => {
-    setMovements(prev => [newMovement, ...prev]);
-    console.log('Nuevo movimiento registrado:', newMovement);
+  const handleMovementCreated = async (newMovement) => {
+    // Recargar movimientos desde la API
+    try {
+      const { movementAPI } = await import('@/lib/api');
+      const response = await movementAPI.getAllMovements();
+      
+      const transformedMovements = response.data.map(mov => {
+        let timestamp;
+        try {
+          if (mov.date) {
+            timestamp = new Date(mov.date).getTime();
+            if (isNaN(timestamp)) {
+              timestamp = Date.now();
+            }
+          } else {
+            timestamp = Date.now();
+          }
+        } catch (e) {
+          timestamp = Date.now();
+        }
+        
+        return {
+          id: mov.movement_id || mov.id,
+          producto: mov.product_name || `Producto #${mov.product_id}`,
+          tipo: mov.movement_type?.toLowerCase() || 'entrada',
+          cantidad: mov.quantity || 0,
+          origen: mov.ubicacionactual || mov.ubicacion_actual || 'N/A',
+          destino: mov.destinatario || 'N/A',
+          usuario: mov.user_name || 'Usuario desconocido',
+          timestamp: timestamp,
+          observaciones: mov.observaciones || mov.motivo || null
+        };
+      });
+      
+      setMovements(transformedMovements);
+    } catch (error) {
+      console.error('Error recargando movimientos:', error);
+    }
   };
 
   return (
@@ -109,14 +153,6 @@ const MovementsContent = () => {
                 <PlusCircle className="mr-2 h-4 w-4" /> 
                 Nuevo Movimiento
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => router.push('/movimientos/clima')}
-                className="flex items-center gap-2"
-              >
-                <Cloud className="h-4 w-4" />
-                Ver Clima
-              </Button>
             </div>
           </div>
         </motion.div>
@@ -127,7 +163,20 @@ const MovementsContent = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          {/* <HistoryMovements movements={movements} /> */}
+          {loading ? (
+            <Card>
+              <CardContent className="py-8">
+                <div className="flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Cargando movimientos...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <HistoryMovements movements={movements} />
+          )}
         </motion.div>
       </div>
 

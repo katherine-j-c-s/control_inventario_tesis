@@ -1,8 +1,8 @@
 import ProjectsPage from "@/app/projects/page";
 import {
   Home, Users, FileText, QrCode, ScanLine, Package,
-  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered, Cloud, MapPin
-  ,ArrowRightLeft, CheckSquare, ListOrdered, Building2
+  FileCheck, MapPin,ArrowRightLeft, CheckSquare, 
+  ListOrdered, Building2
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
@@ -18,8 +18,7 @@ export const allRoutes = {
   projects: { href: "/projects", text: "Obras ", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
   generateReports: { href: "/generate-report", text: "Generar Informes", icon: FileText },
-  weather: { href: "/movimientos/clima", text: "Condiciones Climáticas", icon: Cloud },
-  maps: { href: "/movimientos/visualizacion/1", text: "Visualización en Mapas", icon: MapPin },
+  maps: { href: "/movements/visualizacion/1", text: "Visualización en Mapas", icon: MapPin },
   workOrder: { href: "/work-order", text: "Petición de Obra", icon: Building2 },
 };
 
@@ -56,7 +55,6 @@ export const rolesConfig = {
       allRoutes.generateQR,
       allRoutes.scanQR,
       allRoutes.productExit,
-      allRoutes.weather,
       allRoutes.maps,
       allRoutes.workOrder,
     ],
@@ -70,7 +68,6 @@ export const rolesConfig = {
       allRoutes.pendingPermissions,
       allRoutes.adminUsers,
       allRoutes.generateReports,
-      allRoutes.weather,
       allRoutes.maps,
     ],
   }

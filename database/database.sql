@@ -613,3 +613,46 @@ SELECT 'Warehouses' as tabla, warehouse_id, name as item, address_sector as ubic
 FROM warehouses 
 ORDER BY warehouse_id;
 
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- Script para insertar datos de prueba en la tabla movements
+-- Basado en la estructura real de la base de datos
+
+-- Insertar movimientos de prueba
+-- Usando productos existentes (1-5) y usuarios existentes (1-2)
+
+INSERT INTO movements (movement_type, date, quantity, product_id, status, user_id, ubicacion_actual, estanteria_actual)
+VALUES
+-- Movimientos de entrada
+('entrada', '2025-11-01', 50, 1, 'completado', 1, 'Depósito Central', 'A1'),
+('entrada', '2025-11-02', 100, 2, 'completado', 1, 'Almacén Principal', 'B2'),
+('entrada', '2025-11-03', 25, 3, 'completado', 1, 'Depósito Sur', 'C3'),
+
+-- Movimientos de salida
+('salida', '2025-11-04', 20, 1, 'completado', 1, 'Obra 101', 'A5'),
+('salida', '2025-11-05', 30, 2, 'completado', 1, 'Obra 102', 'B4'),
+('salida', '2025-11-06', 10, 3, 'completado', 2, 'Obra 103', 'C2'),
+
+-- Movimientos de transferencia
+('transferencia', '2025-11-07', 15, 4, 'completado', 1, 'Almacén Secundario', 'D1'),
+('transferencia', '2025-11-08', 20, 5, 'completado', 1, 'Depósito Norte', 'E2'),
+
+-- Movimientos de ajuste
+('ajuste', '2025-11-09', 5, 1, 'completado', 1, 'Depósito Central', 'A1'),
+('ajuste', '2025-11-10', -3, 2, 'completado', 1, 'Almacén Principal', 'B2'),
+
+-- Más movimientos recientes para tener variedad
+('entrada', '2025-11-11', 75, 1, 'completado', 1, 'Depósito Central', 'A2'),
+('salida', '2025-11-12', 40, 2, 'completado', 1, 'Obra 101', 'A6'),
+('transferencia', '2025-11-13', 25, 3, 'completado', 2, 'Almacén Secundario', 'D3'),
+('entrada', '2025-11-14', 60, 4, 'completado', 1, 'Depósito Norte', 'E1'),
+('salida', '2025-11-15', 35, 5, 'completado', 1, 'Obra 102', 'B5'),
+
+-- Movimientos de hoy y días anteriores cercanos
+('entrada', CURRENT_DATE, 30, 1, 'completado', 1, 'Depósito Central', 'A3'),
+('salida', CURRENT_DATE, 15, 2, 'completado', 1, 'Obra 103', 'C4'),
+('transferencia', CURRENT_DATE - INTERVAL '1 day', 20, 3, 'completado', 2, 'Almacén Principal', 'B3'),
+('entrada', CURRENT_DATE - INTERVAL '2 days', 45, 4, 'completado', 1, 'Depósito Sur', 'C5'),
+('ajuste', CURRENT_DATE - INTERVAL '3 days', 2, 5, 'completado', 1, 'Obra 101', 'A4');
+
+

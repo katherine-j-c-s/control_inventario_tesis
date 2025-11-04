@@ -249,7 +249,7 @@ const VisualizacionMaps = ({ productId, product }) => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -316,19 +316,19 @@ const VisualizacionMaps = ({ productId, product }) => {
                 {viewInfo.title}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="h-96 relative">
-                <div ref={mapRef} className="w-full h-full" />
+            <CardContent className="p-0 overflow-hidden">
+              <div className="h-96 relative w-full" style={{ isolation: 'isolate', maxWidth: '100%' }}>
+                <div ref={mapRef} className="w-full h-full" style={{ maxWidth: '100%' }} />
                 
                 {!googleMapsLoaded && !loading && (
-                  <div className="absolute inset-0 bg-muted/50 flex flex-col">
+                  <div className="absolute inset-0 bg-muted/50 flex flex-col" style={{ zIndex: 1 }}>
                     {/* Mapa de Google Maps embebido */}
-                    <div className="flex-1 relative">
+                    <div className="flex-1 relative w-full" style={{ maxWidth: '100%', overflow: 'hidden' }}>
                       <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3104.5!2d-68.0591!3d-38.9516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDU3JzA1LjYiUyA2OMKwMDMnMzIuOCJX!5e0!3m2!1ses!2sar!4v1234567890&q=Av.+Argentina+1400,+Neuquén,+Argentina"
                         width="100%"
                         height="100%"
-                        style={{ border: 0 }}
+                        style={{ border: 0, zIndex: 1, maxWidth: '100%' }}
                         allowFullScreen=""
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"

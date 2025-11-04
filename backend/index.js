@@ -14,8 +14,6 @@ import receiptRoutes from "./routes/receiptRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import orderReportRoutes from "./routes/orderReportRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";
-import InventarioSOAPService from "./services/soapService.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import workOrderRoutes from "./routes/workOrderRoutes.js";
 import movementRoutes from "./routes/movementRoutes.js";
@@ -59,7 +57,6 @@ app.use("/api", receiptRoutes);
 app.use("/api", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-report", orderReportRoutes);
-app.use("/api/reports", reportRoutes);
 app.use("/api", projectRoutes);
 app.use("/api", workOrderRoutes);
 app.use("/api/movements", movementRoutes);
@@ -202,17 +199,11 @@ const startServer = async () => {
       // Continuar con la inicialización aunque haya error en usuario
     }
 
-    // Configurar servicio SOAP
-    const soapService = new InventarioSOAPService();
-    soapService.configureSOAPService(app);
-    console.log("🔧 Servicio SOAP de inventario configurado");
-
     // Iniciar servidor
     app.listen(config.port, () => {
       console.log(`Servidor ejecutándose en puerto ${config.port}`);
       console.log(`Entorno: ${process.env.NODE_ENV || "development"}`);
       console.log(`📊 API REST disponible en: http://localhost:${config.port}/api`);
-      console.log(`🔧 Servicio SOAP disponible en: http://localhost:${config.port}/soap/inventario`);
     });
   } catch (error) {
     console.error("❌ Error al inicializar el servidor:", error.message);

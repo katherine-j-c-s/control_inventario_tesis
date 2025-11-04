@@ -284,7 +284,7 @@ const HistoryMovements = ({ movements = [] }) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push(`/movimientos/visualizacion/${movement.id}`)}
+                      onClick={() => router.push(`/movements/visualizacion/${movement.id}`)}
                       className="flex items-center gap-2 text-xs"
                     >
                       <Map className="h-3 w-3" />

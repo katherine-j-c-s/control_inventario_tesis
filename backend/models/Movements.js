@@ -35,33 +35,15 @@ export default new EntitySchema({
       type: 'int',
       nullable: false,
     },
-    ubicacionactual: {
+    ubicacion_actual: {
       type: 'varchar',
       length: 255,
       nullable: true,
     },
-    motivo: {
+    estanteria_actual: {
       type: 'varchar',
       length: 255,
       nullable: true,
-    },
-    destinatario: {
-      type: 'varchar',
-      length: 255,
-      nullable: true,
-    },
-    observaciones: {
-      type: 'text',
-      nullable: true,
-    },
-    created_at: {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-    },
-    updated_at: {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP',
     },
   },
 });
