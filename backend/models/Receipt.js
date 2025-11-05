@@ -60,7 +60,7 @@ async function getUnverifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE r.verification_status = false 
     AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
@@ -87,7 +87,7 @@ async function getAllReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
   `;
@@ -142,7 +142,7 @@ async function getVerifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE r.verification_status = true 
     AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
