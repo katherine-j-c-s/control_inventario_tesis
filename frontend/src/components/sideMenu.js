@@ -19,8 +19,6 @@ import ProfileImage from "./ProfileImage";
 
 import logoLightMode from "@/assets/logoLighMode.png";
 import logoDarkMode from "@/assets/logoDarkMode.png";
-import logoFullLightMode from "@/assets/logoFullLighMode.png";
-// import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
 
 // Un componente interno para los links, es "inteligente" y muestra un HoverCard cuando está cerrado
 const NavLink = ({ href, icon: Icon, text, isOpen }) => {
@@ -106,19 +104,6 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
     index === self.findIndex(r => r.href === route.href)
   );
 
-  // Debug: Mostrar información del usuario
-  console.log('=== DEBUG SIDEBAR ===');
-  console.log('Usuario completo:', user);
-  console.log('Rol del usuario:', user?.rol);
-  console.log('Permisos del rol (rolPermisos):', user?.rolPermisos);
-  console.log('Permisos del usuario (permisos):', user?.permisos);
-  console.log('Permisos del rol usados:', rolePermissions);
-  console.log('Entradas de permisos:', Object.entries(rolePermissions));
-  console.log('Rutas permitidas:', allowedRoutes.map(r => r.text));
-  console.log('Rutas únicas:', uniqueRoutes.map(r => r.text));
-  console.log('Cantidad de rutas:', uniqueRoutes.length);
-  console.log('===================');
-
   return (
     <motion.aside
       animate={
@@ -127,8 +112,8 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
           : { width: isOpen ? "18rem" : "5rem" } // Animación para escritorio (ancho)
       }
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className={`bg-card text-card-foreground p-4 flex flex-col h-screen shadow-2xl z-50 ${
-        isMobile ? "fixed" : "relative" // Posición fija en móvil
+      className={`bg-card text-card-foreground p-4 flex flex-col h-screen shadow-2xl flex-shrink-0 ${
+        isMobile ? "fixed z-50" : "relative z-40" // z-index más alto en desktop
       }`}
     >
       {/* Contenedor del Logo y Botón de Control */}

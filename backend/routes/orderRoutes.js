@@ -39,4 +39,3 @@ router.put("/:id", verifyToken, updateOrder);
 router.delete("/:id", verifyToken, deleteOrder);
 
 export default router;
-

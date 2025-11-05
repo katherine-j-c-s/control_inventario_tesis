@@ -54,7 +54,7 @@ export default new EntitySchema({
     },
     permisos: {
       type: 'json',
-      default: () => "'{\"entrega\": false, \"movimiento\": false, \"egreso\": false}'",
+      default: () => "'{\"inventory\": true, \"scanQR\": true}'",
     },
     activo: {
       type: 'boolean',

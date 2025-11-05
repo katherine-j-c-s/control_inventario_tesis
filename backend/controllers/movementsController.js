@@ -2,18 +2,42 @@ import AppDataSource from '../database.js';
 
 const getAllMovements = async (req, res) => {
     try {
-        const movementRepository = AppDataSource.getRepository('Movements');
-        const movements = await movementRepository.find({
-            select: [
-                'movement_id', 'movement_type', 'date', 'quantity',
-                'product_id', 'status', 'user_id', 'ubicacionactual',
-                'motivo', 'destinatario', 'observaciones', 'created_at', 'updated_at'
-            ]
-        });
-        res.json(movements);
+        // Verificar que AppDataSource esté inicializado
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+        }
+
+        // Usar SQL directo para obtener información relacionada
+        const { pool } = await import('../db.js');
+        
+        const query = `
+            SELECT 
+                m.movement_id,
+                m.movement_type,
+                m.date,
+                m.quantity,
+                m.product_id,
+                m.status,
+                m.user_id,
+                m.ubicacion_actual,
+                m.estanteria_actual,
+                p.nombre as product_name,
+                u.nombre as user_name
+            FROM movements m
+            LEFT JOIN products p ON m.product_id = p.id AND p.activo = true
+            LEFT JOIN users u ON m.user_id = u.id
+            ORDER BY m.date DESC, m.movement_id DESC
+            LIMIT 200;
+        `;
+        
+        const { rows } = await pool.query(query);
+        res.json(rows);
     } catch (error) {
         console.error('Error obteniendo movimientos:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        res.status(500).json({ 
+            message: 'Error interno del servidor',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 }
 
@@ -25,11 +49,10 @@ const getMovementById = async (req, res) => {
             where: { movement_id: parseInt(id) },
             select: [
                 'movement_id', 'movement_type', 'date', 'quantity',
-                'product_id', 'status', 'user_id', 'ubicacionactual',
-                'motivo', 'destinatario', 'observaciones', 'created_at', 'updated_at'
+                'product_id', 'status', 'user_id', 'ubicacion_actual',
+                'estanteria_actual'
             ]
         });
-
         if (!movement) {
             return res.status(404).json({ message: 'Movimiento no encontrado' });
         }
@@ -50,72 +73,33 @@ const createMovement = async (req, res) => {
             product_id, 
             status, 
             user_id, 
-            ubicacionactual,
-            motivo,
-            destinatario,
-            observaciones
+            ubicacion_actual,
+            estanteria_actual
         } = req.body;
 
-        console.log('Datos recibidos:', req.body);
-
-        try {
-            // Intentar con TypeORM primero
-            const movementRepository = AppDataSource.getRepository('Movements');
-
-            // Crear objeto base con campos requeridos
-            const movementData = {
-                movement_type, 
-                date, 
-                quantity, 
-                product_id, 
-                status, 
-                user_id, 
-                ubicacionactual: ubicacionactual || null
-            };
-
-            // Agregar campos opcionales solo si existen
-            if (motivo !== undefined) {
-                movementData.motivo = motivo;
-            }
-            if (destinatario !== undefined) {
-                movementData.destinatario = destinatario;
-            }
-            if (observaciones !== undefined) {
-                movementData.observaciones = observaciones;
-            }
-
-            console.log('Datos a guardar:', movementData);
-
-            const movement = movementRepository.create(movementData);
-            await movementRepository.save(movement);
-            
-            res.status(201).json({ message: 'Movimiento creado exitosamente', movement });
-        } catch (typeormError) {
-            console.log('Error con TypeORM, intentando con SQL directo:', typeormError.message);
-            
-            // Respaldo con SQL directo si TypeORM falla
-            const { pool } = await import('../db.js');
-            
-            const query = `
-                INSERT INTO movements (
-                    movement_type, date, quantity, product_id, status, user_id, ubicacionactual
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING *;
-            `;
-            
-            const values = [
-                movement_type,
-                date,
-                quantity,
-                product_id,
-                status,
-                user_id,
-                ubicacionactual || null
-            ];
-            
-            const { rows } = await pool.query(query, values);
-            res.status(201).json({ message: 'Movimiento creado exitosamente', movement: rows[0] });
-        }
+        // Usar SQL directo ya que la tabla no tiene todos los campos que el modelo espera
+        const { pool } = await import('../db.js');
+        
+        const query = `
+            INSERT INTO movements (
+                movement_type, date, quantity, product_id, status, user_id, ubicacion_actual, estanteria_actual
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *;
+        `;
+        
+        const values = [
+            movement_type,
+            date,
+            quantity,
+            product_id,
+            status,
+            user_id,
+            ubicacion_actual || null,
+            estanteria_actual || null
+        ];
+        
+        const { rows } = await pool.query(query, values);
+        res.status(201).json({ message: 'Movimiento creado exitosamente', movement: rows[0] });
     } catch (error) {
         console.error('Error creando movimiento:', error);
         console.error('Request body:', req.body);

@@ -18,8 +18,8 @@ export default new EntitySchema({
         nullable: true,
       },
       entry_date :{
-        type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP',
+        type: 'date',
+        default: () => 'CURRENT_DATE',
       },
       verification_status :{
         type: 'boolean',
@@ -48,7 +48,7 @@ async function getUnverifiedReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.location as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -60,7 +60,7 @@ async function getUnverifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE r.verification_status = false 
     AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
@@ -75,7 +75,7 @@ async function getAllReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.location as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -87,7 +87,7 @@ async function getAllReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
   `;
@@ -130,7 +130,7 @@ async function getVerifiedReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.location as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -142,7 +142,7 @@ async function getVerifiedReceipts() {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE r.verification_status = true 
     AND (r.status != 'deleted' OR r.status IS NULL)
     ORDER BY r.entry_date DESC;
@@ -157,7 +157,7 @@ async function getReceiptsByStatus(status) {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.location as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -169,7 +169,7 @@ async function getReceiptsByStatus(status) {
       NULL::INTEGER as product_id,
       r.status
     FROM receipts r
-    LEFT JOIN warehouses w ON r.warehouse_id = w.id
+    LEFT JOIN warehouses w ON r.warehouse_id = w.warehouse_id
     WHERE r.status = $1
     ORDER BY r.entry_date DESC;
   `;

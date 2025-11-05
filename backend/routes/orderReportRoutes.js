@@ -11,4 +11,3 @@ const router = express.Router();
 router.get("/:id", verifyToken, generateOrderReport);
 
 export default router;
-

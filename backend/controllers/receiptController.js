@@ -1,3 +1,4 @@
+
 import {
   getUnverifiedReceipts,
   getAllReceipts,
@@ -524,11 +525,10 @@ const getWarehouses = async (req, res) => {
             SELECT 
                 warehouse_id as id,
                 name,
-                COALESCE(address, address_sector) as location,
-                address_sector,
-                address,
+                location,
                 latitude,
                 longitude,
+                address,
                 capacity
             FROM warehouses
             ORDER BY name;

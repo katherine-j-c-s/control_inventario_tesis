@@ -1,3 +1,4 @@
+
 import AppDataSource from "../database.js";
 import pdf from "pdf-creator-node";
 import fs from "fs";
@@ -238,9 +239,9 @@ const getOrderProducts = async (req, res) => {
         COALESCE(od.quantity, 1) as quantity,
         (COALESCE(od.quantity, 1) * p.precio_unitario) as total
       FROM products p
-      LEFT JOIN order_details od ON p.id = od.product_id AND od.order_id = $1
-      WHERE od.order_id = $1 OR p.id IN (
-        SELECT DISTINCT product_id FROM order_details WHERE order_id = $1
+      LEFT JOIN order_details od ON p.id = od.product_id AND od.id = $1
+      WHERE od.id = $1 OR p.id IN (
+        SELECT DISTINCT product_id FROM order_details WHERE id = $1
       )
     `;
 
@@ -285,8 +286,8 @@ const generateOrderReport = async (req, res) => {
         p.precio_unitario as unit_price,
         (COALESCE(od.quantity, 1) * p.precio_unitario) as total
       FROM products p
-      LEFT JOIN order_details od ON p.id = od.product_id AND od.order_id = $1
-      WHERE od.order_id = $1
+      LEFT JOIN order_details od ON p.id = od.product_id AND od.id = $1
+      WHERE od.id = $1
     `;
 
     const products = await AppDataSource.query(query, [parseInt(id)]);

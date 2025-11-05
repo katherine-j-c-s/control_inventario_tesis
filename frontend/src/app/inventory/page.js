@@ -20,21 +20,8 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { PlusCircle, Loader2, RefreshCw, FileText } from "lucide-react";
 import AddProduct from "./AddProduct";
 
 function InventoryContent() {
@@ -230,7 +217,6 @@ function InventoryContent() {
           loadProducts();
         }}
       />
-
       <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
   );

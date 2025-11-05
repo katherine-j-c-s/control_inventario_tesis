@@ -30,10 +30,31 @@ const GenerateReportComponent = ({ onClose, className = '' }) => {
       ]);
       
       if (orderResponse.data.success) {
-        setOrder(orderResponse.data.data);
+        let orderData = orderResponse.data.data;
         
+        // Si la respuesta es un array, tomar el primer elemento
+        if (Array.isArray(orderData)) {
+          orderData = orderData.length > 0 ? orderData[0] : null;
+        }
+        
+        if (!orderData) {
+          setError('No se encontraron datos de la orden');
+          return;
+        }
+        
+        setOrder(orderData);
+        
+        // Manejar productos (puede ser array o objeto)
         if (productsResponse.data.success) {
-          setProducts(productsResponse.data.data);
+          let productsData = productsResponse.data.data;
+          if (Array.isArray(productsData)) {
+            setProducts(productsData);
+          } else if (productsData && typeof productsData === 'object') {
+            // Si es un objeto, convertirlo a array
+            setProducts([productsData]);
+          } else {
+            setProducts([]);
+          }
         } else {
           setProducts([]);
         }
@@ -148,7 +169,10 @@ const GenerateReportComponent = ({ onClose, className = '' }) => {
                     {products.length > 0 && ` con ${products.length} productos`}
                   </p>
                 </div>
-                <GenerateReportButton orderId={order.order_id} />
+                <GenerateReportButton 
+                  orderId={order?.order_id || order?.id || null}
+                  key={`report-btn-${order?.order_id || order?.id || 'no-id'}`}
+                />
               </div>
             </CardContent>
           </Card>

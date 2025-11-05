@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  ArrowRightLeft,
   Package,
   MapPin,
   Calendar,
@@ -54,18 +54,31 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [productInfo, setProductInfo] = useState(null);
+  const [ubicaciones, setUbicaciones] = useState([]); // Almacenes desde la BD
+  const [loadingWarehouses, setLoadingWarehouses] = useState(true);
 
-  // Lista de ubicaciones disponibles (esto debería venir de una API)
-  const ubicaciones = [
-    "Almacén Central",
-    "Almacén Secundario",
-    "Oficina Piso 1",
-    "Oficina Piso 2",
-    "Sala de Servidores",
-    "Deposito A",
-    "Deposito B",
-    "En Tránsito",
-  ];
+  // Cargar almacenes desde la base de datos
+  useEffect(() => {
+    const loadWarehouses = async () => {
+      try {
+        setLoadingWarehouses(true);
+        const response = await api.get('/warehouses');
+        const warehouses = response.data || [];
+        
+        // Extraer los nombres de los almacenes para el select
+        const warehouseNames = warehouses.map(warehouse => warehouse.name);
+        setUbicaciones(warehouseNames);
+      } catch (error) {
+        console.error('Error cargando almacenes:', error);
+        // Si falla, usar lista vacía o valores por defecto
+        setUbicaciones([]);
+      } finally {
+        setLoadingWarehouses(false);
+      }
+    };
+
+    loadWarehouses();
+  }, []);
 
   // Manejar cambios en los inputs
   const handleInputChange = (field, value) => {
@@ -78,38 +91,79 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
     if (error) setError(null);
   };
 
-  // Buscar producto por código (simulado, aquí iría la llamada a la API)
-  const handleSearchProduct = async () => {
-    if (!formData.codigoProducto.trim()) {
-      setError("Por favor ingrese un código de producto");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
+  // Buscar producto por código usando la API
+  const buscarProductoPorCodigo = async () => {
     try {
-      setTimeout(() => {
-        // Simulación de datos del producto
-        setProductInfo({
-          nombre: "Laptop Dell Inspiron 15",
-          codigo: formData.codigoProducto,
-          ubicacionActual: "Almacén Central",
-          estanteria: "A1",
-          cantidad: 5,
-        });
+      if (!formData.codigoProducto || !formData.codigoProducto.trim()) {
+        setError("Por favor ingrese un código de producto");
+        return;
+      }
 
-        // Pre-llenar ubicación origen y estantería
+      setIsLoading(true);
+      setError(null);
+      setProductInfo(null);
+
+      // Importar la API de productos
+      const { productAPI } = await import('@/lib/api');
+      
+      const searchCode = formData.codigoProducto.trim();
+      
+      // Obtener todos los productos y buscar por código
+      const productsResponse = await productAPI.getAllProducts();
+      
+      if (!productsResponse || !productsResponse.data || !Array.isArray(productsResponse.data)) {
+        setError("Error al obtener productos de la base de datos. Por favor, inténtelo de nuevo.");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Buscar producto por código (case-insensitive)
+      const normalizedCode = searchCode.toUpperCase().trim();
+      const product = productsResponse.data.find(p => {
+        if (!p.codigo) return false;
+        return p.codigo.trim().toUpperCase() === normalizedCode;
+      });
+
+      if (!product) {
+        setError(`No se encontró ningún producto con el código "${searchCode}"`);
+        setProductInfo(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // Validar que el producto tiene datos válidos
+      if (!product.id || !product.nombre || !product.codigo) {
+        setError("El producto encontrado tiene datos incompletos. Por favor, inténtelo de nuevo.");
+        setProductInfo(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // Si encontramos el producto, actualizar la información
+      const newProductInfo = {
+        id: product.id,
+        nombre: product.nombre,
+        codigo: product.codigo,
+        ubicacionActual: product.ubicacion || "No especificada",
+        estanteria: "N/A",
+        cantidad: product.stock_actual || 0,
+        descripcion: product.descripcion || "",
+        categoria: product.categoria || "",
+      };
+      
+      setProductInfo(newProductInfo);
+
+      // Pre-llenar ubicación origen con la ubicación del producto si existe
+      if (product.ubicacion) {
         setFormData((prev) => ({
           ...prev,
-          ubicacionOrigen: "Almacén Central",
-          estanteriaOrigen: "A1",
+          ubicacionOrigen: product.ubicacion,
         }));
+      }
 
-        setIsLoading(false);
-      }, 500);
+      setIsLoading(false);
     } catch (err) {
-      setError("No se encontró el producto con ese código");
+      setError(err.response?.data?.message || err.message || "Error al buscar el producto. Por favor, inténtelo de nuevo.");
       setProductInfo(null);
       setIsLoading(false);
     }
@@ -121,6 +175,13 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
       setError("El código del producto es requerido");
       return false;
     }
+    
+    // Validar que el producto fue encontrado antes de crear el movimiento
+    if (!productInfo || !productInfo.id) {
+      setError("Debe buscar y validar el producto antes de crear el movimiento. Por favor, haga clic en 'Buscar Producto'.");
+      return false;
+    }
+    
     if (!formData.ubicacionOrigen) {
       setError("La ubicación de origen es requerida");
       return false;
@@ -162,25 +223,50 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
 
     if (!validateForm()) return;
 
+    // Validar que el producto fue encontrado
+    if (!productInfo || !productInfo.id) {
+      setError("Debe buscar y validar el producto antes de crear el movimiento.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Importar la API de movimientos
+      const { movementAPI } = await import('@/lib/api');
+      
+      // Combinar fecha y hora en un formato ISO
+      const fechaHora = new Date(`${formData.fecha}T${formData.hora}`);
+      
+      // Preparar datos del movimiento
+      const movementData = {
+        movement_type: 'transferencia',
+        date: formData.fecha, // Solo la fecha en formato YYYY-MM-DD
+        quantity: 1, // Cantidad por defecto, puedes ajustarlo si es necesario
+        product_id: productInfo.id, // ID del producto encontrado
+        status: 'completado',
+        user_id: currentUser?.id || 1, // ID del usuario actual
+        ubicacion_actual: formData.ubicacionDestino, // La ubicación destino se convierte en la actual
+        estanteria_actual: formData.estanteriaOrigen, // La estantería de origen
+      };
+
+      // Crear el movimiento en la API
+      const response = await movementAPI.createMovement(movementData);
 
       setSuccess("Movimiento registrado exitosamente");
 
-      // Notificar al componente padre
+      // Notificar al componente padre para que recargue los movimientos
       if (onMovementCreated) {
         onMovementCreated({
-          id: Date.now(),
-          producto: productInfo?.nombre || formData.codigoProducto,
+          id: response.data?.movement?.movement_id || Date.now(),
+          producto: productInfo.nombre,
           tipo: "transferencia",
-          cantidad: 1,
+          cantidad: movementData.quantity,
           origen: `${formData.ubicacionOrigen} - Est. ${formData.estanteriaOrigen}`,
           destino: formData.ubicacionDestino,
           usuario: formData.responsable,
-          timestamp: new Date(`${formData.fecha}T${formData.hora}`).getTime(),
+          timestamp: fechaHora.getTime(),
           observaciones: formData.observaciones,
           aprobadoPor: formData.aprobadoPor,
         });
@@ -196,7 +282,7 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
       }, 2000);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Error al registrar el movimiento"
+        err.response?.data?.message || err.response?.data?.error || "Error al registrar el movimiento"
       );
     } finally {
       setIsLoading(false);
@@ -270,7 +356,11 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={handleSearchProduct}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    buscarProductoPorCodigo();
+                  }}
                   disabled={isLoading || !formData.codigoProducto.trim()}
                 >
                   Buscar Producto
@@ -332,11 +422,21 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
                       <SelectValue placeholder="Seleccione ubicación" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ubicaciones.map((ubicacion) => (
-                        <SelectItem key={ubicacion} value={ubicacion}>
-                          {ubicacion}
+                      {loadingWarehouses ? (
+                        <SelectItem value="loading" disabled>
+                          Cargando almacenes...
                         </SelectItem>
-                      ))}
+                      ) : ubicaciones.length === 0 ? (
+                        <SelectItem value="no-data" disabled>
+                          No hay almacenes disponibles
+                        </SelectItem>
+                      ) : (
+                        ubicaciones.map((ubicacion) => (
+                          <SelectItem key={ubicacion} value={ubicacion}>
+                            {ubicacion}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -374,11 +474,21 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
                   <SelectValue placeholder="Seleccione ubicación destino" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ubicaciones.map((ubicacion) => (
-                    <SelectItem key={ubicacion} value={ubicacion}>
-                      {ubicacion}
+                  {loadingWarehouses ? (
+                    <SelectItem value="loading" disabled>
+                      Cargando almacenes...
                     </SelectItem>
-                  ))}
+                  ) : ubicaciones.length === 0 ? (
+                    <SelectItem value="no-data" disabled>
+                      No hay almacenes disponibles
+                    </SelectItem>
+                  ) : (
+                    ubicaciones.map((ubicacion) => (
+                      <SelectItem key={ubicacion} value={ubicacion}>
+                        {ubicacion}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

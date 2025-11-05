@@ -71,6 +71,7 @@ export default function Layout({ children }) {
       <Image
           src={fullLogo}
           alt="Control de Inventario"
+          className="w-[150px] h-[35px]"
           width={150}
           height={35}
           priority
@@ -126,7 +127,7 @@ export default function Layout({ children }) {
         />
       )}
 
-      <div className="flex">
+      <div className="flex relative">
         <SideMenu
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
@@ -134,14 +135,15 @@ export default function Layout({ children }) {
         />
 
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 ${
+          className={`flex-1 flex flex-col transition-all duration-300 overflow-hidden min-w-0 ${
             !isMobile && (isSidebarOpen ? "md:ml-0" : "md:ml-5")
           }`}
+          style={{ position: 'relative', zIndex: 1 }}
         >
           <MobileHeader />
           <DesktopHeader />
 
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-6 overflow-auto">{children}</main>
         </div>
       </div>
     </div>
