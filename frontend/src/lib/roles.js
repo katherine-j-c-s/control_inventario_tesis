@@ -1,21 +1,22 @@
+import ProjectsPage from "@/app/projects/page";
 import {
   Home, Users, Settings, FileText, QrCode, ScanLine, Package,
-  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered
+  FileCheck, ArrowRightLeft, CheckSquare, ListOrdered, Building2
 } from "lucide-react";
 
 // 1. Definimos todas las rutas posibles de la aplicación
-const allRoutes = {
+export const allRoutes = {
   dashboard: { href: "/dashboard", text: "Dashboard", icon: Home },
   inventory: { href: "/inventory", text: "Inventario", icon: Package },
-  purchaseOrders: { href: "/ordenes-de-compra", text: "Órdenes de Compra", icon: ListOrdered },
-  verifyRemito: { href: "/verificar-remito", text: "Verificar Remito", icon: FileCheck },
-  productEntry: { href: "/ingreso-productos", text: "Ingreso de Productos", icon: ArrowRightLeft },
-  productExit: { href: "/egreso-productos", text: "Egreso de Productos", icon: ArrowRightLeft },
-  generateQR: { href: "/generar-qr", text: "Generar QR", icon: QrCode },
+  purchaseOrders: { href: "/purchase_order", text: "Órdenes de Compra", icon: ListOrdered },
+  verifyRemito: { href: "/remito", text: "Remitos", icon: FileCheck },
+  productEntry: { href: "/movements", text: "Movimientos", icon: ArrowRightLeft },
+  productExit: { href: "/output-poduct", text: "Egreso de Productos", icon: ArrowRightLeft },
+  generateQR: { href: "/generate-qr", text: "Generar QR", icon: QrCode },
   scanQR: { href: "/escanear-qr", text: "Escanear QR", icon: ScanLine },
-  pendingPermissions: { href: "/permisos-pendientes", text: "Permisos Pendientes", icon: CheckSquare },
+  projects: { href: "/projects", text: "Obras ", icon: CheckSquare },
   adminUsers: { href: "/admin", text: "Administrar Usuarios", icon: Users },
-  generateReports: { href: "/informes", text: "Generar Informes", icon: FileText },
+  workOrder: { href: "/work-order", text: "Petición de Obra", icon: Building2 },
 };
 
 // 2. Mapeamos los roles a las claves de las rutas que pueden ver
@@ -51,6 +52,7 @@ export const rolesConfig = {
       allRoutes.generateQR,
       allRoutes.scanQR,
       allRoutes.productExit,
+      allRoutes.workOrder,
     ],
   },
   'Lider de Proyecto': {

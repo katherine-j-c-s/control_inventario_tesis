@@ -108,3 +108,11 @@ control_inventario_tesis/
 Este proyecto está bajo la licencia **MIT**.
 ¡Sentite libre de usarlo, mejorarlo y compartirlo! 🚀
 
+
+
+escanner
+## 🔧 Dependencias
+
+- `qr-scanner`: Librería principal para escaneo
+- `lucide-react`: Iconos
+- `@/components/ui/*`: Componentes UI base

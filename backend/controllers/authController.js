@@ -1,10 +1,14 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const AppDataSource = require('../database');
-const config = require('../config');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import AppDataSource from '../database.js';
+import config from '../config.js';
 
 const register = async (req, res) => {
   try {
+    console.log('=== INICIO REGISTRO ===');
+    console.log('Body recibido:', req.body);
+    console.log('File recibido:', req.file);
+    
     const { 
       nombre, 
       apellido, 
@@ -16,24 +20,33 @@ const register = async (req, res) => {
       password 
     } = req.body;
 
+    console.log('Datos extraídos:', { nombre, apellido, dni, email, puesto_laboral, edad, genero });
+
     const userRepository = AppDataSource.getRepository('User');
+    console.log('Repository obtenido');
 
     // Verificar si el usuario ya existe
+    console.log('Verificando usuario existente...');
     const existingUser = await userRepository.findOne({
       where: [{ dni }, { email }]
     });
+    console.log('Usuario existente encontrado:', existingUser);
 
     if (existingUser) {
+      console.log('Usuario ya existe, retornando error 400');
       return res.status(400).json({ 
         message: 'Ya existe un usuario con ese DNI o email' 
       });
     }
 
     // Encriptar contraseña
+    console.log('Encriptando contraseña...');
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log('Contraseña encriptada');
 
     // Crear usuario
+    console.log('Creando usuario...');
     const newUser = userRepository.create({
       nombre,
       apellido,
@@ -51,8 +64,11 @@ const register = async (req, res) => {
         egreso: false
       }
     });
+    console.log('Usuario creado en memoria:', newUser);
 
+    console.log('Guardando usuario en base de datos...');
     const savedUser = await userRepository.save(newUser);
+    console.log('Usuario guardado:', savedUser);
 
     // Generar token
     const token = jwt.sign(
@@ -71,8 +87,15 @@ const register = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('=== ERROR EN REGISTRO ===');
+    console.error('Error completo:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('========================');
+    res.status(500).json({ 
+      message: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -88,10 +111,12 @@ const login = async (req, res) => {
 
     const userRepository = AppDataSource.getRepository('User');
     
+    // 1. Primero, buscamos al usuario por su DNI.
     const user = await userRepository.findOne({ 
       where: { dni, activo: true } 
     });
-
+  
+    // 2. Validamos si el usuario existe y su contraseña es correcta.
     if (!user) {
       return res.status(401).json({ 
         message: 'Credenciales inválidas' 
@@ -105,20 +130,39 @@ const login = async (req, res) => {
         message: 'Credenciales inválidas' 
       });
     }
+    
+    // 3. [CORREGIDO] Una vez validado, buscamos su rol para obtener los permisos.
+    const roleRepository = AppDataSource.getRepository('Role');
+    const userRole = await roleRepository.findOne({ 
+      where: { nombre: user.rol } 
+    });
 
-    // Generar token
+    // Debug: Mostrar información del rol
+    console.log('=== DEBUG LOGIN ===');
+    console.log('Usuario rol:', user.rol);
+    console.log('Rol encontrado:', userRole);
+    console.log('Permisos del rol:', userRole?.permisos);
+    console.log('===================');
+
+    // 4. Mantenemos los permisos del usuario y agregamos los permisos del rol
+    const userWithPermissions = { 
+      ...user, 
+      permisos: user.permisos || {}, // Permisos específicos del usuario
+      rolPermisos: userRole?.permisos || {} // Permisos del rol para el sidebar
+    };
+    delete userWithPermissions.password; // Quitamos la contraseña del objeto final
+
+    // 5. Generamos el token.
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, rol: user.rol }, // Guardamos rol en el token para el middleware
       config.jwtSecret,
       { expiresIn: '24h' }
     );
 
-    // Remover password de la respuesta
-    const { password: _, ...userResponse } = user;
-
+    // 6. Enviamos la respuesta.
     res.json({
       message: 'Inicio de sesión exitoso',
-      user: userResponse,
+      user: userWithPermissions,
       token
     });
 
@@ -201,7 +245,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   register,
   login,
   getProfile,

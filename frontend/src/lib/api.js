@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -10,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar token a las peticiones
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -26,14 +25,12 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -44,7 +41,6 @@ api.interceptors.response.use(
   }
 );
 
-// Funciones de autenticación
 export const authAPI = {
   register: (userData, file) => {
     const formData = new FormData();
@@ -87,7 +83,6 @@ export const authAPI = {
   },
 };
 
-// Funciones de gestión de usuarios
 export const userAPI = {
   getUsers: () => {
     return api.get('/users');
@@ -127,7 +122,6 @@ export const userAPI = {
   },
 };
 
-// Funciones de gestión de roles
 export const roleAPI = {
   getRoles: () => {
     return api.get('/roles');
@@ -159,6 +153,195 @@ export const roleAPI = {
 
   getUsersByRole: (roleId) => {
     return api.get(`/roles/${roleId}/users`);
+  },
+};
+
+export const receiptAPI = {
+  getAllReceipts: () => {
+    return api.get('/receipts');
+  },
+
+  getUnverifiedReceipts: () => {
+    return api.get('/receipts/unverified');
+  },
+
+  getVerifiedReceipts: () => {
+    return api.get('/receipts/verified');
+  },
+
+  getReceiptsByStatus: (status) => {
+    return api.get(`/receipts/status/${status}`);
+  },
+
+  getReceiptsStatistics: () => {
+    return api.get('/receipts/statistics');
+  },
+
+  verifyReceipt: (id) => {
+    return api.put(`/receipts/verify/${id}`);
+  },
+
+  getReceiptWithProducts: (id) => {
+    return api.get(`/receipts/${id}`);
+  },
+
+  createReceipt: (receiptData) => {
+    return api.post('/receipts', receiptData);
+  },
+
+  uploadReceiptFile: (fileData) => {
+    return api.post('/receipts/upload', fileData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  getWarehouses: () => {
+    return api.get('/warehouses');
+  },
+};
+
+export const orderAPI = {
+  getOrderById: (id) => {
+    return api.get(`/orders/${id}`);
+  },
+
+  getAllOrders: () => {
+    return api.get('/orders');
+  },
+
+  createOrder: (orderData) => {
+    return api.post('/orders', orderData);
+  },
+
+  updateOrder: (id, orderData) => {
+    return api.put(`/orders/${id}`, orderData);
+  },
+
+  deleteOrder: (id) => {
+    return api.delete(`/orders/${id}`);
+  },
+
+  getStatistics: () => {
+    return api.get('/orders/statistics');
+  },
+
+  getOrderProducts: (id) => {
+    return api.get(`/orders/${id}/products`);
+  },
+
+  // Generar informe PDF de una orden
+  // Retorna un blob que debe ser manejado para descargar el archivo
+  generateOrderReport: async (id) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    const response = await fetch(`${API_URL}/order-report/${id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al generar el informe: ${response.statusText}`);
+    }
+
+    return response.blob();
+  },
+};
+
+export const projectAPI = {
+  getAllProjects: () => {
+    return api.get('/projects');
+  },
+
+  getProjectById: (id) => {
+    return api.get(`/projects/${id}`);
+  },
+
+  getProjectsByStatus: (status) => {
+    return api.get(`/projects/status/${status}`);
+  },
+
+  createProject: (projectData) => {
+    return api.post('/projects', projectData);
+  },
+
+  updateProject: (id, projectData) => {
+    return api.put(`/projects/${id}`, projectData);
+  },
+
+  deleteProject: (id) => {
+    return api.delete(`/projects/${id}`);
+  },
+};
+
+export const workOrderAPI = {
+  getAllWorkOrders: () => {
+    return api.get('/work-orders');
+  },
+
+  getWorkOrderById: (id) => {
+    return api.get(`/work-orders/${id}`);
+  },
+
+  getWorkOrdersByStatus: (status) => {
+    return api.get(`/work-orders/status/${status}`);
+  },
+
+  createWorkOrder: (workOrderData) => {
+    return api.post('/work-orders', workOrderData);
+  },
+
+  updateWorkOrder: (id, workOrderData) => {
+    return api.put(`/work-orders/${id}`, workOrderData);
+  },
+
+  deleteWorkOrder: (id) => {
+    return api.delete(`/work-orders/${id}`);
+  },
+};
+
+export const productAPI = {
+  getAllProducts: () => {
+    return api.get('/productos');
+  },
+
+  getProductById: (id) => {
+    return api.get(`/productos/${id}`);
+  },
+
+  getProductByCode: async (code) => {
+    const products = await api.get('/productos');
+    return products.data.find(p => p.codigo === code);
+  },
+
+  // Nuevo método para procesar egreso de producto (resta cantidad del stock)
+  processProductOutput: (productId, cantidad) => {
+    return api.post(`/productos/${productId}/egreso`, { cantidad });
+  },
+};
+
+export const movementAPI = {
+  getAllMovements: () => {
+    return api.get('/movements');
+  },
+
+  getMovementById: (id) => {
+    return api.get(`/movements/${id}`);
+  },
+
+  createMovement: (movementData) => {
+    return api.post('/movements', movementData);
+  },
+
+  updateMovement: (id, movementData) => {
+    return api.put(`/movements/${id}`, movementData);
+  },
+
+  deleteMovement: (id) => {
+    return api.delete(`/movements/${id}`);
   },
 };
 

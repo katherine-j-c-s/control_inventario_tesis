@@ -1,6 +1,6 @@
-const { EntitySchema } = require('typeorm');
+import { EntitySchema } from 'typeorm';
 
-module.exports = new EntitySchema({
+export default new EntitySchema({
   name: 'Product',
   tableName: 'products',
   columns: {
@@ -16,7 +16,6 @@ module.exports = new EntitySchema({
     codigo: {
       type: 'varchar',
       length: 100,
-      unique: true,
     },
     categoria: {
       type: 'varchar',

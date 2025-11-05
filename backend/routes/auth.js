@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const upload = require('../middleware/upload');
-const { authenticateToken } = require('../middleware/auth');
-const { register, login, getProfile, updateProfile } = require('../controllers/authController');
+import upload from '../middleware/upload.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { register, login, getProfile, updateProfile } from '../controllers/authController.js';
 
 // Registro de usuario
 router.post('/register', upload.single('foto'), register);
@@ -16,4 +16,4 @@ router.get('/profile', authenticateToken, getProfile);
 // Actualizar perfil del usuario autenticado
 router.put('/profile', authenticateToken, upload.single('foto'), updateProfile);
 
-module.exports = router;
+export default router;

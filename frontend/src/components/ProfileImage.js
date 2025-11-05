@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfileImage = ({ user, size = 'md', className = '' }) => {
   const [imageError, setImageError] = useState(false);
@@ -7,7 +8,8 @@ const ProfileImage = ({ user, size = 'md', className = '' }) => {
     sm: 'w-6 h-6 text-xs',
     md: 'w-8 h-8 text-sm',
     lg: 'w-12 h-12 text-base',
-    xl: 'w-16 h-16 text-lg'
+    xl: 'w-16 h-16 text-lg',
+    '2xl': 'w-20 h-20 text-xl'
   };
 
   const currentSizeClass = sizeClasses[size] || sizeClasses.md;
@@ -19,24 +21,39 @@ const ProfileImage = ({ user, size = 'md', className = '' }) => {
   const getInitials = () => {
     const firstName = user?.nombre?.charAt(0)?.toUpperCase() || '';
     const lastName = user?.apellido?.charAt(0)?.toUpperCase() || '';
-    return `${firstName}${lastName}`;
+    return `${firstName}${lastName}` || 'U';
   };
 
-  if (!user?.foto || imageError) {
-    return (
-      <div className={`${currentSizeClass} rounded-full bg-gray-400 flex items-center justify-center text-white font-semibold border-2 border-gray-300 ${className}`}>
-        {getInitials()}
-      </div>
-    );
-  }
+  // Construir la URL de la imagen
+  const getImageUrl = () => {
+    if (!user?.foto) return null;
+    
+    // Si ya es una URL completa, usarla directamente
+    if (user.foto.startsWith('http')) {
+      return user.foto;
+    }
+    
+    // Construir URL desde el backend
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+    const serverUrl = baseUrl.replace('/api', '');
+    return `${serverUrl}/uploads/${user.foto}`;
+  };
+
+  const imageUrl = getImageUrl();
 
   return (
-    <img
-      src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/uploads/${user.foto}`}
-      alt="Foto de perfil"
-      className={`${currentSizeClass} rounded-full object-cover border-2 border-gray-300 ${className}`}
-      onError={handleImageError}
-    />
+    <Avatar className={`${currentSizeClass} ${className}`}>
+      {imageUrl && !imageError ? (
+        <AvatarImage 
+          src={imageUrl} 
+          alt={`Foto de ${user?.nombre || 'Usuario'}`}
+          onError={handleImageError}
+        />
+      ) : null}
+      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+        {getInitials()}
+      </AvatarFallback>
+    </Avatar>
   );
 };
 

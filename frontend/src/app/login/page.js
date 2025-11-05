@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { rolesConfig } from '@/lib/roles';
-
-// Componentes de ShadCN/UI y Lucide Icons
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,7 +30,16 @@ function LoginForm() {
   }, [user, router]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Validación especial para DNI
+    if (name === 'dni') {
+      // Solo permitir números y máximo 8 dígitos
+      const numericValue = value.replace(/\D/g, '').slice(0, 8);
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -40,12 +47,18 @@ function LoginForm() {
     setIsLoading(true);
     setError('');
 
+    // Validación del DNI antes de enviar
+    if (formData.dni.length !== 8) {
+      setError('El DNI debe tener exactamente 8 dígitos');
+      setIsLoading(false);
+      return;
+    }
+
     const result = await login(formData);
     
     if (!result.success) {
       setError(result.error);
     }
-    // La redirección ahora se maneja en el useEffect de arriba
     
     setIsLoading(false);
   };
@@ -81,9 +94,11 @@ function LoginForm() {
                   id="dni"
                   name="dni"
                   type="text"
-                  placeholder="Tu número de DNI"
+                  placeholder="12345678"
                   value={formData.dni}
                   onChange={handleChange}
+                  maxLength="8"
+                  pattern="[0-9]{8}"
                   required
                 />
               </div>

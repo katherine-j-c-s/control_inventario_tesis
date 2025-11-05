@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { rolesConfig } from '@/lib/roles';
-
-// Componentes de ShadCN/UI y Lucide Icons
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,7 +42,16 @@ function RegisterForm() {
   }, [user, router]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Validación especial para DNI
+    if (name === 'dni') {
+      // Solo permitir números y máximo 8 dígitos
+      const numericValue = value.replace(/\D/g, '').slice(0, 8);
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
   
   const handleSelectChange = (name, value) => {
@@ -59,6 +66,13 @@ function RegisterForm() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Validación del DNI antes de enviar
+    if (formData.dni.length !== 8) {
+      setError('El DNI debe tener exactamente 8 dígitos');
+      setIsLoading(false);
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
@@ -117,7 +131,16 @@ function RegisterForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dni">DNI *</Label>
-                  <Input id="dni" name="dni" value={formData.dni} onChange={handleChange} required />
+                  <Input 
+                    id="dni" 
+                    name="dni" 
+                    value={formData.dni} 
+                    onChange={handleChange} 
+                    placeholder="12345678"
+                    maxLength="8"
+                    pattern="[0-9]{8}"
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
@@ -125,7 +148,21 @@ function RegisterForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="puesto_laboral">Puesto Laboral *</Label>
-                  <Input id="puesto_laboral" name="puesto_laboral" value={formData.puesto_laboral} onChange={handleChange} required />
+                  <Select onValueChange={(value) => handleSelectChange('puesto_laboral', value)} value={formData.puesto_laboral} required>
+                  <SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="contol calidad ">Control de Calidad</SelectItem>
+                      <SelectItem value="operario">Operario de almacen</SelectItem>
+                      <SelectItem value="gerente">Gerente de almacen</SelectItem>
+                      <SelectItem value="supervisor">Supervisor de proyectos</SelectItem>
+                      <SelectItem value="operador maquinaria">Operador de maquinaria pesada</SelectItem>
+                      <SelectItem value="ingeniero">Ingeniero de perforación</SelectItem>
+                      <SelectItem value="operador planta">Operador de planta</SelectItem>
+                      <SelectItem value="analista stock">Analista de control de stock</SelectItem>
+                      <SelectItem value="gerente admin">Gerente administrativo</SelectItem>
+                      <SelectItem value="supervisor hse">Supervisor HSE</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edad">Edad *</Label>
