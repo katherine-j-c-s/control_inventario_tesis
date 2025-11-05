@@ -48,7 +48,7 @@ async function getUnverifiedReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.address_sector as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -75,7 +75,7 @@ async function getAllReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.address_sector as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -130,7 +130,7 @@ async function getVerifiedReceipts() {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.address_sector as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 
@@ -157,7 +157,7 @@ async function getReceiptsByStatus(status) {
       r.receipt_id,
       r.warehouse_id,
       w.name as warehouse_name,
-      w.address_sector as warehouse_location,
+      w.address as warehouse_location,
       COALESCE((
         SELECT COUNT(*)::INTEGER 
         FROM receipt_products rp 

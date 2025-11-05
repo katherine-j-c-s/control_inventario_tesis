@@ -7,7 +7,6 @@ import "reflect-metadata";
 import User from "./models/User.js";
 import Product from "./models/Product.js";
 import Role from "./models/Role.js";
-import UserRole from "./models/UserRole.js";
 import Order from "./models/Order.js";
 import Project from "./models/Project.js";
 import WorkOrder from "./models/WorkOrder.js";
@@ -44,7 +43,6 @@ const AppDataSource = new DataSource({
     User,
     Product,
     Role,
-    UserRole,
     Order,
     Project,
     WorkOrder,

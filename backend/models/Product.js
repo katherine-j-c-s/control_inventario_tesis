@@ -28,11 +28,13 @@ export default new EntitySchema({
     unidad_medida: {
       type: 'varchar',
       length: 50,
+      default: "unidad",
     },
     precio_unitario: {
       type: 'decimal',
       precision: 10,
       scale: 2,
+      default: 0,
     },
     stock_minimo: {
       type: 'int',

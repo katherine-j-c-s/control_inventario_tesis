@@ -1,3 +1,4 @@
+
 import {
   getUnverifiedReceipts,
   getAllReceipts,
@@ -242,36 +243,22 @@ const deleteReceipt = async (req, res) => {
 const getReceiptById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { pool } = await import("../db.js");
-    
-    const query = `
-      SELECT 
-        r.receipt_id as id,
-        r.warehouse_id,
-        COALESCE((
-          SELECT COUNT(*)::INTEGER 
-          FROM receipt_products rp 
-          WHERE rp.receipt_id = r.receipt_id
-        ), 0) as quantity_products,
-        r.entry_date,
-        r.verification_status,
-        r.order_id,
-        NULL::INTEGER as product_id,
-        r.status
-      FROM receipts r
-      WHERE r.receipt_id = $1 
-      AND (r.status != 'deleted' OR r.status IS NULL);
-    `;
-    
-    const { rows } = await pool.query(query, [id]);
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Remito no encontrado" });
-    }
-    
-    res.json(rows[0]);
+    const receiptRepository = AppDataSource.getRepository("Receipt");
+    const Receipt = await receiptRepository.findOne({
+      where: { id: parseInt(id), activo: true },
+      select: [
+        "id",
+        "warehouse_id",
+        "quantity_products",
+        "entry_date",
+        "verification_status",
+        "order_id",
+        "product_id",
+        "status",
+      ],
+    });
+    res.json(Receipt);
   } catch (error) {
-    console.error("Error obteniendo remito:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -538,11 +525,11 @@ const getWarehouses = async (req, res) => {
             SELECT 
                 warehouse_id as id,
                 name,
-                address_sector as location,
-                address_sector,
-                0 as latitude,
-                0 as longitude,
-                COALESCE(capacity, 0) as capacity
+                location,
+                latitude,
+                longitude,
+                address,
+                capacity
             FROM warehouses
             ORDER BY name;
         `;

@@ -5,7 +5,6 @@ const getAllRoles = async (req, res) => {
   try {
     const roleRepository = AppDataSource.getRepository('Role');
     const roles = await roleRepository.find({
-      where: { activo: true },
       order: { nombre: 'ASC' }
     });
 
@@ -26,17 +25,12 @@ const createRole = async (req, res) => {
     }
 
     const roleRepository = AppDataSource.getRepository('Role');
-    
-    // Verificar si el rol ya existe
-    const existingRole = await roleRepository.findOne({ 
-      where: { nombre, activo: true } 
-    });
+    const existingRole = await roleRepository.findOne({ where: { nombre } });
 
     if (existingRole) {
       return res.status(400).json({ message: 'Ya existe un rol con ese nombre' });
     }
 
-    // Crear nuevo rol
     const newRole = roleRepository.create({
       nombre,
       descripcion,
@@ -62,35 +56,13 @@ const updateRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, permisos } = req.body;
+
     const roleRepository = AppDataSource.getRepository('Role');
-    const role = await roleRepository.findOne({ where: { id: parseInt(id), activo: true } });
+    const role = await roleRepository.findOne({ where: { id: parseInt(id) } });
 
-    if (!role) {
-      return res.status(404).json({ message: 'Rol no encontrado' });
-    }
+    if (!role) return res.status(404).json({ message: 'Rol no encontrado' });
 
-    // LÓGICA MODIFICADA
-    if (role.es_sistema) {
-      // Si se intenta cambiar algo que NO sean los permisos, se bloquea.
-      if (nombre !== undefined && nombre !== role.nombre) {
-        return res.status(403).json({ message: 'No se puede cambiar el nombre de un rol del sistema.' });
-      }
-      if (descripcion !== undefined && descripcion !== role.descripcion) {
-        return res.status(403).json({ message: 'No se puede cambiar la descripción de un rol del sistema.' });
-      }
-    }
-    // Actualizar campos
-    if (nombre && nombre !== role.nombre) {
-      // Verificar que el nuevo nombre no exista
-      const existingRole = await roleRepository.findOne({ 
-        where: { nombre, activo: true } 
-      });
-      if (existingRole && existingRole.id !== role.id) {
-        return res.status(400).json({ message: 'Ya existe un rol con ese nombre' });
-      }
-      role.nombre = nombre;
-    }
-
+    if (nombre) role.nombre = nombre;
     if (descripcion !== undefined) role.descripcion = descripcion;
     if (permisos) role.permisos = permisos;
 
@@ -111,37 +83,22 @@ const updateRole = async (req, res) => {
 const deleteRole = async (req, res) => {
   try {
     const { id } = req.params;
-
     const roleRepository = AppDataSource.getRepository('Role');
-    const userRepository = AppDataSource.getRepository('User'); 
-    
-    const role = await roleRepository.findOne({
-      where: { id: parseInt(id), activo: true }
-    });
+    const userRepository = AppDataSource.getRepository('User');
 
-    if (!role) {
-      return res.status(404).json({ message: 'Rol no encontrado' });
-    }
+    const role = await roleRepository.findOne({ where: { id: parseInt(id) } });
 
-    if (role.es_sistema) {
-      return res.status(403).json({ 
-        message: 'No se pueden eliminar los roles del sistema' 
-      });
-    }
+    if (!role) return res.status(404).json({ message: 'Rol no encontrado' });
 
-    const userCount = await userRepository.count({
-      where: { rol: role.nombre, activo: true }
-    });
-
+    // Verificar si algún usuario tiene este rol asignado
+    const userCount = await userRepository.count({ where: { rol: role.nombre } });
     if (userCount > 0) {
-      return res.status(400).json({ 
-        message: `No se puede eliminar el rol porque ${userCount} usuario(s) lo tienen asignado` 
+      return res.status(400).json({
+        message: `No se puede eliminar el rol porque ${userCount} usuario(s) lo tienen asignado`
       });
     }
 
-    // [CAMBIO] Reemplazamos .update() por .delete() para un borrado físico
     await roleRepository.delete(id);
-
     res.json({ message: 'Rol eliminado exitosamente' });
 
   } catch (error) {
@@ -150,162 +107,103 @@ const deleteRole = async (req, res) => {
   }
 };
 
-// Asignar rol a usuario
+// ✅ Asignar rol a usuario (actualiza rol y permisos directamente en la tabla users)
 const assignRoleToUser = async (req, res) => {
   try {
     const { userId, roleId } = req.body;
-    const adminId = req.user.id;
 
     if (!userId || !roleId) {
-      return res.status(400).json({ 
-        message: 'ID de usuario y rol son requeridos' 
-      });
+      return res.status(400).json({ message: 'ID de usuario y rol son requeridos' });
     }
 
     const userRepository = AppDataSource.getRepository('User');
     const roleRepository = AppDataSource.getRepository('Role');
-    const userRoleRepository = AppDataSource.getRepository('UserRole');
 
-    // Verificar que el usuario existe
-    const user = await userRepository.findOne({
-      where: { id: parseInt(userId), activo: true }
-    });
+    const user = await userRepository.findOne({ where: { id: parseInt(userId), activo: true } });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
+    const role = await roleRepository.findOne({ where: { id: parseInt(roleId) } });
+    if (!role) return res.status(404).json({ message: 'Rol no encontrado' });
 
-    // Verificar que el rol existe
-    const role = await roleRepository.findOne({
-      where: { id: parseInt(roleId), activo: true }
-    });
+    // Asignar rol y permisos del rol al usuario
+    user.rol = role.nombre;
+    user.permisos = role.permisos;
 
-    if (!role) {
-      return res.status(404).json({ message: 'Rol no encontrado' });
-    }
-
-    // Verificar si ya tiene el rol asignado
-    const existingAssignment = await userRoleRepository.findOne({
-      where: { 
-        user_id: parseInt(userId), 
-        role_id: parseInt(roleId), 
-        activo: true 
-      }
-    });
-
-    if (existingAssignment) {
-      return res.status(400).json({ 
-        message: 'El usuario ya tiene este rol asignado' 
-      });
-    }
-
-    // Crear asignación
-    const userRole = userRoleRepository.create({
-      user_id: parseInt(userId),
-      role_id: parseInt(roleId),
-      asignado_por: adminId
-    });
-
-    await userRoleRepository.save(userRole);
+    await userRepository.save(user);
 
     res.json({
-      message: 'Rol asignado exitosamente',
-      assignment: userRole
+      message: `Rol "${role.nombre}" asignado correctamente a ${user.nombre}`,
+      user
     });
 
   } catch (error) {
-    console.error('Error asignando rol:', error);
+    console.error('Error asignando rol a usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
-// Remover rol de usuario
+// ✅ Remover rol del usuario (reestablece a "usuario" por defecto)
 const removeRoleFromUser = async (req, res) => {
   try {
-    const { userId, roleId } = req.body;
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ message: 'ID de usuario es requerido' });
 
-    if (!userId || !roleId) {
-      return res.status(400).json({ 
-        message: 'ID de usuario y rol son requeridos' 
-      });
-    }
+    const userRepository = AppDataSource.getRepository('User');
+    const defaultRole = 'usuario';
 
-    const userRoleRepository = AppDataSource.getRepository('UserRole');
+    const user = await userRepository.findOne({ where: { id: parseInt(userId), activo: true } });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Buscar la asignación
-    const assignment = await userRoleRepository.findOne({
-      where: { 
-        user_id: parseInt(userId), 
-        role_id: parseInt(roleId), 
-        activo: true 
-      }
+    // Buscar permisos del rol por defecto
+    const roleRepository = AppDataSource.getRepository('Role');
+    const defaultRoleData = await roleRepository.findOne({ where: { nombre: defaultRole } });
+
+    user.rol = defaultRole;
+    user.permisos = defaultRoleData ? defaultRoleData.permisos : {};
+
+    await userRepository.save(user);
+
+    res.json({
+      message: `Rol restablecido a "${defaultRole}" para ${user.nombre}`,
+      user
     });
 
-    if (!assignment) {
-      return res.status(404).json({ 
-        message: 'El usuario no tiene este rol asignado' 
-      });
-    }
-
-    // Soft delete de la asignación
-    await userRoleRepository.update(assignment.id, { activo: false });
-
-    res.json({ message: 'Rol removido exitosamente' });
-
   } catch (error) {
-    console.error('Error removiendo rol:', error);
+    console.error('Error removiendo rol de usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
-// Obtener roles de un usuario
+// ✅ Obtener el rol actual de un usuario
 const getUserRoles = async (req, res) => {
   try {
     const { userId } = req.params;
+    const userRepository = AppDataSource.getRepository('User');
 
-    const userRoleRepository = AppDataSource.getRepository('UserRole');
-    const roleRepository = AppDataSource.getRepository('Role');
+    const user = await userRepository.findOne({ where: { id: parseInt(userId), activo: true } });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Obtener roles del usuario
-    const userRoles = await userRoleRepository
-      .createQueryBuilder('ur')
-      .leftJoinAndSelect('ur.role', 'role')
-      .where('ur.user_id = :userId', { userId: parseInt(userId) })
-      .andWhere('ur.activo = :activo', { activo: true })
-      .andWhere('role.activo = :roleActivo', { roleActivo: true })
-      .getMany();
-
-    const roles = userRoles.map(ur => ({
-      ...ur.role,
-      fecha_asignacion: ur.fecha_asignacion
-    }));
-
-    res.json(roles);
+    res.json({
+      rol: user.rol,
+      permisos: user.permisos
+    });
 
   } catch (error) {
-    console.error('Error obteniendo roles del usuario:', error);
+    console.error('Error obteniendo rol del usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
-// Obtener usuarios con un rol específico
+// Obtener usuarios por rol
 const getUsersByRole = async (req, res) => {
   try {
     const { roleId } = req.params;
-
     const roleRepository = AppDataSource.getRepository('Role');
     const userRepository = AppDataSource.getRepository('User');
 
-    // Primero, encontramos el rol por su ID para obtener el nombre
-    const role = await roleRepository.findOne({
-      where: { id: parseInt(roleId), activo: true }
-    });
+    const role = await roleRepository.findOne({ where: { id: parseInt(roleId) } });
+    if (!role) return res.status(404).json({ message: 'Rol no encontrado' });
 
-    if (!role) {
-      return res.status(404).json({ message: 'Rol no encontrado' });
-    }
-
-    // [MODIFICADO] Buscamos todos los usuarios que tengan ese nombre de rol
     const users = await userRepository.find({
       where: { rol: role.nombre, activo: true }
     });

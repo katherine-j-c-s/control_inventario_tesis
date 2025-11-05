@@ -17,10 +17,11 @@ const register = async (req, res) => {
       puesto_laboral, 
       edad, 
       genero, 
+      foto,
       password 
     } = req.body;
 
-    console.log('Datos extraídos:', { nombre, apellido, dni, email, puesto_laboral, edad, genero });
+    console.log('Datos extraídos:', { nombre, apellido, dni, email, puesto_laboral, edad, genero, foto });
 
     const userRepository = AppDataSource.getRepository('User');
     console.log('Repository obtenido');
@@ -59,9 +60,8 @@ const register = async (req, res) => {
       foto: req.file ? req.file.filename : null,
       rol: 'usuario',
       permisos: {
-        entrega: false,
-        movimiento: false,
-        egreso: false
+        inventory: true,
+        scanQR: true
       }
     });
     console.log('Usuario creado en memoria:', newUser);
@@ -174,8 +174,21 @@ const login = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
+    // Buscar el rol para obtener los permisos del rol
+    const roleRepository = AppDataSource.getRepository('Role');
+    const userRole = await roleRepository.findOne({ 
+      where: { nombre: req.user.rol } 
+    });
+
+    // Construir el perfil con los permisos del rol
     const { password, ...userProfile } = req.user;
-    res.json(userProfile);
+    const userWithPermissions = {
+      ...userProfile,
+      permisos: userProfile.permisos || {},
+      rolPermisos: userRole?.permisos || {}
+    };
+
+    res.json(userWithPermissions);
   } catch (error) {
     console.error('Error obteniendo perfil:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -219,6 +232,12 @@ const updateProfile = async (req, res) => {
 
     // Si hay nueva foto, actualizarla
     if (req.file) {
+      // Verificar que el archivo se haya guardado correctamente
+      if (!req.file.filename) {
+        return res.status(400).json({ 
+          message: 'Error al procesar la imagen. Por favor, inténtalo de nuevo.' 
+        });
+      }
       filteredData.foto = req.file.filename;
     }
 
@@ -241,7 +260,16 @@ const updateProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando perfil:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      path: error.path,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      message: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

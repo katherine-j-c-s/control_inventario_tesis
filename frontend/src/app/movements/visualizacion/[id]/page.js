@@ -7,39 +7,45 @@ import api from '@/lib/api';
 
 export default function VisualizacionMapsPage() {
   const params = useParams();
-  const productId = params.id;
+  const movementId = params.id; // Este es el ID del movimiento, no del producto
   const [product, setProduct] = useState(null);
+  const [movement, setMovement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await api.get(`/productos/${productId}`);
-        setProduct(response.data);
+        
+        // Primero obtener el movimiento para obtener el product_id y ubicacion_actual
+        const movementResponse = await api.get(`/movements/${movementId}`);
+        const movementData = movementResponse.data;
+        
+        if (!movementData || !movementData.product_id) {
+          throw new Error('Movimiento no encontrado o sin producto asociado');
+        }
+        
+        setMovement(movementData);
+        
+        // Luego obtener el producto usando el product_id del movimiento
+        const productResponse = await api.get(`/productos/${movementData.product_id}`);
+        setProduct(productResponse.data);
       } catch (err) {
-        console.error('Error cargando producto:', err);
-        setError('Error al cargar el producto');
-        // Producto de ejemplo como fallback
-        setProduct({
-          id: productId,
-          nombre: 'Producto de Ejemplo',
-          codigo: 'PROD-001',
-          categoria: 'Electrónicos',
-          descripcion: 'Producto de ejemplo para demostración',
-          ubicacion: 'Ruta 7 Km 8, Neuquén, Neuquén, Argentina'
-        });
+        console.error('Error cargando datos:', err);
+        setError(err.response?.data?.error || err.message || 'Error al cargar los datos');
+        setProduct(null);
+        setMovement(null);
       } finally {
         setLoading(false);
       }
     };
 
-    if (productId) {
-      loadProduct();
+    if (movementId) {
+      loadData();
     }
-  }, [productId]);
+  }, [movementId]);
 
   if (loading) {
     return (
@@ -62,6 +68,8 @@ export default function VisualizacionMapsPage() {
     );
   }
 
-  return <VisualizacionMaps productId={productId} product={product} />;
+  return <VisualizacionMaps productId={product?.id} product={product} movement={movement} />;
 }
+
+
 

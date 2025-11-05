@@ -13,8 +13,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { PlusCircle, TrendingUp, MapPin } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { PlusCircle } from 'lucide-react';
 import HistoryMovements from './components/historyMovements';
 import MoveProduct from './components/moveProduct';
 
@@ -34,8 +33,6 @@ const MovementsContent = () => {
         setLoading(true);
         const { movementAPI } = await import('@/lib/api');
         const response = await movementAPI.getAllMovements();
-        
-        console.log('Movimientos recibidos de la API:', response.data);
         
         // Transformar los datos de la API al formato esperado por el componente
         const transformedMovements = response.data.map(mov => {
@@ -66,8 +63,6 @@ const MovementsContent = () => {
             observaciones: mov.observaciones || mov.motivo || null
           };
         });
-        
-        console.log('Movimientos transformados:', transformedMovements);
         setMovements(transformedMovements);
       } catch (error) {
         console.error('Error cargando movimientos:', error);

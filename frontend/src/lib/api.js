@@ -327,7 +327,9 @@ export const productAPI = {
 
   getProductByCode: async (code) => {
     const products = await api.get('/productos');
-    return products.data.find(p => p.codigo === code);
+    // Buscar por código de forma case-insensitive y sin espacios
+    const normalizedCode = code.trim().toUpperCase();
+    return products.data.find(p => p.codigo && p.codigo.trim().toUpperCase() === normalizedCode);
   },
 
   // Nuevo método para procesar egreso de producto (resta cantidad del stock)

@@ -9,22 +9,22 @@ export default new EntitySchema({
       primary: true,
       generated: true,
     },
+    user_id: {
+      type: 'int',
+      nullable: true,
+    },
     name: {
       type: 'varchar',
       length: 100,
     },
-    address_sector: {
+    location: {
       type: 'varchar',
-      length: 150,
-      nullable: true,
-    },
-    address: {
-      type: 'text',
+      length: 100,
       nullable: true,
     },
     latitude: {
       type: 'decimal',
-      precision: 10,
+      precision: 19,
       scale: 8,
       nullable: true,
     },
@@ -34,8 +34,8 @@ export default new EntitySchema({
       scale: 8,
       nullable: true,
     },
-    user_id: {
-      type: 'int',
+    address: {
+      type: 'text',
       nullable: true,
     },
     capacity: {

@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Layout from "@/components/layouts/Layout";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { rolesConfig } from "@/lib/roles";
+import { allRoutes } from "@/lib/roles";
 import {
   Card,
   CardContent,
@@ -50,7 +50,8 @@ function DashboardContent() {
   }
 
   const userRole = user.rol || "default";
-  const quickActions = rolesConfig[userRole]?.routes || [];
+  // Usar los permisos del usuario directamente en lugar de rolesConfig (que ya no existe)
+  const quickActions = []; // Se puede implementar usando user.rolPermisos si es necesario
 
   return (
     <Layout>

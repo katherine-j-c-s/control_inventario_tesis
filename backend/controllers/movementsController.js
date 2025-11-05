@@ -19,11 +19,8 @@ const getAllMovements = async (req, res) => {
                 m.product_id,
                 m.status,
                 m.user_id,
-                m.ubicacion_actual as ubicacionactual,
-                m.estanteria_actual as estanteriaactual,
-                NULL::VARCHAR as motivo,
-                NULL::VARCHAR as destinatario,
-                NULL::TEXT as observaciones,
+                m.ubicacion_actual,
+                m.estanteria_actual,
                 p.nombre as product_name,
                 u.nombre as user_name
             FROM movements m
@@ -56,7 +53,6 @@ const getMovementById = async (req, res) => {
                 'estanteria_actual'
             ]
         });
-
         if (!movement) {
             return res.status(404).json({ message: 'Movimiento no encontrado' });
         }
@@ -77,21 +73,17 @@ const createMovement = async (req, res) => {
             product_id, 
             status, 
             user_id, 
-            ubicacionactual,
-            motivo,
-            destinatario,
-            observaciones
+            ubicacion_actual,
+            estanteria_actual
         } = req.body;
-
-        console.log('Datos recibidos:', req.body);
 
         // Usar SQL directo ya que la tabla no tiene todos los campos que el modelo espera
         const { pool } = await import('../db.js');
         
         const query = `
             INSERT INTO movements (
-                movement_type, date, quantity, product_id, status, user_id, ubicacion_actual
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                movement_type, date, quantity, product_id, status, user_id, ubicacion_actual, estanteria_actual
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *;
         `;
         
@@ -102,7 +94,8 @@ const createMovement = async (req, res) => {
             product_id,
             status,
             user_id,
-            ubicacionactual || null
+            ubicacion_actual || null,
+            estanteria_actual || null
         ];
         
         const { rows } = await pool.query(query, values);

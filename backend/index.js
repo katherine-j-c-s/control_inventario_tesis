@@ -69,6 +69,33 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Endpoint para obtener la API key de Google Maps (solo para el frontend)
+// IMPORTANTE: Esta ruta debe estar ANTES del manejo de errores 404
+app.get("/api/config/google-maps-key", (req, res) => {
+  try {
+    console.log('📌 Solicitud recibida en /api/config/google-maps-key');
+    const apiKey = config.googleMapsApiKey;
+    console.log('📌 API Key configurada:', apiKey ? 'Sí (oculta)' : 'No');
+    
+    if (!apiKey || apiKey === '') {
+      console.warn('⚠️ Google Maps API key no configurada');
+      return res.status(200).json({ 
+        apiKey: null,
+        error: "Google Maps API key no configurada en el servidor. Por favor, configura GOOGLE_MAPS_API_KEY en el archivo .env del backend."
+      });
+    }
+    
+    console.log('✅ Enviando API key al frontend');
+    res.json({ apiKey });
+  } catch (error) {
+    console.error('❌ Error obteniendo API key de Google Maps:', error);
+    res.status(500).json({ 
+      error: "Error interno del servidor al obtener la API key",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // Manejo de errores 404
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Ruta no encontrada" });

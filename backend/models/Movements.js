@@ -27,8 +27,7 @@ export default new EntitySchema({
       nullable: false,
     },
     status: {
-      type: 'varchar',
-      length: 50,
+      type: 'text',
       nullable: false,
     },
     user_id: {
