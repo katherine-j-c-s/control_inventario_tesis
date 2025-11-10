@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { allRoutes, rolesConfig } from "@/lib/roles";
+import { allRoutes } from "@/lib/roles";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";

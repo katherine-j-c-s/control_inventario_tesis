@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { rolesConfig } from '@/lib/roles';
+import { allRoutes } from '@/lib/roles';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,18 @@ function LoginForm() {
 
   useEffect(() => {
     if (user) {
-      const userRole = user.rol || 'default';
-      const redirectPath = rolesConfig[userRole]?.defaultRoute || '/dashboard';
-      router.push(redirectPath);
+      const rolePermissions = user?.rolPermisos || user?.permisos || {};
+
+      const allowedRoutes = Object.entries(rolePermissions)
+        .filter(([key, hasAccess]) => hasAccess && allRoutes[key])
+        .map(([key]) => allRoutes[key]);
+
+      const defaultRoute =
+        (rolePermissions.dashboard && allRoutes.dashboard?.href) ||
+        allowedRoutes[0]?.href ||
+        '/dashboard';
+
+      router.push(defaultRoute);
     }
   }, [user, router]);
 
