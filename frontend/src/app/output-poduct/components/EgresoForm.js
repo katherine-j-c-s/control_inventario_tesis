@@ -52,16 +52,34 @@ const EgresoForm = ({ formData, onChange, disabled, productInfo }) => {
 
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="ubicacionActual">
-          Ubicación Actual del Producto
-        </Label>
-        <div className="bg-muted/50 border border-input rounded-md px-3 py-2 text-sm">
-          {productInfo?.ubicacion || "No especificada"}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="ubicacionActual">
+            Ubicación Actual del Producto
+          </Label>
+          <div className="bg-muted/50 border border-input rounded-md px-3 py-2 text-sm">
+            {productInfo?.ubicacion || "No especificada"}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Ubicación del producto en el inventario
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Esta es la ubicación actual del producto en el inventario
-        </p>
+
+        <div className="space-y-2">
+          <Label htmlFor="estanteriaActual">
+            Estantería Actual
+          </Label>
+          <Input
+            id="estanteriaActual"
+            placeholder="Ej: A1, B2, C3"
+            value={formData.estanteria || ""}
+            onChange={(e) => handleChange("estanteria", e.target.value)}
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground">
+            Número de estantería donde se encuentra
+          </p>
+        </div>
       </div>
 
       {/* Fecha y Hora */}

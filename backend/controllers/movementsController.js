@@ -74,7 +74,8 @@ const createMovement = async (req, res) => {
             status, 
             user_id, 
             ubicacion_actual,
-            estanteria_actual
+            estanteria_actual,
+            motivo
         } = req.body;
 
         // Usar SQL directo ya que la tabla no tiene todos los campos que el modelo espera
@@ -99,7 +100,14 @@ const createMovement = async (req, res) => {
         ];
         
         const { rows } = await pool.query(query, values);
-        res.status(201).json({ message: 'Movimiento creado exitosamente', movement: rows[0] });
+        
+        // Agregar el motivo al resultado si fue proporcionado (para logging)
+        const result = { ...rows[0] };
+        if (motivo) {
+            result.motivo = motivo;
+        }
+        
+        res.status(201).json({ message: 'Movimiento creado exitosamente', movement: result });
     } catch (error) {
         console.error('Error creando movimiento:', error);
         console.error('Request body:', req.body);
