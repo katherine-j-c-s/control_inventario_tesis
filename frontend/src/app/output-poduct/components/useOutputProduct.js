@@ -11,6 +11,7 @@ const useOutputProduct = () => {
   const [formData, setFormData] = useState({
     cantidad: "",
     motivo: "",
+    estanteria: "",
     fecha: new Date().toISOString().split("T")[0],
     hora: new Date().toTimeString().split(" ")[0].substring(0, 5),
     responsable: "",
@@ -100,7 +101,8 @@ const useOutputProduct = () => {
         product_id: state.productInfo.id,
         status: "completed",
         user_id: state.currentUser?.id || 1,
-        ubicacionactual: state.productInfo.ubicacion || "No especificada",
+        ubicacion_actual: state.productInfo.ubicacion || "No especificada",
+        estanteria_actual: formData.estanteria || null,
         motivo: formData.motivo,
       };
 
@@ -194,6 +196,7 @@ const useOutputProduct = () => {
     setFormData({
       cantidad: "",
       motivo: "",
+      estanteria: "",
       fecha: new Date().toISOString().split("T")[0],
       hora: new Date().toTimeString().split(" ")[0].substring(0, 5),
       responsable: state.currentUser?.nombre || state.currentUser?.name || "",
