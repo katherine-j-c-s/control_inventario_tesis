@@ -127,16 +127,16 @@ const Projects = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto md:p-4">
         <div className="mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex md:flex-row flex-col items-start md:items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Gestión de Obras</h1>
               <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
             </div>
             <Button 
               onClick={handleOpenCreateModal}
-              className="flex items-center gap-2"
+              className="flex items-center md:mt-0 mt-3 gap-2"
             >
               <Plus className="h-4 w-4" />
               Crear Obra
@@ -192,9 +192,9 @@ const Projects = () => {
 
         {/* Modal para crear nuevo proyecto */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
             <DialogHeader>
-              <DialogTitle>Crear Nueva Obra</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Crear Nueva Obra</DialogTitle>
             </DialogHeader>
             <CardLoadProject 
               onProjectCreated={handleProjectCreated}

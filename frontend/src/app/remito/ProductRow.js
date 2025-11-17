@@ -13,8 +13,8 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
   };
 
   return (
-    <div className="flex flex-row justify-between items-center w-full wrap md:flex-row gap-4 p-4 border border-border rounded-lg bg-card">
-      <div className="space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 border border-border rounded-lg bg-card">
+      <div className="space-y-2 sm:col-span-3">
         <Label htmlFor={`product-id-${index}`} className="text-sm font-medium">
           ID/Código *
         </Label>
@@ -27,7 +27,7 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
           className="w-full"
         />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 sm:col-span-4">
         <Label htmlFor={`product-name-${index}`} className="text-sm font-medium">
           Nombre *
         </Label>
@@ -40,7 +40,7 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
           className="w-full"
         />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`product-quantity-${index}`} className="text-sm font-medium">
           Cantidad *
         </Label>
@@ -54,9 +54,9 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
           className="w-full"
         />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`product-price-${index}`} className="text-sm font-medium">
-          Precio Unitario
+          Precio Unit.
         </Label>
         <Input
           id={`product-price-${index}`}
@@ -69,7 +69,7 @@ const ProductRow = ({ product, index, onUpdate, onRemove }) => {
           className="w-full"
         />
       </div>
-      <div className="flex items-end">
+      <div className="flex items-end sm:col-span-1">
         <Button
           type="button"
           variant="destructive"

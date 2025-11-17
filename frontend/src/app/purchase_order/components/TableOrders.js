@@ -220,107 +220,196 @@ const TableOrders = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md ">
-          <Table>
-            <TableHeader>
-              <TableRow className="">
-                <TableHead className="text-foreground">ID</TableHead>
-                <TableHead className="text-foreground">Proveedor</TableHead>
-                <TableHead className="text-foreground">Fecha Emisión</TableHead>
-                <TableHead className="text-foreground">Fecha Entrega</TableHead>
-                <TableHead className="text-foreground text-center">Cant. Artículos</TableHead>
-                <TableHead className="text-foreground">Estado Entrega</TableHead>
-                <TableHead className="text-foreground text-right">Total</TableHead>
-                <TableHead className="text-foreground">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow className="border-border">
-                  <TableCell colSpan={8} className="text-center py-8">
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Cargando órdenes...
-                    </div>
-                  </TableCell>
+        <div className="rounded-md hidden md:block">
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="">
+                  <TableHead className="text-foreground">ID</TableHead>
+                  <TableHead className="text-foreground">Proveedor</TableHead>
+                  <TableHead className="text-foreground">Fecha Emisión</TableHead>
+                  <TableHead className="text-foreground">Fecha Entrega</TableHead>
+                  <TableHead className="text-foreground text-center">Cant. Artículos</TableHead>
+                  <TableHead className="text-foreground">Estado Entrega</TableHead>
+                  <TableHead className="text-foreground text-right">Total</TableHead>
+                  <TableHead className="text-foreground">Acciones</TableHead>
                 </TableRow>
-              ) : error ? (
-                <TableRow className="border-border">
-                  <TableCell colSpan={8} className="text-center py-8 text-destructive">
-                    {error}
-                  </TableCell>
-                </TableRow>
-              ) : filteredOrders && filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <TableRow key={order.order_id} className="border-border hover:bg-muted/50">
-                    <TableCell className="font-medium text-foreground">
-                      #{order.order_id}
-                    </TableCell>
-                    <TableCell className="text-foreground">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{order.supplier || "N/A"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-foreground">
-                      {formatDate(order.issue_date)}
-                    </TableCell>
-                    <TableCell className="text-foreground">
-                      {formatDate(order.delivery_date)}
-                    </TableCell>
-                    <TableCell className="text-foreground text-center">
-                      <span className="font-semibold">{order.item_quantity || 0}</span>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(order.delivery_status)}
-                    </TableCell>
-                    <TableCell className="text-foreground text-right font-mono">
-                      {formatCurrency(order.total || 0)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleView(order)}
-                          className="border-border hover:bg-muted"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(order)}
-                          className="border-border hover:bg-muted"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(order)}
-                          className="border-border hover:bg-destructive hover:text-destructive-foreground"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow className="border-border">
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cargando órdenes...
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow className="border-border">
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    No hay órdenes de compra disponibles
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                ) : error ? (
+                  <TableRow className="border-border">
+                    <TableCell colSpan={8} className="text-center py-8 text-destructive">
+                      {error}
+                    </TableCell>
+                  </TableRow>
+                ) : filteredOrders && filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.order_id} className="border-border hover:bg-muted/50">
+                      <TableCell className="font-medium text-foreground">
+                        #{order.order_id}
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{order.supplier || "N/A"}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        {formatDate(order.issue_date)}
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        {formatDate(order.delivery_date)}
+                      </TableCell>
+                      <TableCell className="text-foreground text-center">
+                        <span className="font-semibold">{order.item_quantity || 0}</span>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(order.delivery_status)}
+                      </TableCell>
+                      <TableCell className="text-foreground text-right font-mono">
+                        {formatCurrency(order.total || 0)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleView(order)}
+                            className="border-border hover:bg-muted"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(order)}
+                            className="border-border hover:bg-muted"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(order)}
+                            className="border-border hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow className="border-border">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No hay órdenes de compra disponibles
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Vista móvil */}
+        <div className="space-y-3 md:hidden">
+          {loading ? (
+            <div className="text-center text-muted-foreground py-6">
+              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+              Cargando órdenes...
+            </div>
+          ) : error ? (
+            <p className="text-center text-destructive py-6">{error}</p>
+          ) : filteredOrders && filteredOrders.length > 0 ? (
+            filteredOrders.map((order) => (
+              <div
+                key={order.order_id}
+                className="border border-border rounded-lg p-4 bg-muted/40 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Orden</p>
+                    <p className="text-xl font-semibold text-foreground">
+                      #{order.order_id}
+                    </p>
+                  </div>
+                  {getStatusBadge(order.delivery_status)}
+                </div>
+                <div className="text-sm">
+                  <p className="text-muted-foreground">Proveedor</p>
+                  <p className="font-medium">{order.supplier || "N/A"}</p>
+                </div>
+                <dl className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-muted-foreground">Emisión</dt>
+                    <dd className="font-medium">
+                      {formatDate(order.issue_date)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Entrega</dt>
+                    <dd className="font-medium">
+                      {formatDate(order.delivery_date)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Artículos</dt>
+                    <dd className="font-semibold">{order.item_quantity || 0}</dd>
+                  </div>
+                  <div className="text-right">
+                    <dt className="text-muted-foreground">Total</dt>
+                    <dd className="font-mono font-semibold">
+                      {formatCurrency(order.total || 0)}
+                    </dd>
+                  </div>
+                </dl>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleView(order)}
+                  >
+                    Ver
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEdit(order)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleDelete(order)}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-6">
+              No hay órdenes de compra disponibles
+            </p>
+          )}
         </div>
         
         {/* Footer con información */}
-        <div className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-sm text-muted-foreground">
           Mostrando {filteredOrders.length} de {orders.length} órdenes de compra
-        </div>
+        </p>
       </CardContent>
 
       {/* Modal para ver detalles de la orden */}
@@ -332,9 +421,9 @@ const TableOrders = () => {
 
       {/* Modal para editar orden */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl sm:text-2xl font-bold">
               Editar Orden de Compra #{selectedOrder?.order_id}
             </DialogTitle>
           </DialogHeader>

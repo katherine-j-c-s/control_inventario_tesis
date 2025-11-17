@@ -30,12 +30,12 @@ function Profile() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto">
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver
         </Button>
-        <Card>
+        <Card >
           <CardHeader>
             <CardTitle className="text-2xl">Mi Perfil</CardTitle>
             <CardDescription>

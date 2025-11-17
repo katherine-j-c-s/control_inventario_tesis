@@ -5,7 +5,7 @@ import { FileText, Loader2 } from "lucide-react";
 const FormActions = ({ loading, onSubmit, onCancel }) => {
   return (
     <div className="flex items-center justify-between pt-6 border-t border-border">
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm md:flex hidden text-muted-foreground">
         * Campos obligatorios
       </div>
       <div className="flex items-center gap-3">

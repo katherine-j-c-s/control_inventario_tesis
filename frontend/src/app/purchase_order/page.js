@@ -84,9 +84,9 @@ const PurchaseOrderContent = () => {
 
       {/* Modal para Nueva Orden */}
       <Dialog open={isNewOrderModalOpen} onOpenChange={setIsNewOrderModalOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl sm:text-2xl font-bold">
               Crear Nueva Orden de Compra
             </DialogTitle>
             <DialogDescription>
@@ -102,9 +102,9 @@ const PurchaseOrderContent = () => {
 
       {/* Modal para Generar Informe */}
       <Dialog open={isGenerateReportModalOpen} onOpenChange={setIsGenerateReportModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl sm:text-2xl font-bold">
               Generar Informe de Orden de Compra
             </DialogTitle>
             <DialogDescription>

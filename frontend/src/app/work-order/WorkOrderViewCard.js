@@ -17,11 +17,11 @@ const WorkOrderModal = ({ isOpen, onClose, workOrder }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-card border-border w-[95vw] sm:w-full">
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-foreground flex items-center">
-              <FileText className="w-6 h-6 mr-2 text-primary" />
+            <DialogTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary" />
               Solicitud #{workOrder.id}
             </DialogTitle>
           </div>

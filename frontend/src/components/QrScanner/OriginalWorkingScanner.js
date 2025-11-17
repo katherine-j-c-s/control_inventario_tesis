@@ -111,16 +111,16 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="bg-card text-foreground rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-blue-600 text-white">
+        <div className="flex items-center justify-between p-6 border-b bg-primary text-primary-foreground">
           <div className="flex items-center gap-3">
             <Camera className="h-6 w-6" />
             <h2 className="text-xl font-semibold">Escáner QR</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-blue-700 rounded-full transition-colors"
+            className="p-2 hover:bg-primary/80 rounded-full transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -129,7 +129,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
         {/* Content */}
         <div className="p-6">
           {/* Cámara */}
-          <div className="w-full max-w-md mx-auto overflow-hidden rounded-xl shadow-lg bg-black">
+          <div className="w-full max-w-md mx-auto overflow-hidden rounded-xl shadow-inner bg-black">
             <video
               ref={videoRef}
               autoPlay
@@ -141,22 +141,22 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
 
           {/* Mostrar datos escaneados */}
           {data !== "Esperando escaneo..." && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="font-semibold text-green-800 mb-2">Código escaneado:</h4>
-              <p className="text-green-700 break-all text-sm">{data}</p>
+            <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/40 rounded-lg text-foreground">
+              <h4 className="font-semibold mb-2">Código escaneado:</h4>
+              <p className="text-sm break-all">{data}</p>
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => {
                     setData("Esperando escaneo...");
                     setShowModal(false);
                   }}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition"
+                  className="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-500 transition"
                 >
                   Limpiar
                 </button>
                 <button
                   onClick={() => navigator.clipboard.writeText(data)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
+                  className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/80 transition"
                 >
                   Copiar
                 </button>
@@ -165,7 +165,7 @@ export function OriginalWorkingScanner({ isOpen, onClose, onScanResult }) {
           )}
 
           {/* Instrucciones */}
-          <div className="mt-4 text-center text-gray-600">
+          <div className="mt-4 text-center text-muted-foreground">
             <p className="text-sm">
               Apunta la cámara hacia un código QR para escanearlo
             </p>

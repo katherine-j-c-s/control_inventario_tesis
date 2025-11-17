@@ -330,8 +330,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
 
           {/* Sección: Información del Producto */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <Package className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               <span>Información del Producto</span>
             </div>
 
@@ -371,23 +371,23 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
             {/* Información del producto encontrado */}
             {productInfo && (
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-                <p className="font-semibold text-lg">{productInfo.nombre}</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 text-sm text-muted-foreground">
+                <p className="font-semibold text-base sm:text-lg break-words">{productInfo.nombre}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-2 text-sm text-muted-foreground">
                   <p>
                     Código:{" "}
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-foreground break-words">
                       {productInfo.codigo}
                     </span>
                   </p>
                   <p>
                     Ubicación Actual:{" "}
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-foreground break-words">
                       {productInfo.ubicacionActual}
                     </span>
                   </p>
                   <p>
                     Estantería:{" "}
-                    <span className="font-medium text-foreground">
+                    <span className="font-medium text-foreground break-words">
                       {productInfo.estanteria}
                     </span>
                   </p>
@@ -398,8 +398,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
 
           {/* Sección: Ubicaciones */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <MapPin className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               <span>Ubicaciones</span>
             </div>
 
@@ -496,8 +496,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
 
           {/* Sección: Fecha y Hora */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <Calendar className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               <span>Fecha y Hora del Movimiento</span>
             </div>
 
@@ -536,8 +536,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
 
           {/* Sección: Responsables */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <User className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               <span>Responsables</span>
             </div>
 
@@ -596,13 +596,14 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3">
+        <CardFooter className="flex flex-col sm:flex-row justify-end gap-3">
           {onClose && (
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isLoading}
+              className="w-full sm:w-auto"
             >
               <X className="h-4 w-4 mr-2" />
               Cancelar
@@ -614,11 +615,12 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
             variant="ghost"
             onClick={resetForm}
             disabled={isLoading}
+            className="w-full sm:w-auto"
           >
             Limpiar
           </Button>
 
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
             {isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

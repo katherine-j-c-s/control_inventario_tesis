@@ -75,10 +75,10 @@ export default function CardViewOrder({ isOpen, onClose, orderData }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <ShoppingCart className="h-6 w-6" /> Detalles de la Orden de Compra
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" /> Detalles de la Orden de Compra
           </DialogTitle>
           <DialogDescription>Orden #{orderData.order_id}</DialogDescription>
         </DialogHeader>

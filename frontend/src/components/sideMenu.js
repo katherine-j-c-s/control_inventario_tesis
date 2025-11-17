@@ -19,13 +19,15 @@ import ProfileImage from "./ProfileImage";
 
 import logoLightMode from "@/assets/logoLighMode.png";
 import logoDarkMode from "@/assets/logoDarkMode.png";
+import logoFullLightMode from "@/assets/logoFullLighMode.png";
+import logoFullDarkMode from "@/assets/logoFullDarkMode.png";
 
 // Un componente interno para los links, es "inteligente" y muestra un HoverCard cuando está cerrado
 const NavLink = ({ href, icon: Icon, text, isOpen }) => {
   const pathname = usePathname();
   const isActive = pathname === href;
 
-  const linkClasses = `flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
+  const linkClasses = `flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group min-w-0 ${
     isActive
       ? "bg-primary/10 text-primary"
       : "text-foreground/70 hover:bg-muted hover:text-foreground"
@@ -37,7 +39,7 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
       <HoverCard openDelay={100} closeDelay={100}>
         <HoverCardTrigger asChild>
           <Link href={href} className={linkClasses}>
-            <Icon className="w-5 h-5" />
+            <Icon className="w-5 h-5 flex-shrink-0" />
           </Link>
         </HoverCardTrigger>
         <HoverCardContent
@@ -54,8 +56,8 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
   // Si el menú está abierto, mostramos el texto normalmente
   return (
     <Link href={href} className={linkClasses.replace("justify-center", "")}>
-      <Icon className="w-5 h-5" />
-      <span className="ml-3 whitespace-nowrap">{text}</span>
+      <Icon className="w-5 h-5 flex-shrink-0" />
+      <span className="ml-3 whitespace-nowrap truncate min-w-0">{text}</span>
     </Link>
   );
 };
@@ -88,7 +90,7 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
 
   // Seleccionamos el logo correcto según el tema y si el menú está abierto
   const iconLogo = theme === "dark" ? logoDarkMode : logoLightMode;
-  const fullLogo = theme === "dark" ? logoDarkMode : logoLightMode;
+  const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
 
   // Construimos las rutas permitidas basadas ÚNICAMENTE en los permisos del rol
   // Usamos rolPermisos si está disponible, sino usamos permisos como fallback
@@ -108,59 +110,37 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
     <motion.aside
       animate={
         isMobile
-          ? { x: isOpen ? 0 : "-100%" } // Animación para móvil (deslizamiento)
-          : { width: isOpen ? "18rem" : "5rem" } // Animación para escritorio (ancho)
+          ? { x: isOpen ? 0 : "-100%" }
+          : { width: isOpen ? 288 : 80 }
       }
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className={`bg-card text-card-foreground p-4 flex flex-col h-screen shadow-2xl flex-shrink-0 ${
-        isMobile ? "fixed z-50" : "relative z-40" // z-index más alto en desktop
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+      className={`bg-card fixed top-0 left-0 h-screen text-card-foreground flex flex-col shadow-2xl flex-shrink-0 ${
+        isMobile ? " z-50 " : "z-40"
       }`}
+      style={{ 
+        width: isMobile ? "16rem" : (isOpen ? "288px" : "80px"),
+        minWidth: isMobile ? "16rem" : (isOpen ? "288px" : "80px"),
+        maxWidth: isMobile ? "16rem" : (isOpen ? "288px" : "80px"),
+        height: "100vh",
+        maxHeight: "100vh"
+      }}
+      aria-expanded={isOpen}
     >
-      {/* Contenedor del Logo y Botón de Control */}
-      <div className="">
+      <div className="p-4 flex-shrink-0">
         {/* Botón de abrir/cerrar */}
         <div className={`flex ${isOpen ? "justify-end" : "justify-center"}`}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 rounded-full hover:bg-muted mb-4"
+            className="p-1 rounded-full hover:bg-muted transition-colors"
+            aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
-
-        {/* Logo */}
-        <div className="flex justify-start items-start ">
-          <AnimatePresence>
-            {isOpen ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-               
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="mb-6 items-center"
-              >
-                <Image
-                  src={iconLogo}
-                  alt="Logo"
-                  width={32}
-                  height={32}
-                  priority
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
 
-{/* // Navegación principal con links  */}
-      <nav className="flex-grow space-y-2">
+      {/* Navegación principal con links - Scrollable */}
+      <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 pb-4 space-y-2 scrollbar-hide">
         {uniqueRoutes.map((link) => (
           <NavLink
             key={link.href}
@@ -172,8 +152,8 @@ export const SideMenu = ({ isOpen, setIsOpen, isMobile }) => {
         ))}
       </nav>
 
-
-      <div className="mt-auto">
+      {/* Footer fijo con toggle y perfil */}
+      <div className="px-4 pt-2 pb-4 flex-shrink-0 border-t border-border">
         <DarkModeToggle isOpen={isOpen} />
         <Link href="/profile" className="block mt-2">
           <div className="flex items-center p-2 rounded-lg hover:bg-muted transition-colors group cursor-pointer">

@@ -45,16 +45,16 @@ const InfoReceipt = ({ receipt }) => {
   return (
     <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground flex items-center">
-          <FileText className="w-5 h-5 mr-2" />
+        <CardTitle className="text-base sm:text-lg font-semibold text-foreground flex items-center">
+          <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
           Información General
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Hash className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+              <Hash className="w-4 h-4 text-muted-foreground hidden sm:block" />
               <span className="text-sm font-medium text-foreground">
                 ID del Remito:
               </span>
@@ -63,25 +63,25 @@ const InfoReceipt = ({ receipt }) => {
               </span>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+              <MapPin className="w-4 h-4 text-muted-foreground hidden sm:block" />
               <span className="text-sm font-medium text-foreground">
                 Almacén:
               </span>
               <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground font-medium">
+                <span className="text-sm text-muted-foreground font-medium break-words">
                   {receipt.warehouse_name || "Sin almacén"}
                 </span>
                 {receipt.warehouse_location && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground break-words">
                     {receipt.warehouse_location}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Package className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+              <Package className="w-4 h-4 text-muted-foreground hidden sm:block" />
               <span className="text-sm font-medium text-foreground">
                 Cantidad de Productos:
               </span>
@@ -92,34 +92,34 @@ const InfoReceipt = ({ receipt }) => {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+              <Calendar className="w-4 h-4 text-muted-foreground hidden sm:block" />
               <span className="text-sm font-medium text-foreground">
                 Fecha de Entrada:
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground break-words">
                 {formatDate(receipt.entry_date)}
               </span>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
               <span className="text-sm font-medium text-foreground">
                 Estado:
               </span>
               {getStatusBadge(receipt.status, receipt.verification_status)}
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
               <span className="text-sm font-medium text-foreground">
                 Verificación:
               </span>
               {receipt.verification_status ? (
-                <div className="flex items-center text-primary-400">
+                <div className="flex items-center text-primary dark:text-primary-400">
                   <CheckCircle className="w-4 h-4 mr-1" />
                   <span className="text-sm">Verificado</span>
                 </div>
               ) : (
-                <div className="flex items-center text-red-600">
+                <div className="flex items-center text-destructive">
                   <XCircle className="w-4 h-4 mr-1" />
                   <span className="text-sm">No Verificado</span>
                 </div>

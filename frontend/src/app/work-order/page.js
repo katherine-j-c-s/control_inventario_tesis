@@ -80,9 +80,9 @@ const WorkOrder = () => {
     return (
       <Layout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex md:flex-row flex-col items-start md:items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="h-8 w-8 text-primary" />
+              <FileText className="h-8 w-8 md:flex hidden text-primary" />
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
                   Nueva Solicitud de Materiales

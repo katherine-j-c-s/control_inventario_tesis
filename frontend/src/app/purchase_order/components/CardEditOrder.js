@@ -344,12 +344,12 @@ const CardEditOrder = ({ orderData, onClose, onOrderUpdated }) => {
         </Card>
 
         {/* Botones */}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading} className="w-full sm:w-auto">
             <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading} className="flex items-center gap-2">
+          <Button type="submit" disabled={loading} className="flex items-center gap-2 w-full sm:w-auto">
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />

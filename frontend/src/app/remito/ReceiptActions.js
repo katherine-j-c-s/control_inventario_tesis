@@ -17,9 +17,9 @@ const ReceiptActions = ({
 }) => {
   const { theme } = useTheme();
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 overflow-x-auto scrollbar-hide pb-2">
       {/* Botón para obtener todos los remitos */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border flex-shrink-0 min-w-[200px] sm:min-w-0">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
             <List className="w-4 h-4 mr-2" />
@@ -44,7 +44,7 @@ const ReceiptActions = ({
       </Card>
 
       {/* Botón para obtener remitos no verificados */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border flex-shrink-0 min-w-[200px] sm:min-w-0">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
             <XCircle className="w-4 h-4 mr-2 " />
@@ -69,7 +69,7 @@ const ReceiptActions = ({
       </Card>
 
       {/* Botón para obtener remitos verificados */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border flex-shrink-0 min-w-[200px] sm:min-w-0">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center text-foreground">
             <CheckCircle className="w-4 h-4 mr-2" />

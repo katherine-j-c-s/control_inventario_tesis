@@ -161,7 +161,7 @@ const OutputProductPage = () => {
     <Layout>
       <div className="w-full space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex md:flex-row flex-col items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               Egreso de Producto
@@ -222,10 +222,10 @@ const OutputProductPage = () => {
 
         {/* Dialog/Modal del Formulario de Egreso */}
         <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto border-0">
+          <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto border-0 w-[95vw] sm:w-full">
             <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <Package className="h-6 w-6" />
+              <DialogTitle className="text-lg sm:text-2xl flex items-center gap-2">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6" />
                 Formulario de Egreso
               </DialogTitle>
               <DialogDescription>
@@ -266,18 +266,19 @@ const OutputProductPage = () => {
                 </div>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter className="gap-2 flex-col sm:flex-row">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancelForm}
                   disabled={isLoading}
+                  className="w-full sm:w-auto"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
 
-                <Button type="submit" disabled={isLoading || !productInfo}>
+                <Button type="submit" disabled={isLoading || !productInfo} className="w-full sm:w-auto">
                   {isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

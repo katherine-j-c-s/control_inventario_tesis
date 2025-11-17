@@ -135,7 +135,7 @@ const ProductForm = ({ productos, onProductChange, onAddProduct, onRemoveProduct
           type="button"
           variant="outline"
           onClick={onAddProduct}
-          className="w-full h-12 border-dashed border-2 border-muted-foreground/25 hover:border-primary hover:bg-primary/5"
+          className="w-full h-12 dark:text-blue-200 text-blue-900 border-dashed border-2 border-muted-foreground/25 hover:border-primary hover:bg-primary/5"
         >
           <Plus className="w-4 h-4 mr-2" />
           Agregar Otro Producto

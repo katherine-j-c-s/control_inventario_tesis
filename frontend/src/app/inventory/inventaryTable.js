@@ -190,60 +190,122 @@ export function DataTable({ products }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md ">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="border-border"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+        <div className="rounded-md hidden md:block">
+          <div className="w-full overflow-x-auto">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
                         {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                          header.column.columnDef.header,
+                          header.getContext()
                         )}
-                      </TableCell>
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No se encontraron resultados.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="border-border"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      No se encontraron resultados.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Vista móvil */}
+        <div className="space-y-3 md:hidden">
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <div
+                key={row.id}
+                className="border border-border rounded-lg p-4 bg-muted/40"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      {row.original.nombre}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {row.original.codigo}
+                    </p>
+                  </div>
+                  <Badge variant={getStockStatus(row.original).variant}>
+                    {getStockStatus(row.original).text}
+                  </Badge>
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <dt className="text-muted-foreground">Categoría</dt>
+                    <dd className="font-medium">{row.original.categoria}</dd>
+                  </div>
+                  <div className="text-right">
+                    <dt className="text-muted-foreground">Stock</dt>
+                    <dd className="font-medium">
+                      {row.original.stock_actual} {row.original.unidad_medida}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Ubicación</dt>
+                    <dd className="font-medium">{row.original.ubicacion}</dd>
+                  </div>
+                  <div className="text-right">
+                    <dt className="text-muted-foreground">Precio</dt>
+                    <dd className="font-medium">
+                      {new Intl.NumberFormat("es-AR", {
+                        style: "currency",
+                        currency: "ARS",
+                      }).format(row.original.precio_unitario)}
+                    </dd>
+                  </div>
+                </dl>
+                <div className="flex justify-end mt-3 gap-2">
+                  <Button variant="outline" size="sm">
+                    Ver acciones
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground">
+              No se encontraron resultados.
+            </p>
+          )}
         </div>
         {/* --- Paginación --- */}
-        <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-4">
           <div className="text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} de{" "}
             {table.getFilteredRowModel().rows.length} fila(s) seleccionadas.
           </div>
-          <div className="space-x-2">
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"

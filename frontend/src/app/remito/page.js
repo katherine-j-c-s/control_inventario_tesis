@@ -131,16 +131,16 @@ const Remito = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto md:p-4">
         <div className="mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between md:flex-row flex-col items-start">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Gestión de Remitos</h1>
               <p className="text-lg text-muted-foreground">Bienvenido, {user?.nombre}</p>
             </div>
             <Button 
               onClick={handleOpenLoadModal}
-              className="flex items-center gap-2"
+              className="flex items-center md:mt-0 mt-3 gap-2"
             >
               <Plus className="h-4 w-4" />
               Cargar Remito

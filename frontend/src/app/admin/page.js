@@ -73,18 +73,20 @@ function UsersAdminContent() {
           }
         </AnimatePresence>
 
-        <div className="flex space-x-2 border-b">
-          {tabs.map(tab => (
-            <Button
-              key={tab.id}
-              variant="ghost"
-              onClick={() => setActiveTab(tab.id)}
-              className={`rounded-b-none transition-all duration-200 ${activeTab === tab.id ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <tab.icon className="mr-2 h-4 w-4" />
-              {tab.label}
-            </Button>
-          ))}
+        <div className="overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
+          <div className="flex space-x-2 border-b min-w-max sm:min-w-0">
+            {tabs.map(tab => (
+              <Button
+                key={tab.id}
+                variant="ghost"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-shrink-0 rounded-b-none transition-all duration-200 ${activeTab === tab.id ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                <tab.icon className="mr-2 h-4 w-4" />
+                {tab.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <div>

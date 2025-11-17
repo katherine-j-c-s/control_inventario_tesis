@@ -177,9 +177,9 @@ const MovementsContent = () => {
 
       {/* Modal para Nuevo Movimiento */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-lg sm:text-2xl font-bold">
               Registrar Nuevo Movimiento
             </DialogTitle>
             <DialogDescription>

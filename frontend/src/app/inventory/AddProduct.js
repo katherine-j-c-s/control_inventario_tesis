@@ -138,7 +138,7 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogTitle className="sr-only">Agregar Nuevo Producto</DialogTitle>
 
         <Card>
@@ -150,10 +150,10 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
               Completa los campos para añadir un item al inventario.
             </DialogDescription>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Object.entries(formData).map(([key, value]) => (
-                <div key={key} className="grid grid-cols-4 items-center gap-2">
-                  <Label htmlFor={key} className="text-right capitalize">
+                <div key={key} className="space-y-2 sm:grid sm:grid-cols-4 sm:items-center gap-2">
+                  <Label htmlFor={key} className="block sm:text-right capitalize text-sm">
                     {key.replace(/([A-Z])/g, " $1")}
                   </Label>
                   {key === "descripcion" ? (
@@ -161,12 +161,12 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
                       id={key}
                       value={value}
                       onChange={handleChange}
-                      className="col-span-3 placeholder:text-gray-500"
+                      className="sm:col-span-3 placeholder:text-gray-500"
                       placeholder={key}
                     />
                   ) : key === "categoria" ? (
                     <Select value={value} onValueChange={(val) => handleSelectChange(key, val)}>
-                      <SelectTrigger className="col-span-3">
+                      <SelectTrigger className="sm:col-span-3">
                         <SelectValue placeholder="Selecciona categoría" />
                       </SelectTrigger>
                       <SelectContent>
@@ -177,7 +177,7 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
                     </Select>
                   ) : key === "unidad_medida" ? (
                     <Select value={value} onValueChange={(val) => handleSelectChange(key, val)}>
-                      <SelectTrigger className="col-span-3">
+                      <SelectTrigger className="sm:col-span-3">
                         <SelectValue placeholder="Selecciona unidad" />
                       </SelectTrigger>
                       <SelectContent>
@@ -192,7 +192,7 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
                       value={value}
                       onChange={handleChange}
                       type={["precio_unitario", "stock_minimo", "stock_actual"].includes(key) ? "number" : "text"}
-                      className="col-span-3 placeholder:text-gray-500"
+                      className="sm:col-span-3 placeholder:text-gray-500"
                       placeholder={key.replace(/_/g, ' ')}
                       step={key === "precio_unitario" ? "0.01" : "1"}
                       min={key.includes("stock") || key === "precio_unitario" ? "0" : undefined}
@@ -202,13 +202,13 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
               ))}
             </div>
           </CardContent>
-          <CardContent className="flex justify-end gap-2">
+          <CardContent className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
             <DialogClose asChild>
-              <Button variant="outline" disabled={isLoading}>
+              <Button variant="outline" disabled={isLoading} className="w-full sm:w-auto">
                 Cancelar
               </Button>
             </DialogClose>
-            <Button onClick={handleSave} disabled={isLoading}>
+            <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto">
               {isLoading ? "Guardando..." : "Guardar Producto"}
             </Button>
           </CardContent>

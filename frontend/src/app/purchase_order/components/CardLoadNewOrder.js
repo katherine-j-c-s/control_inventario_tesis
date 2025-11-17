@@ -33,12 +33,12 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 border border-border rounded-lg bg-card">
+    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 border border-border rounded-lg bg-card">
       <FormField
         label="Artículo"
         id={`articulo-${index}`}
         required
-        className="md:col-span-2"
+        className="sm:col-span-3"
         value={product.articulo || ""}
         onChange={(e) => handleChange("articulo", e.target.value)}
         placeholder="Nombre del artículo"
@@ -47,7 +47,7 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
       <FormField
         label="Descripción"
         id={`descripcion-${index}`}
-        className="md:col-span-2"
+        className="sm:col-span-3"
         value={product.descripcion || ""}
         onChange={(e) => handleChange("descripcion", e.target.value)}
         placeholder="Descripción del artículo"
@@ -59,6 +59,7 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
         required
         type="number"
         min="1"
+        className="sm:col-span-2"
         value={product.cantidad || ""}
         onChange={(e) => handleChange("cantidad", e.target.value)}
         placeholder="0"
@@ -71,12 +72,13 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
         type="number"
         min="0"
         step="0.01"
+        className="sm:col-span-2"
         value={product.precio_unitario || ""}
         onChange={(e) => handleChange("precio_unitario", e.target.value)}
         placeholder="0.00"
       />
 
-      <FormField label="Importe">
+      <FormField label="Importe" className="sm:col-span-1">
         <div className="flex items-center h-9 px-3 bg-muted rounded-md">
           <span className="text-sm font-semibold">
             ${(product.importe || 0).toFixed(2)}
@@ -84,7 +86,7 @@ const ProductRowOrder = ({ product, index, onUpdate, onRemove }) => {
         </div>
       </FormField>
 
-      <div className="flex items-end md:col-span-1">
+      <div className="flex items-end sm:col-span-1">
         <Button
           type="button"
           variant="destructive"
@@ -493,12 +495,12 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
         </Card>
 
         {/* Botones */}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading} className="w-full sm:w-auto">
             <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading} className="flex items-center gap-2">
+          <Button type="submit" disabled={loading} className="flex items-center gap-2 w-full sm:w-auto">
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

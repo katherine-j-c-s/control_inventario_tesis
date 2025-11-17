@@ -236,18 +236,18 @@ export default function GenerateQR() {
           </Card>
 
           {error && (
-            <Alert className="mb-6 border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-700">
+            <Alert className="mb-6 border-destructive/30 bg-destructive/10">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-destructive">
                 {error}
               </AlertDescription>
             </Alert>
           )}
 
           {success && (
-            <Alert className="mb-6 border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-700">
+            <Alert className="mb-6 border-emerald-500/30 bg-emerald-500/10">
+              <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <AlertDescription className="text-emerald-700 dark:text-emerald-200">
                 {success}
               </AlertDescription>
             </Alert>
@@ -256,14 +256,15 @@ export default function GenerateQR() {
           {productos.length > 0 && (
             <Card className="bg-card border-border">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex md:flex-row flex-col items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-foreground flex items-center">
-                    <Package className="w-5 h-5 mr-2" />
+                    <Package className="w-5 h-5 mr-2 md:flex hidden" />
                     Productos Verificados del Remito #{remitoId} ({productos.length})
                   </CardTitle>
                   <Button 
                     onClick={descargarTodosQR}
                     variant="outline"
+                    className="mt-4 md:mt-0"
                     size="sm"
                   >
                     <Download className="w-4 h-4 mr-2" />
@@ -295,7 +296,7 @@ export default function GenerateQR() {
                           </div>
 
                           <div className="flex justify-center">
-                            <div className="bg-white p-2 rounded-lg shadow-sm">
+                            <div className="bg-card p-2 rounded-lg border border-border shadow-sm">
                               <QRCodeSVG
                                 value={JSON.stringify(crearObjetoQRSimplificado(producto))}
                                 size={128}

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 import { SideMenu } from "../sideMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default function Layout({ children }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const sidebarWidth = useSidebarWidth(isSidebarOpen);
 
   useEffect(() => {
     setIsSidebarOpen(!isMobile);
@@ -46,18 +48,19 @@ export default function Layout({ children }) {
     const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
 
     return (
-      <header className="bg-card border-b h-screen flex items-center justify-between px-4 md:hidden">
+      <header className="bg-card/90 backdrop-blur fixed border-b h-16 flex items-center justify-between px-4 py-2 md:hidden w-full top-0 z-30">
         <Image
           src={fullLogo}
           alt="Control de Inventario"
-          width={150}
-          height={35}
+          width={140}
+          height={32}
           priority
         />
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="Abrir menú"
         >
           <Menu className="h-6 w-6" />
         </Button>
@@ -66,7 +69,7 @@ export default function Layout({ children }) {
   };
   const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
   const DesktopHeader = () => (
-    <header className="bg-card border-b h-16 items-center justify-end px-6 hidden md:flex">
+    <header className="bg-card border-b h-16 items-center justify-end px-6 hidden md:flex fixed top-0 w-full z-20">
       <Link href="/dashboard" className="flex items-center">
       <Image
           src={fullLogo}
@@ -123,7 +126,7 @@ export default function Layout({ children }) {
       {isMobile && isSidebarOpen && (
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
         />
       )}
 
@@ -135,15 +138,17 @@ export default function Layout({ children }) {
         />
 
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 overflow-hidden min-w-0 ${
-            !isMobile && (isSidebarOpen ? "md:ml-0" : "md:ml-5")
-          }`}
-          style={{ position: 'relative', zIndex: 1 }}
+          className="flex-1 flex flex-col overflow-hidden min-w-0 transition-all duration-300 ease-in-out"
+          style={{ 
+            position: "relative", 
+            zIndex: 1,
+            marginLeft: !isMobile ? `${sidebarWidth}px` : "0px"
+          }}
         >
           <MobileHeader />
           <DesktopHeader />
 
-          <main className="flex-1 p-6 overflow-auto">{children}</main>
+          <main className="flex-1 mt-16 p-6 overflow-auto">{children}</main>
         </div>
       </div>
     </div>

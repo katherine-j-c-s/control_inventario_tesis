@@ -309,12 +309,13 @@ const ManualReceiptForm = ({ onClose, onReceiptCreated }) => {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={loading}
+            className="w-full sm:w-auto"
           >
             <X className="h-4 w-4 mr-2" />
             Cancelar
@@ -322,7 +323,7 @@ const ManualReceiptForm = ({ onClose, onReceiptCreated }) => {
           <Button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             {loading ? (
               <>

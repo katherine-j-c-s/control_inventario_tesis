@@ -103,7 +103,7 @@ export function RolesManagementTab({ setSuccess, setError }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex md:flex-row flex-col items-start md:items-center justify-between">
         <div>
           <CardTitle>Gestión de Roles</CardTitle>
           <CardDescription>Crea y edita los roles y sus permisos específicos.</CardDescription>

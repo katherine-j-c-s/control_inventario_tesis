@@ -69,12 +69,12 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-card border-border w-[95vw] sm:w-full">
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-foreground flex items-center">
-              <FileText className="w-6 h-6 mr-2 text-blue-600" />
-              Detalles del Remito #{receipt.receipt_id}
+            <DialogTitle className="text-lg sm:text-2xl font-bold text-foreground flex items-center">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary" />
+              <span className="break-words">Detalles del Remito #{receipt.receipt_id}</span>
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -95,15 +95,15 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
           />
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-foreground flex items-center">
-                <User className="w-5 h-5 mr-2" />
+              <CardTitle className="text-base sm:text-lg font-semibold text-foreground flex items-center">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Información Adicional
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-3">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
                     <span className="text-sm font-medium text-foreground">
                       ID de Orden:
                     </span>
@@ -111,7 +111,7 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                       #{receipt.order_id || "N/A"}
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
                     <span className="text-sm font-medium text-foreground">
                       Total de Productos:
                     </span>
@@ -119,11 +119,11 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
                       {receipt.quantity_products}
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
                     <span className="text-sm font-medium text-foreground">
                       Fecha de Creación:
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground break-words">
                       {formatDate(receipt.entry_date)}
                     </span>
                   </div>
@@ -133,26 +133,26 @@ const ReceiptModal = ({ isOpen, onClose, receipt, onVerify }) => {
           </Card>
         </div>
 
-        <div className="flex justify-between items-center pt-4 border-t border-border">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t border-border">
           <div className="flex space-x-2">
             {selectedProducts.size > 0 && (
               <Button
                 variant="outline"
                 onClick={() => setSelectedProducts(new Set())}
-                className="text-muted-foreground"
+                className="text-muted-foreground w-full sm:w-auto"
               >
                 <X className="w-4 h-4 mr-2" />
                 Limpiar Selección
               </Button>
             )}
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Cerrar
             </Button>
             {!receipt.verification_status && (
               <Button
-                className="bg-primary-600 hover:bg-primary-700"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                 onClick={() => onVerify && onVerify(receipt.receipt_id)}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />

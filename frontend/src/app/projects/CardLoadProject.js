@@ -238,11 +238,11 @@ const CardLoadProject = ({ onProjectCreated }) => {
           )}
 
           {/* Botones */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button 
               type="submit" 
               disabled={loading || !user}
-              className="flex-1"
+              className="flex-1 w-full sm:w-auto"
             >
               {loading ? (
                 <>
@@ -262,6 +262,7 @@ const CardLoadProject = ({ onProjectCreated }) => {
               variant="outline" 
               onClick={resetForm}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Limpiar
             </Button>

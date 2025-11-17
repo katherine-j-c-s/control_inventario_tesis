@@ -169,7 +169,7 @@ const HistoryMovements = ({ movements = [] }) => {
       <CardHeader>
         <div className="flex flex-col gap-4">
           {/* Header con título y botón limpiar */}
-          <div className="flex items-center justify-between">
+          <div className="flex md:flex-row flex-col items-start md:items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
@@ -183,7 +183,7 @@ const HistoryMovements = ({ movements = [] }) => {
               variant="outline" 
               size="sm" 
               onClick={clearHistory}
-              className="flex items-center gap-2"
+              className="flex items-center md:mt-0 mt-3 gap-2"
             >
               <Trash2 className="h-4 w-4" />
               Limpiar
