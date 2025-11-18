@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -104,8 +104,9 @@ const PdfReceiptUpload = ({ onClose, onReceiptCreated }) => {
       )}
       
       {success && (
-        <Alert className="border-green-500 bg-green-50">
-          <AlertDescription className="text-green-700">{success}</AlertDescription>
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 

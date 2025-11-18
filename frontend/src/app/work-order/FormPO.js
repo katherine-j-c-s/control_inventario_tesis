@@ -6,6 +6,8 @@ import { workOrderAPI } from "@/lib/api";
 import GeneralInfoForm from "./components/GeneralInfoForm";
 import ProductForm from "./components/ProductForm";
 import FormActions from "./components/FormActions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle } from "lucide-react";
 
 const FormPO = ({ onSubmit }) => {
   const { user } = useAuth();
@@ -230,9 +232,10 @@ const FormPO = ({ onSubmit }) => {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Mensaje de éxito */}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-          ✅ {success}
-        </div>
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
       )}
 
       <GeneralInfoForm

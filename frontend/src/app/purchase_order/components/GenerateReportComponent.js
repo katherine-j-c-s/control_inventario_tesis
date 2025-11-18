@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import SearchOrderForm from './SearchOrderForm';
 import OrderDetailsCard from './OrderDetailsCard';
@@ -97,21 +98,12 @@ const GenerateReportComponent = ({ onClose, className = '' }) => {
 
       {/* Mensaje de error */}
       {error && (
-        <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-red-900 dark:text-red-100">
-                  Error
-                </h3>
-                <p className="text-sm text-red-800 dark:text-red-200 mt-1">
-                  {error}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert variant="destructive">
+          <AlertCircle className="w-5 h-5" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Detalles de la orden */}

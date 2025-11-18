@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/card";
 import { PlusCircle, Loader2, RefreshCw, FileText } from "lucide-react";
 import AddProduct from "./AddProduct";
+import EditProduct from "./EditProduct";
+import { toast } from "sonner";
 
 function InventoryContent() {
   const { user, loading } = useAuth();
@@ -32,6 +34,8 @@ function InventoryContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -71,6 +75,31 @@ function InventoryContent() {
       setError("Error al cargar los productos. Intenta nuevamente.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
+
+  const handleDelete = async (product) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar el producto "${product.nombre}"?\n\n⚠️ Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/productos/${product.id}`);
+      toast.success(`Producto "${product.nombre}" eliminado exitosamente`);
+      // Recargar la lista de productos
+      loadProducts();
+    } catch (error) {
+      console.error("Error eliminando producto:", error);
+      toast.error(
+        error.response?.data?.message || "Error al eliminar el producto"
+      );
     }
   };
 
@@ -203,9 +232,14 @@ function InventoryContent() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <DataTable products={filteredProducts} />
+          <DataTable 
+            products={filteredProducts} 
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </motion.div>
       </div>
+      
       {/* Agregar un producto  */}
       <AddProduct
         isOpen={showAddModal}
@@ -213,10 +247,25 @@ function InventoryContent() {
         onProductAdded={(newProduct) => {
           // Agregar el nuevo producto a la lista
           setProducts(prev => [...prev, newProduct]);
-        //  recargar la tabla de productos
+          // Recargar la tabla de productos
           loadProducts();
         }}
       />
+
+      {/* Editar un producto */}
+      <EditProduct
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onProductUpdated={() => {
+          // Recargar la tabla de productos
+          loadProducts();
+        }}
+      />
+
       <FloatingQrScannerButton onScanResult={handleQrScanResult} />
     </Layout>
   );

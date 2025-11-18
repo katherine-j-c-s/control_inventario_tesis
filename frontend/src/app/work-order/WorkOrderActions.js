@@ -36,9 +36,9 @@ const WorkOrderActions = ({
       )}
 
       {success && (
-        <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
-          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-green-700 dark:text-green-400">
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
             {success}
           </AlertDescription>
         </Alert>

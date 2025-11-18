@@ -4,13 +4,13 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
+  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg~*]:pl-7",
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
+        default: "bg-primary/20 border-primary/30 text-primary/700 dark:bg-primary/30 dark:border-primary/50 dark:text-primary/200 [&>svg]:text-primary/600 dark:[&>svg]:text-primary/200",
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+          "bg-primary/30 border-primary/40 text-primary/800 dark:bg-primary/30 dark:border-primary/50 dark:text-primary/200 [&>svg]:text-primary/700 dark:[&>svg]:text-primary/200",
       },
     },
     defaultVariants: {
@@ -39,7 +39,7 @@ AlertTitle.displayName = "AlertTitle"
 const AlertDescription = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
+    className={cn("text-sm [&_p]:leading-relaxed [&_p]:mt-0", className)}
     {...props} />
 ))
 AlertDescription.displayName = "AlertDescription"

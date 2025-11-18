@@ -161,9 +161,9 @@ const CardLoadProject = ({ onProjectCreated }) => {
         )}
 
         {success && (
-          <Alert className="mb-4 border-green-500 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-green-700">{success}</AlertDescription>
+          <Alert variant="default" className="mb-4">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
 

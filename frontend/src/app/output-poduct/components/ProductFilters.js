@@ -65,16 +65,16 @@ const ProductFilters = ({ onFiltersChange, disabled }) => {
     filters.warehouse_id !== "all";
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+    <div className="space-y-4 p-4 rounded-lg bg-card dark:bg-muted/20 border border-border/40 dark:border-transparent">
       <div className="flex items-center gap-2 mb-2">
         <Filter className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">Filtros de Búsqueda</h3>
+        <h3 className="text-sm font-semibold text-foreground">Filtros de Búsqueda</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Filtro por Código */}
         <div className="space-y-2">
-          <Label htmlFor="filterCodigo" className="text-sm">
+          <Label htmlFor="filterCodigo" className="text-sm text-foreground">
             Código del Producto
           </Label>
           <Input
@@ -89,7 +89,7 @@ const ProductFilters = ({ onFiltersChange, disabled }) => {
 
         {/* Filtro por Nombre */}
         <div className="space-y-2">
-          <Label htmlFor="filterNombre" className="text-sm">
+          <Label htmlFor="filterNombre" className="text-sm text-foreground">
             Nombre del Producto
           </Label>
           <Input
@@ -104,7 +104,7 @@ const ProductFilters = ({ onFiltersChange, disabled }) => {
 
         {/* Filtro por Almacén */}
         <div className="space-y-2">
-          <Label htmlFor="filterWarehouse" className="text-sm">
+          <Label htmlFor="filterWarehouse" className="text-sm text-foreground">
             Almacén
           </Label>
           <Select
@@ -151,8 +151,8 @@ const ProductFilters = ({ onFiltersChange, disabled }) => {
       </div>
 
       {hasActiveFilters && (
-        <div className="text-xs text-muted-foreground">
-          <span className="font-medium">Filtros activos:</span>{" "}
+        <div className="text-xs text-muted-foreground dark:text-muted-foreground/80">
+          <span className="font-medium text-foreground/80">Filtros activos:</span>{" "}
           {filters.codigo && `Código: "${filters.codigo}" `}
           {filters.nombre && `Nombre: "${filters.nombre}" `}
           {filters.warehouse_id !== "all" && 

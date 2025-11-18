@@ -55,8 +55,8 @@ function UsersAdminContent() {
         <AnimatePresence>
           {success && 
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <Alert className="border-green-500 text-green-700 dark:border-green-700 dark:text-green-300">
-                    <Terminal className="h-4 w-4" />
+                <Alert variant="default">
+                    <CheckCircle className="h-4 w-4" />
                     <AlertTitle>¡Éxito!</AlertTitle>
                     <AlertDescription>{success}</AlertDescription>
                 </Alert>

@@ -95,14 +95,14 @@ const ProductsTable = ({ products, onSelectProduct, isLoading, selectedProductId
     }
     if (stock < 10) {
       return (
-        <Badge variant="warning" className="gap-1 bg-yellow-500 hover:bg-yellow-600">
+        <Badge variant="warning" className="gap-1 bg-primary-500 opacity-60 hover:bg-primary-500">
           <AlertCircle className="h-3 w-3" />
           Bajo stock
         </Badge>
       );
     }
     return (
-      <Badge variant="success" className="gap-1 bg-green-500 hover:bg-green-600">
+      <Badge variant="success" className="gap-1 bg-primary-400  hover:bg-primary-400">
         <CheckCircle2 className="h-3 w-3" />
         Disponible
       </Badge>

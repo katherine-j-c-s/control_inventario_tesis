@@ -135,7 +135,7 @@ const HistoryMovements = ({ movements = [] }) => {
   const getMovementBadge = (tipo) => {
     const badges = {
       'entrada': { variant: 'default', label: 'Entrada', color: 'bg-green-500' },
-      'salida': { variant: 'destructive', label: 'Salida', color: 'bg-red-500' },
+      'egreso': { variant: 'destructive', label: 'Egreso', color: 'bg-red-500' },
       'transferencia': { variant: 'secondary', label: 'Transferencia', color: 'bg-blue-500' },
       'ajuste': { variant: 'outline', label: 'Ajuste', color: 'bg-yellow-500' }
     };
@@ -212,7 +212,7 @@ const HistoryMovements = ({ movements = [] }) => {
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="entrada">Entrada</SelectItem>
-                <SelectItem value="salida">Salida</SelectItem>
+                <SelectItem value="egreso">Egreso</SelectItem>
                 <SelectItem value="transferencia">Transferencia</SelectItem>
                 <SelectItem value="ajuste">Ajuste</SelectItem>
               </SelectContent>

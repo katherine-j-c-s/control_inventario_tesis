@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Save, X, DollarSign } from "lucide-react";
+import { Plus, Save, X, DollarSign, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -350,21 +350,24 @@ const CardLoadNewOrder = ({ onClose, onOrderCreated }) => {
       )}
 
       {success && (
-        <Alert className="border-green-500 bg-green-50">
-          <AlertDescription className="text-green-700">{success}</AlertDescription>
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 
       {!user && (
         <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
           <AlertDescription>Debe estar autenticado para crear una orden de compra</AlertDescription>
         </Alert>
       )}
 
       {user && (
-        <Alert className="border-blue-500 bg-blue-50">
-          <AlertDescription className="text-blue-700">
-            ℹ️ Los totales se calculan automáticamente basándose en los productos agregados
+        <Alert variant="default">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Los totales se calculan automáticamente basándose en los productos agregados
           </AlertDescription>
         </Alert>
       )}

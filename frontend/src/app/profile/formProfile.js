@@ -159,7 +159,6 @@ export function FormProfile({ user }) {
       {message.text && (
         <Alert
           variant={message.type === "error" ? "destructive" : "default"}
-          className={message.type === "success" ? "border-green-500" : ""}
         >
           <Terminal className="h-4 w-4" />
           <AlertTitle>
