@@ -57,8 +57,15 @@ const updateProject = async (req, res) => {
             return res.status(404).json({ message: 'Proyecto no encontrado' });
         }
 
-        await projectRepository.update(id, updateData);
-        res.json({ message: 'Proyecto actualizado exitosamente', project });
+        await projectRepository.update({ project_id: parseInt(id) }, updateData);
+        
+        // Obtener el proyecto actualizado
+        const updatedProject = await projectRepository.findOne({ 
+            where: { project_id: parseInt(id) },
+            select: ['project_id', 'admin_id', 'name', 'description', 'ubicacion', 'estado', 'created_at', 'updated_at']
+        });
+        
+        res.json({ message: 'Proyecto actualizado exitosamente', project: updatedProject });
     } catch (error) {
         console.error('Error actualizando proyecto:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
