@@ -11,6 +11,7 @@ import {
   getStatistics,
   getReceiptWithProducts,
   createReceipt,
+  updateReceipt,
   uploadReceiptFile,
   getWarehouses,
 } from "../controllers/receiptController.js";
@@ -29,6 +30,7 @@ router.post("/receipts", createReceipt);
 router.post("/receipts/upload", upload.single("file"), uploadReceiptFile);
 
 router.put("/receipts/verify/:id", verify);
+router.put("/receipts/:id", updateReceipt);
 
 router.get("/remitos/:id/productos", async (req, res) => {
   const remitoId = req.params.id;

@@ -11,9 +11,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CheckCircle, XCircle, Clock, Eye, MoreHorizontal, Pencil } from "lucide-react";
 
-const ReceiptsTable = ({ receipts, onVerify, onView }) => {
+const ReceiptsTable = ({ receipts, onVerify, onView, onEdit }) => {
   const { theme } = useTheme();
   const getStatusBadge = (status, verificationStatus) => {
     if (verificationStatus) {
@@ -89,7 +96,7 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                 <TableCell className="text-foreground">{receipt.order_id || 'N/A'}</TableCell>
                 {/* <TableCell className="text-foreground">{receipt.product_id || 'N/A'}</TableCell> */}
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
@@ -98,17 +105,19 @@ const ReceiptsTable = ({ receipts, onVerify, onView }) => {
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
-                    {/* {!receipt.verification_status && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => onVerify(receipt.receipt_id)}
-                        className="bg-primary hover:bg-primary-600 text-white"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Verificar
-                      </Button>
-                    )} */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => onEdit(receipt)}>
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>

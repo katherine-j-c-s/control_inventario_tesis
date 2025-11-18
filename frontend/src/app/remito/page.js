@@ -9,6 +9,7 @@ import ReceiptActions from "./ReceiptActions";
 import ReceiptsTable from "./ReceiptsTable";
 import ReceiptModal from "./ReceiptModal";
 import ModalRemito from "./ModalRemito";
+import EditReceiptForm from "./EditReceiptForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ const Remito = () => {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [receiptToEdit, setReceiptToEdit] = useState(null);
 
   const handleError = (error) => {
     console.error('Error:', error);
@@ -124,6 +127,22 @@ const Remito = () => {
     handleGetAll();
   };
 
+  const handleEdit = (receipt) => {
+    setReceiptToEdit(receipt);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setReceiptToEdit(null);
+  };
+
+  const handleReceiptUpdated = () => {
+    handleGetAll();
+    handleCloseEditModal();
+    showSuccess('Remito actualizado correctamente');
+  };
+
 
   useEffect(() => {
     handleGetAll();
@@ -185,7 +204,7 @@ const Remito = () => {
               receipts={receipts}
               onVerify={handleVerify}
               onView={handleView}
-
+              onEdit={handleEdit}
             />
           </div>
         </div>
@@ -201,6 +220,13 @@ const Remito = () => {
           isOpen={isLoadModalOpen}
           onClose={handleCloseLoadModal}
           onReceiptCreated={handleReceiptCreated}
+        />
+
+        <EditReceiptForm
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          receipt={receiptToEdit}
+          onReceiptUpdated={handleReceiptUpdated}
         />
       </div>
     </Layout>

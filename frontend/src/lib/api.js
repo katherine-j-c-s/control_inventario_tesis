@@ -189,6 +189,10 @@ export const receiptAPI = {
     return api.post('/receipts', receiptData);
   },
 
+  updateReceipt: (id, receiptData) => {
+    return api.put(`/receipts/${id}`, receiptData);
+  },
+
   uploadReceiptFile: (fileData) => {
     return api.post('/receipts/upload', fileData, {
       headers: {
