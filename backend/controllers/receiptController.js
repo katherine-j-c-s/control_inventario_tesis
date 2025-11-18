@@ -224,10 +224,164 @@ const createReceipt = async (req, res) => {
 
 const updateReceipt = async (req, res) => {
   try {
-    const data = await updateReceipt(req.body);
-    res.json(data);
+    const { id } = req.params;
+    const { warehouse_id, entry_date, order_id, status, products } = req.body;
+
+    // Validar datos requeridos
+    if (!warehouse_id || !entry_date || !products || !Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({
+        error: "Datos requeridos: warehouse_id, entry_date y products (array no vacío)",
+      });
+    }
+
+    const { pool } = await import("../db.js");
+
+    // Verificar que el remito existe
+    const checkReceiptQuery = `SELECT receipt_id FROM receipts WHERE receipt_id = $1`;
+    const { rows: receiptRows } = await pool.query(checkReceiptQuery, [id]);
+    
+    if (receiptRows.length === 0) {
+      return res.status(404).json({ error: "Remito no encontrado" });
+    }
+
+    // Iniciar transacción
+    await pool.query("BEGIN");
+
+    try {
+      // 1. Obtener productos existentes del remito para revertir stock
+      const existingProductsQuery = `
+        SELECT product_id, quantity 
+        FROM receipt_products 
+        WHERE receipt_id = $1
+      `;
+      const { rows: existingProducts } = await pool.query(existingProductsQuery, [id]);
+
+      // 2. Revertir stock de productos existentes (restar las cantidades que se agregaron antes)
+      for (const existingProduct of existingProducts) {
+        await pool.query(
+          `UPDATE products 
+           SET stock_actual = GREATEST(0, stock_actual - $1),
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [existingProduct.quantity, existingProduct.product_id]
+        );
+      }
+
+      // 3. Eliminar productos existentes del remito
+      await pool.query(
+        `DELETE FROM receipt_products WHERE receipt_id = $1`,
+        [id]
+      );
+
+      // 4. Actualizar el remito
+      const receiptQuery = `
+        UPDATE receipts 
+        SET warehouse_id = $1, entry_date = $2, order_id = $3, status = $4
+        WHERE receipt_id = $5
+        RETURNING receipt_id;
+      `;
+      await pool.query(receiptQuery, [
+        warehouse_id,
+        entry_date,
+        order_id || null,
+        status || "Pending",
+        id,
+      ]);
+
+      // 5. Procesar cada producto nuevo (similar a createReceipt)
+      const productIds = [];
+      for (const product of products) {
+        const { name, description, quantity, unit_price } = product;
+
+        if (!name || !quantity) {
+          throw new Error(`Producto inválido: nombre y cantidad son requeridos`);
+        }
+
+        // Buscar producto existente por nombre
+        const existingProductQuery = `
+          SELECT id FROM products 
+          WHERE LOWER(nombre) = LOWER($1) AND activo = true
+          LIMIT 1;
+        `;
+        const { rows: existingRows } = await pool.query(existingProductQuery, [name]);
+
+        let productId;
+
+        if (existingRows.length > 0) {
+          // Usar producto existente
+          productId = existingRows[0].id;
+          
+          // Actualizar stock del producto (agregar nueva cantidad)
+          await pool.query(
+            `UPDATE products 
+             SET stock_actual = stock_actual + $1,
+                 precio_unitario = COALESCE($2, precio_unitario),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3`,
+            [quantity, unit_price || null, productId]
+          );
+        } else {
+          // Crear nuevo producto
+          const newProductQuery = `
+            INSERT INTO products (
+              nombre, codigo, categoria, descripcion, unidad_medida, 
+              precio_unitario, stock_minimo, stock_actual, ubicacion, 
+              activo, created_at, updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id;
+          `;
+          const { rows: newProductRows } = await pool.query(newProductQuery, [
+            name,
+            description || `PROD-${Date.now()}`,
+            "General",
+            description || "",
+            "unidad",
+            unit_price || 0,
+            0,
+            quantity,
+            "Almacén",
+          ]);
+          productId = newProductRows[0].id;
+        }
+
+        productIds.push(productId);
+
+        // 6. Crear relación en receipt_products
+        await pool.query(
+          `INSERT INTO receipt_products (receipt_id, product_id, quantity)
+           VALUES ($1, $2, $3)`,
+          [id, productId, quantity]
+        );
+      }
+
+      // Confirmar transacción
+      await pool.query("COMMIT");
+
+      res.json({
+        success: true,
+        message: "Remito actualizado correctamente.",
+        receipt_id: parseInt(id),
+        products_updated: productIds.length,
+        data: {
+          receipt_id: parseInt(id),
+          warehouse_id,
+          entry_date,
+          order_id,
+          status: status || "Pending",
+          products_count: products.length,
+        },
+      });
+    } catch (error) {
+      // Revertir transacción en caso de error
+      await pool.query("ROLLBACK");
+      throw error;
+    }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error actualizando remito:", error);
+    res.status(500).json({
+      error: "Error al actualizar remito o productos: " + error.message,
+    });
   }
 };
 

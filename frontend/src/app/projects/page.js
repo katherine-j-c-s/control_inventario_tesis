@@ -9,6 +9,7 @@ import ProjectActions from "./ProjectActions";
 import ProjectsTable from "./ProjectsTable";
 import ProjectModal from "./ProjectModal";
 import CardLoadProject from "./CardLoadProject";
+import EditProjectForm from "./EditProjectForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,8 @@ const Projects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState(null);
   const router = useRouter();
   const handleError = (error) => {
     console.error('Error:', error);
@@ -113,6 +116,22 @@ const Projects = () => {
     handleGetAll();
   };
 
+  const handleEdit = (project) => {
+    setProjectToEdit(project);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setProjectToEdit(null);
+  };
+
+  const handleProjectUpdated = () => {
+    handleGetAll();
+    handleCloseEditModal();
+    showSuccess('Obra actualizada correctamente');
+  };
+
   useEffect(() => {
     handleGetAll();
   }, []);
@@ -180,6 +199,7 @@ const Projects = () => {
             <ProjectsTable
               projects={projects}
               onView={handleView}
+              onEdit={handleEdit}
             />
           </div>
         </div>
@@ -201,6 +221,14 @@ const Projects = () => {
             />
           </DialogContent>
         </Dialog>
+
+        {/* Modal para editar proyecto */}
+        <EditProjectForm
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          project={projectToEdit}
+          onProjectUpdated={handleProjectUpdated}
+        />
       </div>
     </Layout>
   );

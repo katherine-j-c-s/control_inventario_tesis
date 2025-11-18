@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Eye, MapPin } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye, MapPin, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ProjectsTable = ({ projects, onView }) => {
+const ProjectsTable = ({ projects, onView, onEdit }) => {
   const getStatusBadge = (project) => {
     const estado = project.estado || 'activo';
     const baseClasses =
@@ -153,6 +153,14 @@ const ProjectsTable = ({ projects, onView }) => {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEdit(project)}
+                          className="border-border hover:bg-muted"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -213,14 +221,25 @@ const ProjectsTable = ({ projects, onView }) => {
                   </dd>
                 </div>
               </dl>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full"
-                onClick={() => onView(project)}
-              >
-                Ver Detalles
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => onView(project)}
+                >
+                  Ver Detalles
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => onEdit(project)}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+              </div>
             </div>
           ))
         ) : (
