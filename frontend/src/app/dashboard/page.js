@@ -50,8 +50,20 @@ function DashboardContent() {
   }
 
   const userRole = user.rol || "default";
-  // Usar los permisos del usuario directamente en lugar de rolesConfig (que ya no existe)
-  const quickActions = []; // Se puede implementar usando user.rolPermisos si es necesario
+  
+  // Generar accesos directos basados en los permisos del usuario
+  const quickActions = Object.entries(allRoutes)
+    .filter(([key, route]) => {
+      // Excluir el dashboard de los accesos directos
+      if (key === "dashboard") return false;
+      
+      // Admin tiene acceso a todo
+      if (user.rol === "admin") return true;
+      
+      // Para otros usuarios, verificar permisos
+      return user.permisos?.[key] === true;
+    })
+    .map(([key, route]) => route);
 
   return (
     <Layout>
