@@ -10,7 +10,8 @@ import WorkOrderTable from "./components/WorkOrderTable";
 import FormPO from "./FormPO";
 import { useWorkOrders } from "./components/useWorkOrders";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle, FileText } from "lucide-react";
 
 const WorkOrder = () => {
   const { user, loading } = useAuth();
@@ -113,15 +114,17 @@ const WorkOrder = () => {
 
         {/* Alertas */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-            {success}
-          </div>
+          <Alert variant="default">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
         )}
 
         {/* Acciones */}

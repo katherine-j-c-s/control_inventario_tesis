@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import api from "@/lib/api";
 
-const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
+const EditProduct = ({ isOpen, onClose, product, onProductUpdated }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     codigo: "",
@@ -36,6 +36,23 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
 
   const categorias = ["Electricidad", "Construcción", "General", "Pinturas", "Ferreteria"];
   const unidades = ["Unidad", "Kilogramo", "Gramo", "Litro", "Metro", "Caja", "Paquete", "Docena"];
+
+  // Cargar datos del producto cuando se abre el modal
+  useEffect(() => {
+    if (product && isOpen) {
+      setFormData({
+        nombre: product.nombre || "",
+        codigo: product.codigo || "",
+        categoria: product.categoria || "",
+        descripcion: product.descripcion || "",
+        unidad_medida: product.unidad_medida || "",
+        precio_unitario: product.precio_unitario?.toString() || "",
+        stock_minimo: product.stock_minimo?.toString() || "",
+        stock_actual: product.stock_actual?.toString() || "",
+        ubicacion: product.ubicacion || "",
+      });
+    }
+  }, [product, isOpen]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -69,22 +86,18 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
     return true;
   };
 
-  const createProduct = async (productData) => {
+  const updateProduct = async (productData) => {
     try {
-      const response = await api.post('/productos', productData);
+      const response = await api.put(`/productos/${product.id}`, productData);
       return response.data;
     } catch (error) {
-      // Manejar errores de axios
       if (error.response) {
-        // El servidor respondió con un código de error
-        const errorMessage = error.response.data?.error || error.response.data?.message || 'Error al crear el producto';
+        const errorMessage = error.response.data?.error || error.response.data?.message || 'Error al actualizar el producto';
         throw new Error(errorMessage);
       } else if (error.request) {
-        // La petición fue hecha pero no se recibió respuesta
         throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.');
       } else {
-        // Algo más pasó
-        throw new Error(error.message || 'Error inesperado al crear el producto');
+        throw new Error(error.message || 'Error inesperado al actualizar el producto');
       }
     }
   };
@@ -104,32 +117,19 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
         stock_actual: parseInt(formData.stock_actual),
       };
 
-      const newProduct = await createProduct(productData);
+      const updatedProduct = await updateProduct(productData);
       
-      toast.success('Producto creado exitosamente');
-      
-      // Resetear el formulario
-      setFormData({
-        nombre: "",
-        codigo: "",
-        categoria: "",
-        descripcion: "",
-        unidad_medida: "",
-        precio_unitario: "",
-        stock_minimo: "",
-        stock_actual: "",
-        ubicacion: "",
-      });
+      toast.success('Producto actualizado exitosamente');
 
-      // Notificar al componente padre si se proporciona la función
-      if (onProductAdded) {
-        onProductAdded(newProduct);
+      // Notificar al componente padre
+      if (onProductUpdated) {
+        onProductUpdated(updatedProduct);
       }
 
       onClose();
     } catch (error) {
-      console.error('Error creando producto:', error);
-      toast.error(error.message || 'Error al crear el producto');
+      console.error('Error actualizando producto:', error);
+      toast.error(error.message || 'Error al actualizar el producto');
     } finally {
       setIsLoading(false);
     }
@@ -138,9 +138,9 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogTitle>Agregar Nuevo Producto</DialogTitle>
+        <DialogTitle>Editar Producto</DialogTitle>
         <DialogDescription>
-          Completa los campos para añadir un item al inventario.
+          Modifica los campos del producto.
         </DialogDescription>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -267,7 +267,7 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
             </Button>
           </DialogClose>
           <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? "Guardando..." : "Guardar Producto"}
+            {isLoading ? "Actualizando..." : "Actualizar Producto"}
           </Button>
         </div>
       </DialogContent>
@@ -275,4 +275,5 @@ const AddProduct = ({ isOpen, onClose, onProductAdded }) => {
   );
 };
 
-export default AddProduct;
+export default EditProduct;
+

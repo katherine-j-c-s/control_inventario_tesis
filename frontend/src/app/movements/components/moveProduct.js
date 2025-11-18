@@ -320,9 +320,9 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
           )}
 
           {success && (
-            <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800 dark:text-green-200">
+            <Alert variant="default">
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
                 {success}
               </AlertDescription>
             </Alert>

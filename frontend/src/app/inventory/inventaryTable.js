@@ -57,7 +57,7 @@ const getStockStatus = (product) => {
 };
 
 // --- Definición de Columnas ---
-export const columns = [
+export const createColumns = (onEdit, onDelete) => [
   {
     id: "select",
     header: ({ table }) => (
@@ -142,14 +142,14 @@ export const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(row.original)}>
               <Pencil className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <QrCode className="mr-2 h-4 w-4" /> Ver QR
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500 focus:text-red-500">
+            <DropdownMenuItem 
+              className="text-red-500 focus:text-red-500"
+              onClick={() => onDelete(row.original)}
+            >
               <Trash2 className="mr-2 h-4 w-4" /> Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -160,9 +160,11 @@ export const columns = [
 ];
 
 // --- Componente Principal de la Tabla ---
-export function DataTable({ products }) {
+export function DataTable({ products, onEdit, onDelete }) {
   const [sorting, setSorting] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
+
+  const columns = createColumns(onEdit, onDelete);
 
   const table = useReactTable({
     data: products,
@@ -287,8 +289,19 @@ export function DataTable({ products }) {
                   </div>
                 </dl>
                 <div className="flex justify-end mt-3 gap-2">
-                  <Button variant="outline" size="sm">
-                    Ver acciones
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onEdit(row.original)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" /> Editar
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => onDelete(row.original)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
                   </Button>
                 </div>
               </div>

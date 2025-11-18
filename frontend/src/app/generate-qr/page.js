@@ -236,18 +236,18 @@ export default function GenerateQR() {
           </Card>
 
           {error && (
-            <Alert className="mb-6 border-destructive/30 bg-destructive/10">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <AlertDescription className="text-destructive">
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
                 {error}
               </AlertDescription>
             </Alert>
           )}
 
           {success && (
-            <Alert className="mb-6 border-emerald-500/30 bg-emerald-500/10">
-              <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <AlertDescription className="text-emerald-700 dark:text-emerald-200">
+            <Alert variant="default" className="mb-6">
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
                 {success}
               </AlertDescription>
             </Alert>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, X, Loader2 } from "lucide-react";
+import { Save, X, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -192,8 +192,9 @@ const CardEditOrder = ({ orderData, onClose, onOrderUpdated }) => {
       )}
 
       {success && (
-        <Alert className="border-green-500 bg-green-50">
-          <AlertDescription className="text-green-700">{success}</AlertDescription>
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 

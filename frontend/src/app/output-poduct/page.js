@@ -38,7 +38,7 @@ import ProductFilters from "./components/ProductFilters.js";
 import ProductsTable from "./components/ProductsTable.js";
 import useOutputProduct from "./components/useOutputProduct.js";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { productAPI } from "@/lib/api";
+import { productAPI, receiptAPI } from "@/lib/api";
 
 const OutputProductPage = () => {
   const { user, loading } = useAuth();
@@ -95,33 +95,70 @@ const OutputProductPage = () => {
     }
   };
 
-  const handleFiltersChange = (filters) => {
-    const filtered = allProducts.filter((product) => {
-      // Filtro por código
-      if (filters.codigo && !product.codigo.toLowerCase().includes(filters.codigo.toLowerCase())) {
-        return false;
-      }
+  const handleFiltersChange = async (filters) => {
+    setIsLoadingProducts(true);
+    setError(null);
 
-      // Filtro por nombre
-      if (filters.nombre && !product.nombre.toLowerCase().includes(filters.nombre.toLowerCase())) {
-        return false;
-      }
-
-      // Filtro por almacén (usando ubicación como proxy)
+    try {
+      // Recargar todos los productos desde el backend para asegurar que tenemos todos
+      const productsResponse = await productAPI.getAllProducts();
+      const allProductsFromAPI = productsResponse.data || [];
+      
+      // Si se seleccionó un almacén específico, obtener su dirección
+      let warehouseAddress = null;
       if (filters.warehouse_id !== "all") {
-        // Aquí podrías implementar la lógica específica de almacén
-        // Por ahora, filtramos por ubicación
-        // Si tienes una relación directa con warehouses, ajusta esta parte
+        try {
+          const warehousesResponse = await receiptAPI.getWarehouses();
+          const warehouses = warehousesResponse.data || [];
+          const selectedWarehouse = warehouses.find(w => w.id.toString() === filters.warehouse_id);
+          warehouseAddress = selectedWarehouse?.address;
+        } catch (error) {
+          console.error("Error obteniendo dirección del almacén:", error);
+        }
       }
 
-      return true;
-    });
+      // Filtrar todos los productos según los criterios
+      const filtered = allProductsFromAPI.filter((product) => {
+        // Filtro por código
+        if (filters.codigo && filters.codigo.trim() !== "") {
+          if (!product.codigo || !product.codigo.toLowerCase().includes(filters.codigo.toLowerCase())) {
+            return false;
+          }
+        }
 
-    setFilteredProducts(filtered);
-    setShowProductList(true);
-    
-    if (filtered.length === 0) {
-      setError("No se encontraron productos con los filtros aplicados");
+        // Filtro por nombre
+        if (filters.nombre && filters.nombre.trim() !== "") {
+          if (!product.nombre || !product.nombre.toLowerCase().includes(filters.nombre.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Filtro por almacén (comparando la ubicación del producto con la dirección del almacén)
+        if (filters.warehouse_id !== "all" && warehouseAddress) {
+          // Comparar si la ubicación del producto coincide con la dirección del almacén
+          if (!product.ubicacion || product.ubicacion !== warehouseAddress) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      // Actualizar el estado con todos los productos y los filtrados
+      setAllProducts(allProductsFromAPI);
+      setFilteredProducts(filtered);
+      setShowProductList(true);
+      
+      if (filtered.length === 0) {
+        setError("No se encontraron productos con los filtros aplicados");
+      } else {
+        setError(null);
+      }
+    } catch (error) {
+      console.error("Error aplicando filtros:", error);
+      setError("Error al cargar los productos. Intenta nuevamente.");
+    } finally {
+      setIsLoadingProducts(false);
     }
   };
 

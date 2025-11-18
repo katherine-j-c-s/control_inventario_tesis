@@ -152,9 +152,9 @@ const Projects = () => {
         )}
 
         {success && (
-          <Alert className="mb-4 border-primary500 bg-primary-50">
-            <CheckCircle className="h-4 w-4 text-primary-500" />
-            <AlertDescription className="text-gray-700">{success}</AlertDescription>
+          <Alert variant="default" className="mb-4">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
 

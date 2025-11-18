@@ -178,8 +178,9 @@ const ManualReceiptForm = ({ onClose, onReceiptCreated }) => {
       )}
 
       {success && (
-        <Alert className="border-green-500 bg-green-50">
-          <AlertDescription className="text-green-700">{success}</AlertDescription>
+        <Alert variant="default">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription >{success}</AlertDescription>
         </Alert>
       )}
 
