@@ -32,6 +32,27 @@ router.post("/receipts/upload", upload.single("file"), uploadReceiptFile);
 router.put("/receipts/verify/:id", verify);
 router.put("/receipts/:id", updateReceipt);
 
+// Verificar si un producto está en algún remito
+router.get("/productos/:id/en-remito", async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const query = `
+      SELECT EXISTS(
+        SELECT 1 
+        FROM receipt_products rp 
+        WHERE rp.product_id = $1
+      ) as en_remito;
+    `;
+
+    const { rows } = await pool.query(query, [productId]);
+    res.json({ enRemito: rows[0].en_remito });
+  } catch (error) {
+    console.error("Error verificando si producto está en remito:", error);
+    res.status(500).json({ error: "Error verificando producto" });
+  }
+});
+
 router.get("/remitos/:id/productos", async (req, res) => {
   const remitoId = req.params.id;
 

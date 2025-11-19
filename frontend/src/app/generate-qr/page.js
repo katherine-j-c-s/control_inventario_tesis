@@ -3,7 +3,7 @@
 import Layout from "@/components/layouts/Layout";
 import { useEffect, useState } from "react";
 import React from "react";
-import api from "@/lib/api";
+import api, { productAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,21 @@ import {
   AlertCircle,
   CheckCircle,
   Loader2,
-  Tag
+  Tag,
+  FileText,
+  Hash
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import jsPDF from "jspdf";
 
 
 export default function GenerateQR() {
+  const [tipoBusqueda, setTipoBusqueda] = useState("remito"); // "remito" o "codigo"
   const [remitoId, setRemitoId] = useState("");
+  const [codigoProducto, setCodigoProducto] = useState("");
   const [productos, setProductos] = useState([]);
   const [isloading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,7 +40,6 @@ export default function GenerateQR() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-
   useEffect(() => {
     if (loading) return;
     if (!user) {
@@ -42,6 +47,15 @@ export default function GenerateQR() {
       return;
     }
   }, [user, router, loading]);
+
+  // Limpiar campos cuando cambia el tipo de búsqueda
+  useEffect(() => {
+    setRemitoId("");
+    setCodigoProducto("");
+    setProductos([]);
+    setError(null);
+    setSuccess(null);
+  }, [tipoBusqueda]);
 
   const crearObjetoQRSimplificado = (producto) => ({
     i: producto.id,
@@ -95,6 +109,91 @@ export default function GenerateQR() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const buscarPorCodigo = async () => {
+    if (!codigoProducto.trim()) {
+      setError("Por favor ingresa un código de producto válido");
+      return;
+    }
+
+    if (!user?.id) {
+      setError("No se pudo identificar al usuario. Por favor, inicia sesión nuevamente.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    setProductos([]);
+
+    try {
+      // Buscar producto por código usando el mismo método que la página de egreso
+      const producto = await productAPI.getProductByCode(codigoProducto.trim());
+      
+      if (!producto) {
+        setError(`No se encontró ningún producto con el código "${codigoProducto.trim()}"`);
+        return;
+      }
+
+      // Verificar si el producto está en algún remito
+      const verificarRemitoResponse = await api.get(`/productos/${producto.id}/en-remito`);
+      const { enRemito } = verificarRemitoResponse.data;
+
+      if (enRemito) {
+        setError("Este producto está asociado a un remito. Solo se pueden generar QR para productos ingresados manualmente (no de remitos).");
+        return;
+      }
+
+      // Obtener movimientos del producto usando el endpoint que incluye movimientos
+      // Este endpoint está en receiptRoutes.js y devuelve el producto con movimientos
+      let productoCompleto = { movimientos: [] };
+      try {
+        const movimientosResponse = await api.get(`/productos/${producto.id}`);
+        productoCompleto = movimientosResponse.data;
+      } catch (err) {
+        // Si falla, continuar sin movimientos
+        console.warn('No se pudieron obtener movimientos, continuando sin ellos');
+      }
+
+      // Formatear el producto para que sea consistente con los productos de remito
+      const productoFormateado = {
+        id: producto.id,
+        nombre: producto.nombre,
+        descripcion: producto.descripcion || "",
+        categoria: producto.categoria || "General",
+        unidad: producto.unidad_medida || "unidad",
+        precio: producto.precio_unitario || 0,
+        cantidad: producto.stock_actual || 0,
+        ubicacion: producto.ubicacion || "",
+        codigo: producto.codigo,
+        verificado: true, // Productos ingresados manualmente se consideran verificados
+        receipt_id: null,
+        fecha_remito: null,
+        movimientos: productoCompleto.movimientos || []
+      };
+
+      // Convertir el producto único en un array para mantener consistencia
+      setProductos([productoFormateado]);
+      setSuccess(`Producto encontrado: ${producto.nombre}`);
+    } catch (error) {
+      console.error('Error buscando producto por código:', error);
+      if (error.response?.status === 404) {
+        setError("Producto no encontrado");
+      } else {
+        setError(`Error al buscar producto: ${error.response?.data?.error || error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBuscar = () => {
+    if (tipoBusqueda === "remito") {
+      buscarRemito();
+    } else {
+      buscarPorCodigo();
     }
   };
 
@@ -170,12 +269,193 @@ export default function GenerateQR() {
     }
   };
 
-  const descargarTodosQR = () => {
-    productos.forEach((producto, index) => {
-      setTimeout(() => {
-        descargarQR(producto);
-      }, index * 1000);
-    });
+  const descargarTodosQR = async () => {
+    if (productos.length === 0) {
+      setError("No hay productos para descargar");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Crear un nuevo documento PDF (A4: 210mm x 297mm)
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = 210; // Ancho de A4 en mm
+      const pageHeight = 297; // Alto de A4 en mm
+      const margin = 10; // Margen en mm
+      const qrSize = 50; // Tamaño de cada QR en mm
+      const spacing = 5; // Espacio entre QRs en mm
+      const cols = 3; // 3 columnas
+      const rows = 4; // 4 filas por página
+      const qrsPerPage = cols * rows; // 12 QR por página
+
+      // Calcular el ancho disponible y posiciones
+      const availableWidth = pageWidth - (2 * margin);
+      const availableHeight = pageHeight - (2 * margin);
+      const colWidth = (availableWidth - (spacing * (cols - 1))) / cols;
+      const rowHeight = (availableHeight - (spacing * (rows - 1))) / rows;
+
+      // Función auxiliar para convertir SVG a imagen
+      const svgToImage = (svgElement) => {
+        return new Promise((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 256;
+          canvas.height = 256;
+
+          const svgData = new XMLSerializer().serializeToString(svgElement);
+          const img = new Image();
+
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              } else {
+                reject(new Error('Error al convertir SVG a imagen'));
+              }
+            }, 'image/png');
+          };
+
+          img.onerror = reject;
+          img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        });
+      };
+
+      // Función auxiliar para generar QR como imagen
+      const generarQRImagen = async (producto) => {
+        const { createRoot } = await import('react-dom/client');
+        
+        return new Promise((resolve, reject) => {
+          const tempDiv = document.createElement('div');
+          tempDiv.style.position = 'absolute';
+          tempDiv.style.left = '-9999px';
+          tempDiv.style.top = '-9999px';
+          tempDiv.style.width = '256px';
+          tempDiv.style.height = '256px';
+          document.body.appendChild(tempDiv);
+
+          const qrContainer = document.createElement('div');
+          qrContainer.id = `qr-temp-${producto.id}`;
+          qrContainer.style.width = '256px';
+          qrContainer.style.height = '256px';
+          tempDiv.appendChild(qrContainer);
+
+          const root = createRoot(qrContainer);
+
+          root.render(
+            React.createElement(QRCodeSVG, {
+              value: JSON.stringify(crearObjetoQRSimplificado(producto)),
+              size: 256,
+              level: "M",
+              includeMargin: true
+            }, null)
+          );
+
+          setTimeout(() => {
+            const qrElement = qrContainer.querySelector('svg');
+            if (qrElement) {
+              svgToImage(qrElement)
+                .then((dataUrl) => {
+                  root.unmount();
+                  document.body.removeChild(tempDiv);
+                  resolve(dataUrl);
+                })
+                .catch((err) => {
+                  root.unmount();
+                  document.body.removeChild(tempDiv);
+                  reject(err);
+                });
+            } else {
+              root.unmount();
+              document.body.removeChild(tempDiv);
+              reject(new Error('No se pudo generar el QR'));
+            }
+          }, 200);
+        });
+      };
+
+      // Generar todas las imágenes de QR
+      const qrImages = [];
+      for (const producto of productos) {
+        try {
+          const imageData = await generarQRImagen(producto);
+          qrImages.push({
+            image: imageData,
+            producto: producto
+          });
+        } catch (err) {
+          console.error(`Error generando QR para ${producto.nombre}:`, err);
+        }
+      }
+
+      if (qrImages.length === 0) {
+        setError("No se pudieron generar los códigos QR");
+        setLoading(false);
+        return;
+      }
+
+      // Agregar QRs al PDF
+      let currentPage = 0;
+      let qrIndex = 0;
+
+      for (let i = 0; i < qrImages.length; i++) {
+        const { image, producto } = qrImages[i];
+        const pageIndex = Math.floor(i / qrsPerPage);
+
+        // Agregar nueva página si es necesario
+        if (pageIndex > currentPage) {
+          doc.addPage();
+          currentPage = pageIndex;
+        }
+
+        // Calcular posición en la grilla
+        const positionInPage = i % qrsPerPage;
+        const col = positionInPage % cols;
+        const row = Math.floor(positionInPage / cols);
+
+        // Calcular coordenadas
+        const x = margin + (col * (colWidth + spacing)) + (colWidth - qrSize) / 2;
+        const y = margin + (row * (rowHeight + spacing)) + (rowHeight - qrSize) / 2;
+
+        // Agregar imagen del QR
+        doc.addImage(image, 'PNG', x, y, qrSize, qrSize);
+
+        // Agregar nombre del producto debajo del QR (opcional, más pequeño)
+        const textY = y + qrSize + 3;
+        const nombreCorto = producto.nombre.length > 20 
+          ? producto.nombre.substring(0, 17) + '...' 
+          : producto.nombre;
+        
+        doc.setFontSize(8);
+        doc.text(nombreCorto, x + qrSize / 2, textY, {
+          align: 'center',
+          maxWidth: qrSize
+        });
+      }
+
+      // Descargar el PDF
+      const fileName = tipoBusqueda === "remito" 
+        ? `qr-remito-${remitoId}.pdf`
+        : `qr-productos-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      doc.save(fileName);
+      setSuccess(`PDF generado exitosamente con ${qrImages.length} códigos QR`);
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      setError('Error al generar el PDF con los códigos QR');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -187,7 +467,7 @@ export default function GenerateQR() {
               Generador de Códigos QR
             </h1>
             <p className="text-muted-foreground">
-              Genera códigos QR para productos verificados de un remito
+              Genera códigos QR para productos verificados de un remito o productos ingresados manualmente
             </p>
           </div>
 
@@ -195,39 +475,92 @@ export default function GenerateQR() {
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-foreground flex items-center">
                 <Search className="w-5 h-5 mr-2" />
-                Buscar Productos por Remito
+                Buscar Productos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="remitoId" className="text-foreground">
-                    ID del Remito
+                  <Label htmlFor="tipoBusqueda" className="text-foreground">
+                    Tipo de Búsqueda
                   </Label>
-                  <Input
-                    id="remitoId"
-                    type="number"
-                    placeholder="Ingresa el ID del remito"
-                    value={remitoId}
-                    onChange={(e) => setRemitoId(e.target.value)}
-                    className="mt-1"
-                  />
+                  <Select value={tipoBusqueda} onValueChange={setTipoBusqueda}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecciona el tipo de búsqueda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="remito">
+                        <div className="flex items-center">
+                          <FileText className="w-4 h-4 mr-2" />
+                          Por ID de Remito
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="codigo">
+                        <div className="flex items-center">
+                          <Hash className="w-4 h-4 mr-2" />
+                          Por Código de Producto
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                {tipoBusqueda === "remito" ? (
+                  <div>
+                    <Label htmlFor="remitoId" className="text-foreground">
+                      ID del Remito
+                    </Label>
+                    <Input
+                      id="remitoId"
+                      type="number"
+                      placeholder="Ingresa el ID del remito"
+                      value={remitoId}
+                      onChange={(e) => setRemitoId(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <Label htmlFor="codigoProducto" className="text-foreground">
+                      Código del Producto
+                    </Label>
+                    <Input
+                      id="codigoProducto"
+                      type="text"
+                      placeholder="Ingresa el código del producto"
+                      value={codigoProducto}
+                      onChange={(e) => setCodigoProducto(e.target.value)}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Solo se mostrarán productos ingresados manualmente por ti (no de remitos)
+                    </p>
+                  </div>
+                )}
                 
                 <Button 
-                  onClick={buscarRemito}
-                  disabled={isloading || !remitoId.trim()}
+                  onClick={handleBuscar}
+                  disabled={isloading || (tipoBusqueda === "remito" ? !remitoId.trim() : !codigoProducto.trim())}
                   className="w-full"
                 >
                   {isloading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Buscando Remito...
+                      {tipoBusqueda === "remito" ? "Buscando Remito..." : "Buscando Producto..."}
                     </>
                   ) : (
                     <>
-                      <Package className="w-4 h-4 mr-2" />
-                      Buscar Remito
+                      {tipoBusqueda === "remito" ? (
+                        <>
+                          <Package className="w-4 h-4 mr-2" />
+                          Buscar Remito
+                        </>
+                      ) : (
+                        <>
+                          <Hash className="w-4 h-4 mr-2" />
+                          Buscar Producto
+                        </>
+                      )}
                     </>
                   )}
                 </Button>
@@ -259,7 +592,10 @@ export default function GenerateQR() {
                 <div className="flex md:flex-row flex-col items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-foreground flex items-center">
                     <Package className="w-5 h-5 mr-2 md:flex hidden" />
-                    Productos Verificados del Remito #{remitoId} ({productos.length})
+                    {tipoBusqueda === "remito" 
+                      ? `Productos Verificados del Remito #${remitoId} (${productos.length})`
+                      : `Producto Encontrado (${productos.length})`
+                    }
                   </CardTitle>
                   <Button 
                     onClick={descargarTodosQR}
@@ -338,15 +674,18 @@ export default function GenerateQR() {
             </Card>
           )}
 
-          {!isloading && productos.length === 0 && remitoId && (
+          {!isloading && productos.length === 0 && (tipoBusqueda === "remito" ? remitoId : codigoProducto) && (
             <Card className="bg-card border-border">
               <CardContent className="text-center py-12">
                 <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No hay productos verificados
+                  {tipoBusqueda === "remito" ? "No hay productos verificados" : "Producto no encontrado"}
                 </h3>
                 <p className="text-muted-foreground">
-                  El remito #{remitoId} no tiene productos verificados para generar códigos QR
+                  {tipoBusqueda === "remito" 
+                    ? `El remito #${remitoId} no tiene productos verificados para generar códigos QR`
+                    : `No se encontró un producto con el código "${codigoProducto}" ingresado manualmente por ti`
+                  }
                 </p>
               </CardContent>
             </Card>
