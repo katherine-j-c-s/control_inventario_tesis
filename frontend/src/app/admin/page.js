@@ -7,7 +7,7 @@ import Layout from '@/components/layouts/Layout';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Users, Settings, UserPlus, Terminal } from "lucide-react";
+import { Users, Settings, UserPlus, Terminal, CheckCircle } from "lucide-react";
 import { AllUsersTab } from './components/AllUsersTab';
 import { RolesManagementTab } from './components/RolesManagementTab';
 import { RoleAssignmentTab } from './components/RoleAssignmentTab';

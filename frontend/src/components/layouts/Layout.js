@@ -69,9 +69,16 @@ export default function Layout({ children }) {
   };
   const fullLogo = theme === "dark" ? logoFullDarkMode : logoFullLightMode;
   const DesktopHeader = () => (
-    <header className="bg-card border-b h-16 items-center justify-end px-6 hidden md:flex fixed top-0 w-full z-20">
+    <header 
+      className="bg-card border-b h-16 items-center justify-between px-6 hidden md:flex fixed top-0 z-50"
+      style={{
+        left: !isMobile ? `${sidebarWidth}px` : "0px",
+        right: "0px",
+        width: !isMobile ? `calc(100% - ${sidebarWidth}px)` : "100%"
+      }}
+    >
       <Link href="/dashboard" className="flex items-center">
-      <Image
+        <Image
           src={fullLogo}
           alt="Control de Inventario"
           className="w-[150px] h-[35px]"
@@ -79,9 +86,8 @@ export default function Layout({ children }) {
           height={35}
           priority
         />
-        </Link>
-      <div className="ml-auto ">
-        
+      </Link>
+      <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -94,7 +100,7 @@ export default function Layout({ children }) {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56 z-[100]" align="end" sideOffset={8}>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
@@ -137,16 +143,15 @@ export default function Layout({ children }) {
           isMobile={isMobile}
         />
 
+        <DesktopHeader />
+
         <div
-          className="flex-1 flex flex-col overflow-hidden min-w-0 transition-all duration-300 ease-in-out"
+          className="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out"
           style={{ 
-            position: "relative", 
-            zIndex: 1,
             marginLeft: !isMobile ? `${sidebarWidth}px` : "0px"
           }}
         >
           <MobileHeader />
-          <DesktopHeader />
 
           <main className="flex-1 mt-16 p-6 overflow-auto">{children}</main>
         </div>
