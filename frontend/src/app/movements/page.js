@@ -60,6 +60,7 @@ const MovementsContent = () => {
             destino: mov.destinatario || 'N/A',
             usuario: mov.user_name || 'Usuario desconocido',
             timestamp: timestamp,
+            fecha: mov.date, // Fecha original de la BD
             observaciones: mov.observaciones || mov.motivo || null
           };
         });
@@ -116,6 +117,7 @@ const MovementsContent = () => {
           destino: mov.destinatario || 'N/A',
           usuario: mov.user_name || 'Usuario desconocido',
           timestamp: timestamp,
+          fecha: mov.date, // Fecha original de la BD
           observaciones: mov.observaciones || mov.motivo || null
         };
       });

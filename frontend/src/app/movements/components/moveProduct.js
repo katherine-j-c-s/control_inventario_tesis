@@ -39,6 +39,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
   // Estado del formulario
   const [formData, setFormData] = useState({
     codigoProducto: "",
+    cantidad: "",
+    tipoMovimiento: "",
     ubicacionOrigen: "",
     estanteriaOrigen: "",
     ubicacionDestino: "",
@@ -182,22 +184,38 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
       return false;
     }
     
-    if (!formData.ubicacionOrigen) {
-      setError("La ubicación de origen es requerida");
+    if (!formData.cantidad || formData.cantidad <= 0) {
+      setError("La cantidad debe ser mayor a 0");
       return false;
     }
+    
+    if (parseFloat(formData.cantidad) > productInfo.cantidad) {
+      setError(`La cantidad no puede superar el stock disponible (${productInfo.cantidad})`);
+      return false;
+    }
+    
+    if (!formData.tipoMovimiento) {
+      setError("El tipo de movimiento es requerido");
+      return false;
+    }
+    
+    // Validaciones específicas según el tipo de movimiento
+    if (formData.tipoMovimiento === 'transferencia') {
+      if (!formData.ubicacionDestino) {
+        setError("La ubicación de destino es requerida para transferencias");
+        return false;
+      }
+      if (formData.ubicacionOrigen === formData.ubicacionDestino) {
+        setError("La ubicación de origen y destino no pueden ser la misma");
+        return false;
+      }
+    }
+    
     if (!formData.estanteriaOrigen.trim()) {
       setError("La estantería de origen es requerida");
       return false;
     }
-    if (!formData.ubicacionDestino) {
-      setError("La ubicación de destino es requerida");
-      return false;
-    }
-    if (formData.ubicacionOrigen === formData.ubicacionDestino) {
-      setError("La ubicación de origen y destino no pueden ser la misma");
-      return false;
-    }
+    
     if (!formData.fecha) {
       setError("La fecha es requerida");
       return false;
@@ -241,13 +259,13 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
       
       // Preparar datos del movimiento
       const movementData = {
-        movement_type: 'transferencia',
+        movement_type: formData.tipoMovimiento,
         date: formData.fecha, // Solo la fecha en formato YYYY-MM-DD
-        quantity: 1, // Cantidad por defecto, puedes ajustarlo si es necesario
+        quantity: parseFloat(formData.cantidad),
         product_id: productInfo.id, // ID del producto encontrado
         status: 'completado',
         user_id: currentUser?.id || 1, // ID del usuario actual
-        ubicacion_actual: formData.ubicacionDestino, // La ubicación destino se convierte en la actual
+        ubicacion_actual: formData.tipoMovimiento === 'transferencia' ? formData.ubicacionDestino : formData.ubicacionOrigen,
         estanteria_actual: formData.estanteriaOrigen, // La estantería de origen
       };
 
@@ -261,10 +279,10 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
         onMovementCreated({
           id: response.data?.movement?.movement_id || Date.now(),
           producto: productInfo.nombre,
-          tipo: "transferencia",
-          cantidad: movementData.quantity,
+          tipo: formData.tipoMovimiento,
+          cantidad: parseFloat(formData.cantidad),
           origen: `${formData.ubicacionOrigen} - Est. ${formData.estanteriaOrigen}`,
-          destino: formData.ubicacionDestino,
+          destino: formData.tipoMovimiento === 'transferencia' ? formData.ubicacionDestino : formData.ubicacionOrigen,
           usuario: formData.responsable,
           timestamp: fechaHora.getTime(),
           observaciones: formData.observaciones,
@@ -293,6 +311,8 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
   const resetForm = () => {
     setFormData({
       codigoProducto: "",
+      cantidad: "",
+      tipoMovimiento: "",
       ubicacionOrigen: "",
       estanteriaOrigen: "",
       ubicacionDestino: "",
@@ -386,9 +406,9 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
                     </span>
                   </p>
                   <p>
-                    Estantería:{" "}
+                    Stock Disponible:{" "}
                     <span className="font-medium text-foreground break-words">
-                      {productInfo.estanteria}
+                      {productInfo.cantidad}
                     </span>
                   </p>
                 </div>
@@ -396,30 +416,117 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
             )}
           </div>
 
-          {/* Sección: Ubicaciones */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
-              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              <span>Ubicaciones</span>
-            </div>
+          {/* Sección: Detalles del Movimiento */}
+          {productInfo && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <span>Detalles del Movimiento</span>
+              </div>
 
-            {/* Ubicación Actual (Origen) */}
-            <div className=" rounded-lg p-4">
-              <h3 className="font-semibold mb-3 text-sm">Ubicación Actual (Origen)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Campo de Cantidad */}
                 <div className="space-y-2">
-                  <Label htmlFor="ubicacionOrigen">
-                    Ubicación <span className="text-red-500">*</span>
+                  <Label htmlFor="cantidad">
+                    Cantidad <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="cantidad"
+                    type="number"
+                    min="1"
+                    max={productInfo.cantidad}
+                    placeholder="Ingrese la cantidad"
+                    value={formData.cantidad}
+                    onChange={(e) =>
+                      handleInputChange("cantidad", e.target.value)
+                    }
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Stock disponible: {productInfo.cantidad}
+                  </p>
+                </div>
+
+                {/* Campo de Tipo de Movimiento */}
+                <div className="space-y-2">
+                  <Label htmlFor="tipoMovimiento">
+                    Tipo de Movimiento <span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={formData.ubicacionOrigen}
+                    value={formData.tipoMovimiento}
                     onValueChange={(value) =>
-                      handleInputChange("ubicacionOrigen", value)
+                      handleInputChange("tipoMovimiento", value)
                     }
                     disabled={isLoading}
                   >
-                    <SelectTrigger id="ubicacionOrigen">
-                      <SelectValue placeholder="Seleccione ubicación" />
+                    <SelectTrigger id="tipoMovimiento">
+                      <SelectValue placeholder="Seleccione tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="entrada">Entrada</SelectItem>
+                      <SelectItem value="ajuste">Ajuste</SelectItem>
+                      <SelectItem value="transferencia">Transferencia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sección: Ubicaciones */}
+          {productInfo && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <span>Ubicaciones</span>
+              </div>
+
+              {/* Ubicación Actual (Solo lectura) */}
+              <div className="rounded-lg p-4 bg-muted/30">
+                <h3 className="font-semibold mb-3 text-sm">Ubicación Actual del Producto</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="ubicacionActual">Ubicación</Label>
+                    <Input
+                      id="ubicacionActual"
+                      value={productInfo.ubicacionActual}
+                      disabled
+                      className="bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="estanteriaOrigen">
+                      Estantería <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="estanteriaOrigen"
+                      placeholder="Ej: A1, B2, C3..."
+                      value={formData.estanteriaOrigen}
+                      onChange={(e) =>
+                        handleInputChange("estanteriaOrigen", e.target.value)
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Ubicación Destino (Solo para transferencias) */}
+              {formData.tipoMovimiento === 'transferencia' && (
+                <div className="space-y-2">
+                  <Label htmlFor="ubicacionDestino">
+                    Ubicación Destino <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.ubicacionDestino}
+                    onValueChange={(value) =>
+                      handleInputChange("ubicacionDestino", value)
+                    }
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger id="ubicacionDestino">
+                      <SelectValue placeholder="Seleccione ubicación destino" />
                     </SelectTrigger>
                     <SelectContent>
                       {loadingWarehouses ? (
@@ -440,59 +547,9 @@ const MoveProduct = ({ onClose, onMovementCreated, currentUser }) => {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="estanteriaOrigen">
-                    Estantería <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="estanteriaOrigen"
-                    placeholder="Ej: A1, B2, C3..."
-                    value={formData.estanteriaOrigen}
-                    onChange={(e) =>
-                      handleInputChange("estanteriaOrigen", e.target.value)
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
+              )}
             </div>
-
-            {/* Ubicación Destino */}
-            <div className="space-y-2">
-              <Label htmlFor="ubicacionDestino">
-                Ubicación Destino <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.ubicacionDestino}
-                onValueChange={(value) =>
-                  handleInputChange("ubicacionDestino", value)
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger id="ubicacionDestino">
-                  <SelectValue placeholder="Seleccione ubicación destino" />
-                </SelectTrigger>
-                <SelectContent>
-                  {loadingWarehouses ? (
-                    <SelectItem value="loading" disabled>
-                      Cargando almacenes...
-                    </SelectItem>
-                  ) : ubicaciones.length === 0 ? (
-                    <SelectItem value="no-data" disabled>
-                      No hay almacenes disponibles
-                    </SelectItem>
-                  ) : (
-                    ubicaciones.map((ubicacion) => (
-                      <SelectItem key={ubicacion} value={ubicacion}>
-                        {ubicacion}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          )}
 
           {/* Sección: Fecha y Hora */}
           <div className="space-y-4">

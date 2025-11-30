@@ -25,54 +25,54 @@ const TableWorkOrder = ({ workOrders, onApprove, onReject, onView }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Datos de ejemplo para demostración
-  const mockData = [
-    {
-      id: 1,
-      solicitante: "Juan Pérez",
-      obra: "Armado de Pozo - Sede Central",
-      fecha_solicitud: "2024-01-15",
-      fecha_requerida: "2024-01-20",
-      prioridad: "Alta",
-      estado: "Pendiente",
-      total_productos: 3,
-      productos: [
-        { nombre: "Cemento Portland", cantidad: 50, unidad: "bolsa" },
-        { nombre: "Ladrillos cerámicos", cantidad: 1000, unidad: "unidad" },
-        { nombre: "Arena gruesa", cantidad: 5, unidad: "m³" },
-      ],
-      observaciones: "Materiales necesarios para la primera fase del proyecto",
-    },
-    {
-      id: 2,
-      solicitante: "María González",
-      obra: "Construcción Edificio A - Sede Norte",
-      fecha_solicitud: "2024-01-14",
-      fecha_requerida: "2024-01-18",
-      prioridad: "Media",
-      estado: "Aprobada",
-      total_productos: 2,
-      productos: [
-        { nombre: "Acero de construcción", cantidad: 200, unidad: "kg" },
-        { nombre: "Alambre de amarre", cantidad: 10, unidad: "rollo" },
-      ],
-      observaciones: "Refuerzos para estructura",
-    },
-    {
-      id: 3,
-      solicitante: "Carlos López",
-      obra: "Remodelación Oficinas - Sede Sur",
-      fecha_solicitud: "2024-01-13",
-      fecha_requerida: "2024-01-25",
-      prioridad: "Baja",
-      estado: "Rechazada",
-      total_productos: 1,
-      productos: [
-        { nombre: "Pintura blanca", cantidad: 20, unidad: "litro" },
-      ],
-      observaciones: "Pintura para oficinas",
-    },
-  ];
+  // // Datos de ejemplo para demostración
+  // const mockData = [
+  //   {
+  //     id: 1,
+  //     solicitante: "Juan Pérez",
+  //     obra: "Armado de Pozo - Sede Central",
+  //     fecha_solicitud: "2024-01-15",
+  //     fecha_requerida: "2024-01-20",
+  //     prioridad: "Alta",
+  //     estado: "Pendiente",
+  //     total_productos: 3,
+  //     productos: [
+  //       { nombre: "Cemento Portland", cantidad: 50, unidad: "bolsa" },
+  //       { nombre: "Ladrillos cerámicos", cantidad: 1000, unidad: "unidad" },
+  //       { nombre: "Arena gruesa", cantidad: 5, unidad: "m³" },
+  //     ],
+  //     observaciones: "Materiales necesarios para la primera fase del proyecto",
+  //   },
+  //   {
+  //     id: 2,
+  //     solicitante: "María González",
+  //     obra: "Construcción Edificio A - Sede Norte",
+  //     fecha_solicitud: "2024-01-14",
+  //     fecha_requerida: "2024-01-18",
+  //     prioridad: "Media",
+  //     estado: "Aprobada",
+  //     total_productos: 2,
+  //     productos: [
+  //       { nombre: "Acero de construcción", cantidad: 200, unidad: "kg" },
+  //       { nombre: "Alambre de amarre", cantidad: 10, unidad: "rollo" },
+  //     ],
+  //     observaciones: "Refuerzos para estructura",
+  //   },
+  //   {
+  //     id: 3,
+  //     solicitante: "Carlos López",
+  //     obra: "Remodelación Oficinas - Sede Sur",
+  //     fecha_solicitud: "2024-01-13",
+  //     fecha_requerida: "2024-01-25",
+  //     prioridad: "Baja",
+  //     estado: "Rechazada",
+  //     total_productos: 1,
+  //     productos: [
+  //       { nombre: "Pintura blanca", cantidad: 20, unidad: "litro" },
+  //     ],
+  //     observaciones: "Pintura para oficinas",
+  //   },
+  // ];
 
   const data = workOrders || mockData;
 
@@ -166,7 +166,7 @@ const TableWorkOrder = ({ workOrders, onApprove, onReject, onView }) => {
                               variant="secondary"
                               size="sm"
                               onClick={() => onApprove && onApprove(order.id)}
-                              className="h-8 px-3 bg-emerald-600 text-white hover:bg-emerald-500"
+                              className="h-8 px-3 bg-primary-600 text-white hover:bg-primary-500"
                             >
                               Aprobar
                             </Button>

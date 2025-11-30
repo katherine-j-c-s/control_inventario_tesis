@@ -6,7 +6,7 @@ export const getStatusBadge = (estado) => {
     case "aprobado":
     case "Aprobada":
       return (
-        <Badge variant="default" className="bg-green-600 hover:bg-green-500">
+        <Badge variant="default" className="bg-primary-500 hover:bg-primary-400 ">
           <CheckCircle className="w-3 h-3 mr-1" />
           Aprobada
         </Badge>
@@ -22,7 +22,7 @@ export const getStatusBadge = (estado) => {
     case "pendiente":
     case "Pendiente":
       return (
-        <Badge variant="default" className="bg-yellow-600 hover:bg-yellow-500">
+        <Badge variant="default" className="bg-primary-700 hover:bg-primary-500 ">
           <Clock className="w-3 h-3 mr-1" />
           Pendiente
         </Badge>
