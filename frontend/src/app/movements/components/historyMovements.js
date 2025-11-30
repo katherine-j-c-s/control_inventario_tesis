@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   History, 
-  Trash2, 
   Search, 
   ArrowRightLeft, 
   Package, 
@@ -27,10 +26,10 @@ import {
 } from "@/components/ui/select";
 
 /**
- * Componente moderno de historial de movimientos de productos
+ * Componente moderno de historial de movimientos de productos  muestra de la bd 
  * 
  * Características:
- * - Persistencia en localStorage (últimos 30 días)
+ * - Muestra todos los movimientos de la base de datos
  * - Filtrado por tipo de movimiento, producto y fecha
  * - Búsqueda en tiempo real
  * - UI moderna con badges y colores
@@ -38,53 +37,13 @@ import {
  */
 const HistoryMovements = ({ movements = [] }) => {
   const router = useRouter();
-  const [localHistory, setLocalHistory] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filteredMovements, setFilteredMovements] = useState([]);
 
-  // 30 días de retención del historial
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-
-  // Cargar y sincronizar historial desde localStorage
-  useEffect(() => {
-    const now = Date.now();
-    const stored = JSON.parse(localStorage.getItem('movementsHistory')) || [];
-    
-    // Crear un objeto para evitar duplicados basado en el ID
-    const historyMap = {};
-    
-    // Agregar movimientos almacenados primero
-    stored.forEach(item => {
-      if (now - item.timestamp < THIRTY_DAYS) {
-        historyMap[item.id] = item;
-      }
-    });
-    
-    // Agregar nuevos movimientos
-    movements.forEach(item => {
-      const itemWithTimestamp = {
-        ...item,
-        timestamp: item.timestamp || Date.now()
-      };
-      if (now - itemWithTimestamp.timestamp < THIRTY_DAYS) {
-        historyMap[item.id] = itemWithTimestamp;
-      }
-    });
-    
-    // Ordenar por fecha descendente y limitar a 200 registros
-    const combined = Object.values(historyMap)
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 200);
-
-    // Guardar en localStorage
-    localStorage.setItem('movementsHistory', JSON.stringify(combined));
-    setLocalHistory(combined);
-  }, [movements]);
-
   // Filtrar movimientos según búsqueda y tipo
   useEffect(() => {
-    let filtered = localHistory;
+    let filtered = movements;
 
     // Filtrar por tipo
     if (filterType !== 'all') {
@@ -103,32 +62,28 @@ const HistoryMovements = ({ movements = [] }) => {
     }
 
     setFilteredMovements(filtered);
-  }, [localHistory, searchTerm, filterType]);
+  }, [movements, searchTerm, filterType]);
 
-  // Formatear fecha y hora
-  const formatTimestamp = (timestamp) => {
-    return new Intl.DateTimeFormat('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(new Date(timestamp));
-  };
-
-  // Formatear fecha relativa (hace X tiempo)
-  const getRelativeTime = (timestamp) => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'Hace un momento';
-    if (minutes < 60) return `Hace ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
-    if (hours < 24) return `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
-    return `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
+  // Formatear fecha y hora de la BD
+  const formatFechaHora = (fecha) => {
+    if (!fecha) return 'Fecha no disponible';
+    
+    try {
+      const date = new Date(fecha);
+      if (isNaN(date.getTime())) return 'Fecha inválida';
+      
+      return new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(date);
+    } catch (e) {
+      return 'Error en fecha';
+    }
   };
 
   // Obtener color del badge según tipo de movimiento
@@ -142,15 +97,7 @@ const HistoryMovements = ({ movements = [] }) => {
     return badges[tipo] || { variant: 'outline', label: tipo, color: 'bg-gray-500' };
   };
 
-  // Limpiar historial
-  const clearHistory = () => {
-    if (confirm('¿Está seguro de que desea limpiar todo el historial?')) {
-      localStorage.removeItem('movementsHistory');
-      setLocalHistory([]);
-    }
-  };
-
-  if (localHistory.length === 0) {
+  if (movements.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -168,7 +115,7 @@ const HistoryMovements = ({ movements = [] }) => {
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4">
-          {/* Header con título y botón limpiar */}
+          {/* Header con título */}
           <div className="flex md:flex-row flex-col items-start md:items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -179,15 +126,6 @@ const HistoryMovements = ({ movements = [] }) => {
                 {filteredMovements.length} movimiento{filteredMovements.length !== 1 ? 's' : ''} registrado{filteredMovements.length !== 1 ? 's' : ''}
               </CardDescription>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={clearHistory}
-              className="flex items-center md:mt-0 mt-3 gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Limpiar
-            </Button>
           </div>
 
           {/* Filtros y búsqueda */}
@@ -263,7 +201,7 @@ const HistoryMovements = ({ movements = [] }) => {
                     <span className="font-medium">{movement.destino || 'N/A'}</span>
                   </div>
 
-                  {/* Fila inferior: Usuario, fecha y botón de mapa */}
+                  {/* Fila inferior: Usuario y fecha */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2">
                       <User className="h-3 w-3" />
@@ -272,8 +210,8 @@ const HistoryMovements = ({ movements = [] }) => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-3 w-3" />
-                        <span title={formatTimestamp(movement.timestamp)}>
-                          {getRelativeTime(movement.timestamp)}
+                        <span>
+                          {movement.fecha ? formatFechaHora(movement.fecha) : 'Sin fecha'}
                         </span>
                       </div>
                     </div>

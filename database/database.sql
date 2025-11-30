@@ -514,3 +514,60 @@ SELECT setval('work_orders_id_seq', COALESCE((SELECT MAX(id) FROM work_orders), 
 
 -- Resetear secuencia de work_order_items
 SELECT setval('work_order_items_id_seq', COALESCE((SELECT MAX(id) FROM work_order_items), 0) + 1, false);
+
+-- //Actualizar coordenadas de warehouses
+UPDATE warehouses
+SET 
+    latitud = -38.9108072,
+    longitud = -68.0762809
+WHERE warehouse_id = 1;
+
+UPDATE warehouses
+SET 
+    latitude = -38.3533503,
+    longitude = -68.7738514
+WHERE warehouse_id = 2;
+
+UPDATE warehouses
+SET 
+
+    latitude = -38.9391457,
+    longitude = -68.0150651
+WHERE warehouse_id = 3;
+
+-- //Actualizar address de warehouses
+
+  UPDATE warehouses
+  SET address = 'Cdor. Rodriguez 1020 M32 Lota 14 PIN Este, Neuquén, Argentina, Q8300 Neuquén'
+  WHERE warehouse_id = 1;
+
+  UPDATE warehouses
+  SET address = 'Q8305 Añelo, Neuquén'
+  WHERE warehouse_id = 2;
+
+  UPDATE warehouses
+  SET address = 'Rogelio Segovia 1150, R8324 Cipolletti, Río Negro'
+  WHERE warehouse_id = 3;
+
+-- //Actualizar ubicacion de productos
+UPDATE products
+SET ubicacion = 'Q8305 Añelo, Neuquén'
+WHERE ubicacion = 'Av. Argentina 1400, Neuquén, Neuquén, Argentina';
+
+ UPDATE products
+SET ubicacion = 'Cdor. Rodriguez 1020 M32 Lota 14 PIN Este, Neuquén, Argentina, Q8300 Neuquén'
+WHERE ubicacion = 'Ruta 7 Km 8, Neuquén, Neuquén, Argentina';
+
+UPDATE products
+SET ubicacion = 'Rogelio Segovia 1150, R8324 Cipolletti, Río Negro'
+WHERE ubicacion = 'Av. Olascoaga 1200, Neuquén, Neuquén, Argentina';
+
+-- Acrualizo movimientos
+UPDATE movements
+SET ubicacion_actual = 'Deposito Sur'
+WHERE ubicacion_actual = 'Ruta 7 Km 8, Neuquén, Neuquén, Argentina';
+
+-- //Actualizar tipo de fecha de movimientos , para que salga horrio del movimiento 
+ALTER TABLE movements
+ALTER COLUMN "date" TYPE TIMESTAMP
+USING "date"::timestamp;

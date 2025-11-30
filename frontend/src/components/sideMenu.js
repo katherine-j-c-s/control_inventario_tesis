@@ -36,7 +36,7 @@ const NavLink = ({ href, icon: Icon, text, isOpen }) => {
   // Si el menú está cerrado, usamos HoverCard
   if (!isOpen) {
     return (
-      <HoverCard openDelay={100} closeDelay={100}>
+      <HoverCard openDelay={100} closeDelay={100} > 
         <HoverCardTrigger asChild>
           <Link href={href} className={linkClasses}>
             <Icon className="w-5 h-5 flex-shrink-0" />
@@ -66,7 +66,7 @@ const DarkModeToggle = ({ isOpen }) => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center justify-between mt-4 p-2 rounded-lg bg-muted/50">
+    <div className="flex items-center justify-between mt-4 p-2 rounded-lg bg-muted/50 ">
       {isOpen && (
         <span className="text-sm font-medium text-foreground/70 ml-2">
           Modo Oscuro
